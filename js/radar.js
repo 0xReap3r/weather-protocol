@@ -28,12 +28,9 @@ export function initRadar(map, { beforeId, isOn }) {
   let timer = null;
 
   FRAMES.forEach((f, i) => {
-    map.addSource(`radar-${i}`, {
-      type: "raster",
-      tiles: [TILE(f.suffix, bust)],
-      tileSize: 256,
-      attribution: i === FRAMES.length - 1 ? ATTRIB : undefined,
-    });
+    const src = { type: "raster", tiles: [TILE(f.suffix, bust)], tileSize: 256 };
+    if (i === FRAMES.length - 1) src.attribution = ATTRIB; // credit once, not six times
+    map.addSource(`radar-${i}`, src);
     map.addLayer(
       {
         id: `radar-${i}`,
