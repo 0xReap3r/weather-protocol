@@ -15,8 +15,9 @@ function save(list) {
   try { localStorage.setItem(KEY, JSON.stringify(list)); return true; } catch (_) { return false; }
 }
 
-export function initPlaces({ getSpot, getAlertsFC, getRoads, openSheet, onPick, onRoute, toast }) {
+export function initPlaces({ getSpot, getAlertsFC, getRoads, openSheet, onPick, onRoute, toast, onChange }) {
   const root = document.getElementById("places-body");
+  let onRender = null;
   let places = load();
   let draftName = "";
 
@@ -60,7 +61,9 @@ export function initPlaces({ getSpot, getAlertsFC, getRoads, openSheet, onPick, 
         <input id="place-name" class="place-input" type="text" maxlength="40" placeholder="Name, like Home" value="${esc(draftName)}" aria-label="Place name">
         <button type="button" class="near-btn rp-open" id="place-save">Save</button>
       </div>
-      <div class="place-suggest">${SUGGEST.filter((n) => !places.some((p) => p.name === n)).map((n) => `<button type="button" class="sl-day" data-place-suggest="${n}">${n}</button>`).join("")}</div>`}`;
+      <div class="place-suggest">${SUGGEST.filter((n) => !places.some((p) => p.name === n)).map((n) => `<button type="button" class="sl-day" data-place-suggest="${n}">${n}</button>`).join("")}</div>`}
+      <div id="push-card" class="push-card"></div>`;
+    onRender?.();
   }
 
   root.addEventListener("input", (e) => { if (e.target.id === "place-name") draftName = e.target.value; });
@@ -74,12 +77,13 @@ export function initPlaces({ getSpot, getAlertsFC, getRoads, openSheet, onPick, 
       places = [...places, { id: Math.random().toString(36).slice(2, 9), name, at }];
       if (!save(places)) toast("Couldn't save on this device. Private browsing can block it.");
       else toast(`Saved ${name}.`);
+      onChange?.();
       draftName = "";
       render();
       return;
     }
     const del = e.target.closest("[data-place-del]");
-    if (del) { places = places.filter((p) => p.id !== del.dataset.placeDel); save(places); render(); return; }
+    if (del) { places = places.filter((p) => p.id !== del.dataset.placeDel); save(places); render(); onChange?.(); return; }
     const go = e.target.closest("[data-place-go]");
     if (go) { const p = places.find((x) => x.id === go.dataset.placeGo); if (p) onPick(p.at); return; }
     const rt = e.target.closest("[data-place-route]");
@@ -89,6 +93,7 @@ export function initPlaces({ getSpot, getAlertsFC, getRoads, openSheet, onPick, 
   return {
     open() { places = load(); render(); openSheet("places", "My places"); },
     list: () => places,
+    onRender(fn) { onRender = fn; },
     refresh() { if (!document.getElementById("sheet").hidden && !root.parentElement.hidden) render(); },
   };
 }

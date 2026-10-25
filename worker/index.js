@@ -3,8 +3,10 @@
 // ERCOT's dashboard JSON has no CORS headers, so the browser can't read it; this route can.
 // Keep it read-only and keyless (CLAUDE.md ground rules).
 
+import { handlePush, checkAlerts } from "./push.js";
+
 const ERCOT = "https://www.ercot.com/api/1/services/read/dashboards/daily-prc.json";
-const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET, OPTIONS" };
+const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET, POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type" };
 
 const json = (body, status = 200, extra = {}) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json; charset=utf-8", ...CORS, ...extra } });
@@ -41,10 +43,15 @@ export default {
     const url = new URL(req.url);
     if (url.pathname.startsWith("/api/")) {
       if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
-      if (req.method !== "GET") return json({ error: "Method not allowed" }, 405);
+      if (req.method !== "GET" && !url.pathname.startsWith("/api/push/")) return json({ error: "Method not allowed" }, 405);
       if (url.pathname === "/api/grid") return grid(ctx, req);
+      if (url.pathname.startsWith("/api/push/")) return handlePush(req, env, url, json);
       return json({ error: "Not found" }, 404);
     }
     return env.ASSETS.fetch(req);
+  },
+  // Every minute: look for new warnings that cover someone's saved places and push them.
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(checkAlerts(env));
   },
 };

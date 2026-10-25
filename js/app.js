@@ -16,6 +16,7 @@ import { initPlaces } from "./places.js";
 import { initRoute } from "./route.js";
 import { initGrid } from "./grid.js";
 import { initLegends } from "./legends.js";
+import { initPush } from "./push.js";
 import { initRainTotals, rainTotalsAt, formatInches } from "./raintotals.js";
 import { contains, milesBetween } from "./near.js";
 import { fimLayers, exportTiles, NFHL, NFHL_ZONES_LAYER } from "./data/floodmaps.js";
@@ -86,7 +87,7 @@ let reports = null; // neighbor reports, created once the map is ready
 let transit = null; // DART rail, created once the map is ready
 let storms = null; // SPC outlook, created once the map is ready
 let satellite = null, rainTotals = null; // NASA flood map and NOAA rain totals
-let feed = null, places = null, route = null; // What's happened, My places, Check a route
+let feed = null, places = null, route = null, push = null; // What's happened, My places, Check a route, alerts
 const LABEL_FONT = ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"]; // must exist in the basemap's glyphs
 
 // On desktop the Near-you column covers the right of the map, so offset the map's
@@ -276,7 +277,11 @@ map.on("load", () => {
   places = initPlaces({
     getSpot: () => near.getSpot(), getAlertsFC: () => alertsFC, getRoads: () => reports.roads(),
     openSheet, onPick: pickSpot, onRoute: (p) => route.open(p), toast,
+    onChange: () => push?.sync(),
   });
+  push = initPush({ metro, getPlaces: () => places.list(), toast });
+  places.onRender(() => push.render());
+  push.sync(); // keep the server's copy of places current
   window.stormlinePlaces = places; window.stormlineRoute = route; window.stormlineFeed = feed; // debugging aids
 
   applyLayerVisibility();

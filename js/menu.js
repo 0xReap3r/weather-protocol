@@ -24,6 +24,7 @@ const MODES = [
 
 // Newest first. Keep entries short and in plain words.
 const CHANGES = [
+  ["Oct 25, 2026", "Push alerts: get notified when an NWS warning covers one of My places."],
   ["Oct 25, 2026", "Texas power grid status from ERCOT, and a freeze card in the panel when temperatures will drop below freezing."],
   ["Oct 25, 2026", "What's happened (last 3 days), My places, and Check a route against warnings and neighbor reports."],
   ["Oct 25, 2026", "Flood from space (NASA satellite flood map with flooded acres per county) and Rain totals for the last hour, 24 hours and 3 days."],

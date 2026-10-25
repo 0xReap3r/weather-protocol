@@ -938,3 +938,9 @@ button.feed-item:hover { border-color: var(--signal); border-left-color: var(--f
 @media (max-width: 719px) {
   .maplibregl-ctrl-bottom-right { right: auto; left: 0; bottom: calc(env(safe-area-inset-bottom, 0px) + 150px); }
 }
+
+/* ---------- Push alerts card (My places) ---------- */
+.push-card { margin-top: 18px; padding-top: 4px; border-top: 1px solid var(--line); }
+.push-kinds { display: grid; gap: 6px; margin: 4px 0 4px; }
+.push-kind { display: flex; align-items: center; gap: 10px; min-height: 36px; font-size: 14px; cursor: pointer; }
+.push-kind input { width: 18px; height: 18px; accent-color: var(--signal); }

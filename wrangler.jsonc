@@ -9,5 +9,16 @@
     "not_found_handling": "single-page-application",
     // Only /api/* runs the Worker; every other request is served straight from static assets.
     "run_worker_first": ["/api/*"]
+  },
+  // Push alerts (Phase 7): subscriptions in D1, checked every minute.
+  "d1_databases": [
+    { "binding": "DB", "database_name": "stormline", "database_id": "PASTE_D1_DATABASE_ID" }
+  ],
+  "triggers": { "crons": ["* * * * *"] },
+  "vars": {
+    // Public half of the VAPID key pair (safe to publish). The private half is the Worker
+    // secret VAPID_PRIVATE_KEY, set in the Cloudflare dashboard, never in this repo.
+    "VAPID_PUBLIC_KEY": "BHzsKhm4oCUQI_NFEdUAFjLa5bWZLUa2rzVtZ_nxaM2jvBIg08nnH3dt2gZs4Ffc_-dZNx9KBYImh811ByAqLWM",
+    "VAPID_SUBJECT": "https://weather-protocol.protocolxv-dev.workers.dev"
   }
 }
