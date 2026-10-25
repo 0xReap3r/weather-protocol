@@ -178,7 +178,7 @@ export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast,
     const dist = from ? ` · ${milesBetween(from, r.at) < 0.1 ? "here" : `${milesBetween(from, r.at).toFixed(1)} mi`}` : "";
     return `<li><button type="button" class="nr-row road-row${r.confirmed ? "" : " faint"}" style="--rc:${color}" data-avoid-at="${r.at.join(",")}">
       <span class="nr-dot"></span>
-      <span class="nr-text"><span class="nr-what">${esc(r.street || "Unnamed street")}${r.city ? ` <span class="road-city">${esc(r.city)}</span>` : ""}</span>
+      <span class="nr-text"><span class="nr-what">${esc(r.street || "Street name not found")}${r.city ? ` <span class="road-city">${esc(r.city)}</span>` : ""}</span>
       <span class="nr-meta">${esc(what)} · ${esc(who)} · ${esc(ago(r.last_at))}${r.spots > 1 ? ` · ${r.spots} spots` : ""}${dist}</span></span>
       <span class="road-go" aria-hidden="true">›</span></button></li>`;
   }
@@ -196,7 +196,7 @@ export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast,
       ${list.length ? `<ul class="near-list">${list.map((r) => roadRow(r, null)).join("")}</ul>` : ""}
       <p class="near-note">From neighbor reports, not official closures. A road that isn't listed can still be flooded or iced.</p>
       <div class="near-actions">
-        <a class="near-btn" href="https://drivetexas.org/" target="_blank" rel="noopener">Official closures: DriveTexas</a>
+        <a class="near-btn" href="https://drivetexas.org/" target="_blank" rel="noopener">DriveTexas closures</a>
         <button type="button" class="near-btn rp-open" data-report-open="flood">Report a road</button>
       </div>`;
   }
