@@ -50,3 +50,9 @@ Run locally: `npx serve .` then open http://localhost:3000.
 
 ## Debugging
 In the browser console: `stormlineMap`, `stormlineNear`, `stormlineDemo()` (fake flood warning + gauge to see pulsing), and in demo mode `stormlineReports.store.simulate([lng,lat], 'flood', 2, 3)` to add fake neighbors.
+
+## Revisit later (full list in the build plan doc, "Revisit later" section)
+- No free feed yet: TEXRail / Trinity Metro lines, low-water crossings (Fort Worth HWWS is on OneRain), TxDOT closures (DriveTexas), DART live service alerts, Oncor outages. Don't scrape; outreach is deferred.
+- ERCOT grid level needs a server-side fetch (Cloudflare Worker route) — Phase 4b.
+- Storms and Grid chips still "soon". Report photos/moderation history not built.
+- Housekeeping: schedule `reports_cleanup()`, Supabase free tier pauses after ~1 week idle, leftover GitHub branches, final name, lawyer review of terms.
