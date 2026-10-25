@@ -13,7 +13,10 @@ export const APP = {
   // Neighbor reports database (Supabase). Leave blank for demo mode (reports stay on this device).
   // The publishable/anon key is meant to be public; row-level security in supabase/schema.sql
   // decides what anyone can do with it. Never put the service_role or secret key here.
-  reports: { supabaseUrl: "", supabaseKey: "" },
+  reports: {
+    supabaseUrl: "https://iiozdkcgxqvzukziovhq.supabase.co",
+    supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlpb3pka2NneHF2enVremlvdmhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI5NDczODksImV4cCI6MjEwODUyMzM4OX0.VHGVKkFDdN89dtlohVJ04pZDJ50hN4m0qUVx9SeB1OQ",
+  },
 };
 
 export const METROS = {
