@@ -47,6 +47,7 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - `js/data/reports.js` — report store: demo (this browser) or Supabase (anonymous auth + REST); reports keep only an H3 cell (res 10 roads, res 8 power)
 - `js/reports.js` also builds "Roads to avoid" (area-panel card + full list sheet), grouped by street name
 - `js/transit.js` / `js/data/transit.js` — Rail chip: DART lines and stations; stations flagged by NWS flood/tornado/winter warnings or confirmed flooding within 0.3 mi
+- `js/menu.js` — side menu: "Show me" layer presets, all views, Simple / Normal / Advanced (`body[data-view-mode]`; simple hides `.chips`, `.nd-more`; advanced shows `.adv-only`)
 - `js/storms.js` — Storms chip: SPC day 1–3 outlook shading + legend card; `levelToday()` feeds fast polling
 - `js/app.js` also: fast alert polling (60 s during active weather), "you're inside the warning" bar (`#danger-bar`) from the Near me location
 - `supabase/migrations/` — run in order on an existing project (002 adds hail + damage kinds)

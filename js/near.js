@@ -284,18 +284,22 @@ export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, o
       ${tone === "none" ? `<p class="near-note">From National Weather Service alerts. Conditions can change fast. Keep Wireless Emergency Alerts on.</p>` : ""}
       ${alertItems ? `<ul class="near-list">${alertItems}</ul>` : ""}
       ${rainCard(rain)}
+      <div class="nd-more">
       ${weather}
       ${zoneRow(zone)}
       ${rainChart(w)}
+      </div>
       <div class="near-actions">
         <a class="near-btn" href="https://www.google.com/maps/dir/?api=1&destination=${pt[1].toFixed(5)},${pt[0].toFixed(5)}" target="_blank" rel="noopener">Directions</a>
         <button type="button" class="near-btn" id="near-share">Copy link</button>
         ${mode === "pin" ? '<button type="button" class="near-btn" id="near-clear">Clear pin</button>' : ""}
       </div>
       ${getReportsHTML?.(pt) || ""}
+      <div class="nd-more">
       <h3 class="near-h">Nearest gauges</h3>
       <ul class="near-list">${gaugeRows || '<li class="near-note">Loading gauges…</li>'}</ul>
       ${cityRows ? `<h3 class="near-h">Nearby cities</h3><ul class="near-list">${cityRows}</ul>` : ""}
+      </div>
       <p class="near-911">In danger now? Call <strong>911</strong>.</p>
       <p class="near-legal">Not an official warning. Information can be wrong or late; follow the National Weather Service and local officials. <button type="button" class="link-inline" id="near-about">Sources and terms</button></p>`;
 

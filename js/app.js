@@ -9,6 +9,7 @@ import { initOutlook } from "./outlook.js";
 import { initReports } from "./reports.js";
 import { initTransit } from "./transit.js";
 import { initStorms } from "./storms.js";
+import { initMenu } from "./menu.js";
 import { contains, milesBetween } from "./near.js";
 import { fimLayers, exportTiles, NFHL, NFHL_ZONES_LAYER } from "./data/floodmaps.js";
 
@@ -32,6 +33,7 @@ function ago(iso) {
 /* ---------- Branding from config (rename in one place) ---------- */
 document.title = APP.name;
 $("#app-name").textContent = APP.name;
+$(".mn-brand").textContent = APP.name;
 $("#metro-name").textContent = metro.name;
 $("#disclaimer").textContent = APP.disclaimer;
 
@@ -827,6 +829,63 @@ function openOutlook() {
   outlook.render();
 }
 window.stormlineOutlook = outlook; // debugging aid
+
+/* ---------- Side menu ---------- */
+function applyPreset(ids) {
+  for (const l of LAYERS) {
+    if (l.id === "grid") continue; // not live yet
+    layerState[l.id] = ids.includes(l.id);
+    $(`#chip-${l.id}`)?.setAttribute("aria-pressed", String(layerState[l.id]));
+  }
+  saveLayerState(layerState);
+  applyLayerVisibility();
+  if (layerState.reports) reports?.refresh();
+  if (layerState.zones && map.getZoom() < 11) toast("Zoom in closer to see FEMA flood zones.");
+}
+const expandNear = (scrollTo) => {
+  const panel = $("#near");
+  panel.classList.add("expanded");
+  if (scrollTo) {
+    const h = [...panel.querySelectorAll(".near-h")].find((el) => el.textContent.startsWith(scrollTo));
+    h?.scrollIntoView({ block: "start", behavior: reduceMotion.matches ? "auto" : "smooth" });
+  }
+};
+const feedText = (f) => (!f ? "waiting" : f.ok === false ? `problem · last good ${f.at ? ago(f.at.toISOString()) : "never"}` : `updated ${ago(f.at.toISOString())}`);
+const menu = initMenu({
+  getLayerState: () => layerState,
+  applyPreset,
+  canInstall: () => !!deferredInstall,
+  getFeeds: () => [
+    { name: "NWS warnings", ...(feeds.alerts || {}), text: `${feedText(feeds.alerts)} · every ${Math.round(alertDelayMs / 60000)} min` },
+    { name: "River gauges", ...(feeds.gauges || {}), text: feedText(feeds.gauges) },
+    { name: "Neighbor reports", at: null, ok: true, text: reports ? `${reports.store.mode === "live" ? "shared database" : "demo, this device"} · every 1 min` : "waiting" },
+  ],
+  actions: {
+    toast,
+    map: () => {},
+    warnings: () => openAlerts(),
+    coming: () => openOutlook(),
+    area: () => expandNear(),
+    reports: () => expandNear("Neighbor reports"),
+    avoid: () => reports?.openAvoid(),
+    rail: () => { if (!layerState.transit) toggleLayer("transit"); toast("Rail is on. Tap a station for details."); },
+    report: () => reports?.openReport(),
+    locate: () => locateMe(),
+    share: () => {
+      const [lng, lat] = near.getSpot().at;
+      const url = `${location.origin}${location.pathname}#at=${lat.toFixed(5)},${lng.toFixed(5)}`;
+      (navigator.share ? navigator.share({ title: APP.name, url }) : navigator.clipboard.writeText(url).then(() => toast("Link copied.")))
+        .catch(() => {});
+    },
+    layers: () => { renderLayerList(); openSheet("layers", "Layers"); },
+    key: () => { $("#key-body").innerHTML = renderKey(); openSheet("key", "Map key"); },
+    install: () => $("#btn-install").click(),
+    guide: () => { $("#guide-body").innerHTML = menu.guideHTML(); openSheet("guide", "How to use it"); },
+    news: () => { $("#news-body").innerHTML = menu.newsHTML(); openSheet("news", "What's new"); },
+    about: () => openAbout(),
+  },
+});
+window.stormlineMenu = menu; // debugging aid
 window.stormlineNear = near; // debugging aid
 // Debug: stormlineDemo() paints a fake flood-stage gauge + warning so you can see pulsing. Reload to clear.
 window.stormlineDemo = (kind = "flood") => {
