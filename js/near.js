@@ -134,7 +134,7 @@ function rainChart(w) {
 }
 
 /* ---------- Panel ---------- */
-export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, openAlerts, locate }) {
+export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, openAlerts, locate, openAbout }) {
   const panel = document.getElementById("near");
   const body = document.getElementById("near-body");
   let mode = "center"; // "center" | "me" | "pin"
@@ -220,9 +220,27 @@ export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, o
       })
       .join("");
 
+    // Nearby cities: the closest six, each with the top NWS alert covering its center.
+    const cityRows = (metro.cities || [])
+      .map(([name, lat, lng]) => ({ name, at: [lng, lat], mi: milesBetween(pt, [lng, lat]) }))
+      .sort((a, b) => a.mi - b.mi)
+      .slice(0, 6)
+      .map((c) => {
+        let top = null;
+        for (const f of fc.features) if (contains(f.geometry, c.at) && (!top || f.properties.rank > top.rank)) top = f.properties;
+        const status = top
+          ? `<span class="nc-status" style="--alert:${top.color}">${esc(top.event)}</span>`
+          : `<span class="nc-status none">No warnings</span>`;
+        return `<li><button type="button" class="near-city" data-lng="${c.at[0]}" data-lat="${c.at[1]}">
+          <span class="nc-name">${esc(c.name)}</span>${status}
+          <span class="ng-dist">${c.mi < 1 ? "here" : c.mi < 10 ? c.mi.toFixed(1) + " mi" : Math.round(c.mi) + " mi"}</span>
+        </button></li>`;
+      })
+      .join("");
+
     // Draw what we have now; weather fills in when it arrives.
     let info = null, rain = null, zone = null;
-    const args = () => ({ verdict, tone, color, hereList, nearList, gaugeRows, info, rain, zone, pt });
+    const args = () => ({ verdict, tone, color, hereList, nearList, gaugeRows, cityRows, info, rain, zone, pt });
     paint(args());
     await Promise.all([
       pointInfo(pt).then((x) => (info = x)).catch(() => (info = { failed: true })),
@@ -232,7 +250,7 @@ export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, o
     if (token === renderToken) paint(args());
   }
 
-  function paint({ verdict, tone, color, hereList, nearList, gaugeRows, info, rain, zone, pt }) {
+  function paint({ verdict, tone, color, hereList, nearList, gaugeRows, cityRows, info, rain, zone, pt }) {
     const inPilot = pt[0] >= metro.bounds[0] && pt[0] <= metro.bounds[2] && pt[1] >= metro.bounds[1] && pt[1] <= metro.bounds[3];
     const where = mode === "pin" ? "Dropped pin" : mode === "me" ? "Your location" : "Map center";
     const place = info?.place ? `${info.place} · ${where}` : where;
@@ -274,7 +292,9 @@ export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, o
       </div>
       <h3 class="near-h">Nearest gauges</h3>
       <ul class="near-list">${gaugeRows || '<li class="near-note">Loading gauges…</li>'}</ul>
-      <p class="near-911">In danger now? Call <strong>911</strong>.</p>`;
+      ${cityRows ? `<h3 class="near-h">Nearby cities</h3><ul class="near-list">${cityRows}</ul>` : ""}
+      <p class="near-911">In danger now? Call <strong>911</strong>.</p>
+      <p class="near-legal">Not an official warning. Information can be wrong or late; follow the National Weather Service and local officials. <button type="button" class="link-inline" id="near-about">Sources and terms</button></p>`;
 
     body.querySelector("#near-share")?.addEventListener("click", async (e) => {
       const url = `${location.origin}${location.pathname}#at=${pt[1].toFixed(5)},${pt[0].toFixed(5)}`;
@@ -282,11 +302,19 @@ export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, o
       catch (_) { prompt("Copy this link:", url); }
     });
     body.querySelector("#near-clear")?.addEventListener("click", () => setMode("center"));
+    body.querySelector("#near-about")?.addEventListener("click", () => openAbout?.());
+    body.querySelectorAll(".near-city").forEach((b) =>
+      b.addEventListener("click", () => {
+        const at = [Number(b.dataset.lng), Number(b.dataset.lat)];
+        map.easeTo({ center: at, zoom: Math.max(map.getZoom(), 11) });
+        api.setPin(at);
+      })
+    );
     body.querySelectorAll(".near-gauge").forEach((b) => b.addEventListener("click", () => openGauge(b.dataset.lid)));
     body.querySelectorAll(".near-alert").forEach((b) => b.addEventListener("click", () => openAlerts(b.dataset.id)));
   }
 
-  return {
+  const api = {
     render,
     setMe(pt) { mePoint = pt; setMode("me"); },
     setPin(pt) {
@@ -302,4 +330,5 @@ export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, o
       panel.classList.add("expanded");
     },
   };
+  return api;
 }

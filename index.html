@@ -81,6 +81,7 @@
     <p id="disclaimer" class="disclaimer"></p>
     <div class="foot-actions">
       <button id="btn-install" class="link-btn" type="button" hidden>Install app</button>
+      <button id="btn-key" class="link-btn" type="button">Map key</button>
       <button id="btn-about" class="link-btn" type="button">About</button>
     </div>
   </footer>
@@ -109,15 +110,33 @@
       <div id="gauge-body"></div>
     </div>
 
+    <div data-view="key" hidden>
+      <div id="key-body"></div>
+    </div>
+
     <div data-view="about" hidden>
-      <p class="sheet-lead">A live picture of severe weather across Dallas–Fort Worth, built from public government data and reports from neighbors.</p>
+      <p class="sheet-lead">A live picture of severe weather across Dallas–Fort Worth, built from public government data and, later, reports from neighbors.</p>
       <ul class="about-list">
         <li><strong>In danger now?</strong> Call 911. This map does not contact emergency services.</li>
-        <li><strong>Warnings</strong> come from the National Weather Service. Keep Wireless Emergency Alerts on; this map can lag.</li>
+        <li><strong>Warnings</strong> come from the National Weather Service. Keep Wireless Emergency Alerts on; this map can lag behind official warnings.</li>
         <li><strong>Gray means no data</strong>, not "safe." A road with no reports can still be flooded or iced.</li>
         <li><strong>Every reading shows its time.</strong> Old readings fade so you can tell what's current.</li>
       </ul>
-      <p class="sheet-small">Data: NOAA National Weather Service, NOAA National Water Prediction Service, U.S. Geological Survey, NOAA Storm Prediction Center, FEMA, ERCOT. Not affiliated with any government agency.</p>
+
+      <h3 class="about-h">Terms</h3>
+      <p class="about-legal">This is not an official warning service. Information can be wrong, incomplete or late. Use your own judgment and follow the National Weather Service, emergency managers and local officials. Never drive into water: turn around, don't drown. This map is provided as is, and to the fullest extent the law allows, its makers are not responsible for any loss or decision made from it. Not affiliated with any government agency.</p>
+
+      <h3 class="about-h">Sources</h3>
+      <ul class="about-sources">
+        <li><a href="https://www.weather.gov/" target="_blank" rel="noopener">NOAA National Weather Service</a> · warnings, watches, forecasts</li>
+        <li><a href="https://water.noaa.gov/" target="_blank" rel="noopener">NOAA National Water Prediction Service</a> · river gauges, flood stages, modeled flood maps</li>
+        <li><a href="https://waterdata.usgs.gov/" target="_blank" rel="noopener">U.S. Geological Survey</a> · streamgage readings</li>
+        <li><a href="https://mesonet.agron.iastate.edu/" target="_blank" rel="noopener">Iowa Environmental Mesonet</a> · NWS NEXRAD radar</li>
+        <li><a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> · rain-now model nowcast (NOAA HRRR)</li>
+        <li><a href="https://msc.fema.gov/" target="_blank" rel="noopener">FEMA National Flood Hazard Layer</a> · flood zones</li>
+        <li><a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a> and <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · base map</li>
+      </ul>
+      <p class="sheet-small">Coming later: NOAA Storm Prediction Center outlooks and ERCOT grid status.</p>
     </div>
   </section>
 

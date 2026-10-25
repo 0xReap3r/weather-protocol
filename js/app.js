@@ -4,6 +4,7 @@ import { loadAlerts, uniqueAlerts } from "./data/alerts.js";
 import { loadGauges, loadStageflow, CATEGORY } from "./data/gauges.js";
 import { initNearPanel } from "./near.js";
 import { initRadar } from "./radar.js";
+import { renderKey } from "./key.js";
 import { fimLayers, exportTiles, NFHL, NFHL_ZONES_LAYER } from "./data/floodmaps.js";
 
 const metro = METROS[DEFAULT_METRO];
@@ -387,7 +388,9 @@ function closeSheet() {
   setTimeout(() => !currentView && (sheet.hidden = true), 200);
 }
 $("#btn-layers").addEventListener("click", () => { renderLayerList(); openSheet("layers", "Layers"); });
-$("#btn-about").addEventListener("click", () => openSheet("about", "About"));
+const openAbout = () => openSheet("about", "About");
+$("#btn-about").addEventListener("click", openAbout);
+$("#btn-key").addEventListener("click", () => { $("#key-body").innerHTML = renderKey(); openSheet("key", "Map key"); });
 sheet.querySelector(".sheet-close").addEventListener("click", closeSheet);
 document.addEventListener("keydown", (e) => e.key === "Escape" && !sheet.hidden && closeSheet());
 
@@ -632,6 +635,7 @@ near = initNearPanel({
   openGauge,
   openAlerts,
   locate: locateMe,
+  openAbout,
 });
 window.stormlineNear = near; // debugging aid
 // Debug: stormlineDemo() paints a fake flood-stage gauge + warning so you can see pulsing. Reload to clear.
