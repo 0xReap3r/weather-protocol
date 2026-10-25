@@ -63,6 +63,18 @@ function addProtocol() {
   });
 }
 
+function wetNeighbors(d, size, px, py) {
+  let n = 0;
+  for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+    if (!dx && !dy) continue;
+    const x = px + dx, y = py + dy;
+    if (x < 0 || y < 0 || x >= size || y >= size) continue;
+    const k = classify(d, (y * size + x) * 4);
+    if (k === "flood" || k === "recurring" || (d[(y * size + x) * 4 + 3] && near(d, (y * size + x) * 4, CLASS.water))) n++;
+  }
+  return n;
+}
+
 // Flooded acres per county from the z9 tiles covering the counties.
 async function countyTotals(counties, date) {
   let w = Infinity, s = Infinity, e = -Infinity, n = -Infinity;
@@ -88,7 +100,10 @@ async function countyTotals(counties, date) {
         if (!cty) continue;
         const t = totals.get(cty.geoid);
         t.all++;
-        const k = classify(d, (py * size + px) * 4);
+        let k = classify(d, (py * size + px) * 4);
+        // Lone flood pixels are usually cloud shadows or noise: count flood water only where
+        // at least 2 of the 8 neighboring pixels are water too.
+        if ((k === "flood" || k === "recurring") && wetNeighbors(d, size, px, py) < 2) k = null;
         if (k) t[k]++;
       }
     }
