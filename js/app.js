@@ -14,6 +14,7 @@ import { initSatellite } from "./satellite.js";
 import { initFeed } from "./feed.js";
 import { initPlaces } from "./places.js";
 import { initRoute } from "./route.js";
+import { initGrid } from "./grid.js";
 import { initRainTotals, rainTotalsAt, formatInches } from "./raintotals.js";
 import { contains, milesBetween } from "./near.js";
 import { fimLayers, exportTiles, NFHL, NFHL_ZONES_LAYER } from "./data/floodmaps.js";
@@ -76,6 +77,7 @@ const MAP_LAYERS = {
   storms: [], // filled in once the map is ready
   satflood: [], // filled in once the map is ready
   raintotal: [], // filled in once the map is ready
+  grid: [], // not a map layer: the chip shows or hides the Texas grid pill
   reports: [], // filled in once the map is ready
 };
 let radar = null;
@@ -453,6 +455,7 @@ function applyLayerVisibility() {
   radar?.onToggle(!!layerState.rain);
   transit?.onToggle(!!layerState.transit);
   storms?.onToggle(!!layerState.storms);
+  grid?.render();
   satellite?.onToggle(!!layerState.satflood);
   rainTotals?.onToggle(!!layerState.raintotal);
   for (const [id, ids] of Object.entries(MAP_LAYERS)) {
@@ -896,6 +899,10 @@ function openOutlook() {
 }
 window.stormlineOutlook = outlook; // debugging aid
 
+/* ---------- Texas grid (ERCOT) ---------- */
+const grid = initGrid({ isOn: () => !!layerState.grid, openSheet });
+window.stormlineGrid = grid; // debugging aid
+
 /* ---------- Side menu ---------- */
 function applyPreset(ids) {
   for (const l of LAYERS) {
@@ -931,6 +938,7 @@ const menu = initMenu({
     map: () => {},
     warnings: () => openAlerts(),
     feed: () => feed?.open(),
+    grid: () => { if (!layerState.grid) toggleLayer("grid"); $("#grid-pill").hidden ? toast("Texas grid status is loading…") : $("#grid-pill").click(); },
     places: () => places?.open(),
     route: () => route?.open(),
     coming: () => openOutlook(),

@@ -70,6 +70,11 @@ async function pointInfo([lng, lat]) {
         .filter((x) => Date.parse(x.endTime) > Date.now())
         .slice(0, 12)
         .map((x) => ({ t: x.startTime, pop: x.probabilityOfPrecipitation?.value ?? 0 })),
+      // Coldest hour in the next 36 hours, for the freeze card.
+      low36: periods
+        .filter((x) => Date.parse(x.endTime) > Date.now())
+        .slice(0, 36)
+        .reduce((lo, x) => (lo && lo.temp <= x.temperature ? lo : { temp: x.temperature, t: x.startTime, sky: x.shortForecast }), null),
     };
   } catch (_) { /* forecast is a nice-to-have; the panel works without it */ }
   const out = { place: rel.city ? `${rel.city}, ${rel.state}` : null, hourly, at: Date.now() };
@@ -103,6 +108,20 @@ function rainCard(rain) {
 }
 
 /* ---------- FEMA flood zone for the spot ---------- */
+// Freezing temperatures ahead (NWS hourly forecast). Shown in every view mode.
+function freezeCard(w) {
+  const lo = w?.low36;
+  if (!lo || w.unit !== "F" || lo.temp > 32) return "";
+  const hard = lo.temp <= 25;
+  const when = new Date(lo.t).toLocaleString([], { weekday: "short", hour: "numeric" });
+  const icy = /snow|sleet|ice|freezing/i.test(lo.sky || "");
+  return `<section class="rain-card freeze-card" data-level="${hard ? "heavy" : "moderate"}">
+    <p class="rc-head"><span>${hard ? "Hard freeze ahead" : "Freezing temps ahead"}</span><span>NWS forecast</span></p>
+    <p class="rc-title">Low of ${esc(lo.temp)}°F <small>around ${esc(when)}</small></p>
+    <p class="rc-advice">${icy ? "Ice or snow is in the forecast: bridges and overpasses freeze first. " : "Bridges and overpasses can ice first if there's any moisture. "}Protect pipes, plants and pets${hard ? "; drip faucets and cover outdoor pipes" : ""}. Never heat your home with a stove or grill.</p>
+  </section>`;
+}
+
 function zoneRow(zone) {
   if (!zone) return `<h3 class="near-h">FEMA flood zone</h3><p class="near-note">Checking FEMA's flood map…</p>`;
   if (zone.failed) return `<h3 class="near-h">FEMA flood zone</h3><p class="near-note">FEMA's flood map isn't responding right now.</p>`;
@@ -284,6 +303,7 @@ export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, o
       ${tone === "none" ? `<p class="near-note">From National Weather Service alerts. Conditions can change fast. Keep Wireless Emergency Alerts on.</p>` : ""}
       ${alertItems ? `<ul class="near-list">${alertItems}</ul>` : ""}
       ${rainCard(rain)}
+      ${freezeCard(info?.hourly)}
       <div class="nd-more">
       ${weather}
       ${zoneRow(zone)}

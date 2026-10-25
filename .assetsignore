@@ -7,3 +7,5 @@ CLAUDE.md
 README.md
 LICENSE
 node_modules
+worker
+supabase

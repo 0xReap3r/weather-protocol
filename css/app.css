@@ -857,3 +857,25 @@ button.feed-item:hover { border-color: var(--signal); border-left-color: var(--f
 .place-suggest { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .route-to { flex-wrap: wrap; }
 .sl-day:disabled { opacity: .45; cursor: default; }
+.freeze-card { --rc: #9fe1ff !important; }
+.freeze-card[data-level="heavy"] { --rc: #a99bff !important; }
+.freeze-card .rc-title small { font-size: 14px; color: var(--text-dim); margin-left: 6px; }
+
+/* ---------- Texas grid (ERCOT) pill ---------- */
+.grid-pill {
+  --gc: var(--live);
+  justify-self: start; display: inline-flex; align-items: center; gap: 8px; max-width: 100%;
+  min-height: 32px; padding: 0 12px; border-radius: 999px; cursor: pointer; font: inherit; font-size: 13px; color: var(--text);
+  background: rgba(18,24,32,.94); border: 1px solid color-mix(in srgb, var(--gc) 60%, var(--line));
+}
+.grid-pill[hidden] { display: none; }
+.grid-pill .gp-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gc); flex: none; }
+.grid-pill strong { color: var(--gc); font-weight: 600; }
+.grid-pill[data-level="0"] strong { color: var(--text); }
+.grid-pill .gp-src { color: var(--text-dim); font-family: var(--font-data); font-size: 11px; }
+.grid-pill.stale { opacity: .6; }
+.grid-meter { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin: 10px 0 4px; }
+.grid-meter span { height: 6px; border-radius: 3px; background: var(--line); }
+.grid-meter span.on { background: var(--gc); }
+.grid-steps { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 4px; font-size: 13px; color: var(--text-dim); }
+.grid-steps li.cur { color: var(--text); font-weight: 600; }

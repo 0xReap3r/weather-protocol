@@ -37,7 +37,7 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - NOAA rain totals: `mapservices.weather.noaa.gov/raster/rest/services/obs/mrms_qpe/ImageServer` — renderingRule `rft_1hr|rft_24hr|rft_72hr` for tiles/legend; items `conus_QPE_01H…72H` for identify (spot) and computeStatisticsHistograms (county mean/max)
 - County outlines: Census TIGERweb `State_County/MapServer/1` (BASENAME + STATE FIPS), `js/data/counties.js`
 - Routing: OSRM public demo `router.project-osrm.org` (fair-use only; self-host or pay before launch)
-- ERCOT dashboard JSON is CORS-blocked in browsers; fetch it server-side.
+- ERCOT grid: `ercot.com/api/1/services/read/dashboards/daily-prc.json` → `current_condition` {state normal|weather|vcn|conservation|eea1|eea2|eea3, title, condition_note, eea_level, prc_value}. CORS-blocked, so `worker/index.js` serves it trimmed at `/api/grid` (60 s edge cache)
 
 ## Layout
 - `js/config.js` — app name, disclaimer, basemap, metro config (DFW counties, gauges, cities, refresh rates)
@@ -57,6 +57,8 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - `js/feed.js` — "What's happened": last 3 days of NWS alerts (`loadRecentAlerts`), rivers at action+, neighbor reports
 - `js/places.js` — My places (localStorage `stormline.places.v1`, max 10) with live status
 - `js/route.js` — Check a route: OSRM public demo router → warnings crossed + reported roads within 120 m
+- `worker/index.js` — Cloudflare Worker for `/api/*` only (`run_worker_first`); everything else is static assets
+- `js/grid.js` — Grid chip: ERCOT pill under the warnings banner + detail sheet; uses `APP.apiBase` off the live site
 - `js/storms.js` — Storms chip: SPC day 1–3 outlook shading + legend card; `levelToday()` feeds fast polling
 - `js/app.js` also: fast alert polling (60 s during active weather), "you're inside the warning" bar (`#danger-bar`) from the Near me location
 - `supabase/migrations/` — run in order on an existing project (002 adds hail + damage kinds)
@@ -69,7 +71,6 @@ In the browser console: `stormlineMap`, `stormlineNear`, `stormlineDemo()` / `st
 
 ## Revisit later (full list in the build plan doc, "Revisit later" section)
 - No free feed yet: TEXRail / Trinity Metro lines, low-water crossings (Fort Worth HWWS is on OneRain), TxDOT closures (DriveTexas), DART live service alerts, Oncor outages. Don't scrape; outreach is deferred.
-- ERCOT grid level needs a server-side fetch (Cloudflare Worker route) — Phase 4b.
-- Grid chip still "soon". Push alerts for warnings wait for Phase 7. Report photos/moderation history not built.
+- Push alerts for warnings wait for Phase 7. Report photos/moderation history not built.
 - Optimize the mobile version: chips overflow the edge, radar legend covers the map, side panel and sheets open too tall; check tap targets and test on real iPhone/Android.
 - Housekeeping: schedule `reports_cleanup()`, Supabase free tier pauses after ~1 week idle, leftover GitHub branches, final name, lawyer review of terms.

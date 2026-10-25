@@ -24,6 +24,7 @@ const MODES = [
 
 // Newest first. Keep entries short and in plain words.
 const CHANGES = [
+  ["Oct 25, 2026", "Texas power grid status from ERCOT, and a freeze card in the panel when temperatures will drop below freezing."],
   ["Oct 25, 2026", "What's happened (last 3 days), My places, and Check a route against warnings and neighbor reports."],
   ["Oct 25, 2026", "Flood from space (NASA satellite flood map with flooded acres per county) and Rain totals for the last hour, 24 hours and 3 days."],
   ["Oct 25, 2026", "Side menu with Show me presets and Simple / Normal / Advanced views."],
@@ -93,6 +94,7 @@ export function initMenu({ appName, getLayerState, applyPreset, actions, getFeed
             ${item("area", "area", "This area")}
             ${item("avoid", "avoid", "Roads to avoid")}
             ${item("rail", "rail", "Rail (DART)")}
+            ${item("grid", "info", "Texas power grid")}
           </ul>
         </section>
         <section class="mn-sec">

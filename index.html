@@ -41,6 +41,7 @@
     <nav id="chips" class="chips" aria-label="Map layers"></nav>
     <button id="alert-banner" class="alert-banner" type="button" hidden></button>
     <div id="danger-bar" class="danger-bar" role="alert" hidden></div>
+    <button id="grid-pill" class="grid-pill" type="button" hidden></button>
     <div id="radar-legend" class="radar-legend" hidden>
       <div class="rl-head">
         <span class="rl-title">Rain radar</span>
@@ -148,6 +149,10 @@
       <div id="outlook-body"></div>
     </div>
 
+    <div data-view="grid" hidden>
+      <div id="grid-body"></div>
+    </div>
+
     <div data-view="feed" hidden>
       <div id="feed-body"></div>
     </div>
@@ -198,9 +203,9 @@
         <li><a href="https://mrms.nssl.noaa.gov/" target="_blank" rel="noopener">NOAA MRMS</a> · rain totals from radar</li>
         <li><a href="https://tigerweb.geo.census.gov/" target="_blank" rel="noopener">U.S. Census Bureau TIGERweb</a> · county outlines</li>
         <li><a href="https://www.dart.org/" target="_blank" rel="noopener">DART</a> · rail lines and stations (schedule data via City of Dallas GIS)</li>
+        <li><a href="https://www.ercot.com/gridmktinfo/dashboards/gridconditions" target="_blank" rel="noopener">ERCOT</a> · Texas power grid conditions</li>
         <li><a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a> and <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · base map and street names</li>
       </ul>
-      <p class="sheet-small">Coming later: ERCOT grid status.</p>
     </div>
   </section>
 

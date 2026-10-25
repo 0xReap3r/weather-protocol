@@ -62,8 +62,8 @@ export const LAYERS = [
   {
     id: "grid",
     label: "Grid",
-    hint: "Texas grid emergency level",
-    source: "ERCOT",
+    hint: "Texas power grid status from ERCOT, from Normal up to Energy Emergency level 3, shown under the warnings banner.",
+    source: "ERCOT grid conditions",
     phase: 4,
     defaultOn: true,
   },
