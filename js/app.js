@@ -10,6 +10,8 @@ import { initReports } from "./reports.js";
 import { initTransit } from "./transit.js";
 import { initStorms } from "./storms.js";
 import { initMenu } from "./menu.js";
+import { initSatellite } from "./satellite.js";
+import { initRainTotals, rainTotalsAt, formatInches } from "./raintotals.js";
 import { contains, milesBetween } from "./near.js";
 import { fimLayers, exportTiles, NFHL, NFHL_ZONES_LAYER } from "./data/floodmaps.js";
 
@@ -69,12 +71,15 @@ const MAP_LAYERS = {
   zones: ["fema-zones"],
   transit: [], // filled in once the map is ready
   storms: [], // filled in once the map is ready
+  satflood: [], // filled in once the map is ready
+  raintotal: [], // filled in once the map is ready
   reports: [], // filled in once the map is ready
 };
 let radar = null;
 let reports = null; // neighbor reports, created once the map is ready
 let transit = null; // DART rail, created once the map is ready
 let storms = null; // SPC outlook, created once the map is ready
+let satellite = null, rainTotals = null; // NASA flood map and NOAA rain totals
 const LABEL_FONT = ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"]; // must exist in the basemap's glyphs
 
 // On desktop the Near-you column covers the right of the map, so offset the map's
@@ -118,6 +123,13 @@ map.on("load", () => {
   storms = initStorms({ map, beforeId: firstLabel });
   MAP_LAYERS.storms = storms.layerIds;
   window.stormlineStorms = storms; // debugging aid
+
+  // Rain totals (NOAA MRMS) and flood from space (NASA), under the radar drops.
+  rainTotals = initRainTotals({ map, metro, beforeId: firstLabel });
+  MAP_LAYERS.raintotal = rainTotals.layerIds;
+  satellite = initSatellite({ map, metro, beforeId: firstLabel });
+  MAP_LAYERS.satflood = satellite.layerIds;
+  window.stormlineSatellite = satellite; // debugging aid
 
   // Rain radar
   radar = initRadar(map, { beforeId: firstLabel, isOn: () => layerState.rain });
@@ -411,6 +423,8 @@ function applyLayerVisibility() {
   radar?.onToggle(!!layerState.rain);
   transit?.onToggle(!!layerState.transit);
   storms?.onToggle(!!layerState.storms);
+  satellite?.onToggle(!!layerState.satflood);
+  rainTotals?.onToggle(!!layerState.raintotal);
   for (const [id, ids] of Object.entries(MAP_LAYERS)) {
     for (const l of ids) if (map.getLayer(l)) map.setLayoutProperty(l, "visibility", layerState[id] ? "visible" : "none");
   }
@@ -785,8 +799,29 @@ near = initNearPanel({
   openAlerts,
   locate: locateMe,
   openAbout,
-  getReportsHTML: (pt) => (reports?.summaryHTML(pt) || "") + stationsHTML(pt),
+  getReportsHTML: (pt) => rainSoFarHTML(pt) + (reports?.summaryHTML(pt) || "") + stationsHTML(pt),
 });
+
+// Rain that has already fallen at the spot (NOAA MRMS radar estimates), loaded in the background.
+const rainSoFar = new Map(); // "lng,lat" (2 decimals) -> totals | "loading" | "failed"
+function rainSoFarHTML(pt) {
+  const key = `${pt[0].toFixed(2)},${pt[1].toFixed(2)}`;
+  const v = rainSoFar.get(key);
+  if (!v) {
+    rainSoFar.set(key, "loading");
+    rainTotalsAt(pt).then((t) => rainSoFar.set(key, t)).catch(() => rainSoFar.set(key, "failed")).finally(() => near?.render());
+  }
+  if (!v || v === "loading") return `<h3 class="near-h">Rain so far</h3><p class="near-note">Checking radar rain totals…</p>`;
+  if (v === "failed") return `<h3 class="near-h">Rain so far</h3><p class="near-note">Rain totals are unavailable right now.</p>`;
+  const when = v.at ? new Date(v.at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : null;
+  return `<h3 class="near-h">Rain so far <span class="near-h-note">NOAA radar${when ? ` · to ${esc(when)}` : ""}</span></h3>
+    <div class="near-stats rt-stats">
+      <div><span class="st-l">Last hour</span><span class="st-v">${formatInches(v["1h"])}<small>in</small></span></div>
+      <div><span class="st-l">24 hours</span><span class="st-v">${formatInches(v["24h"])}<small>in</small></span></div>
+      <div><span class="st-l">3 days</span><span class="st-v">${formatInches(v["72h"])}<small>in</small></span></div>
+    </div>`;
+}
+setInterval(() => rainSoFar.clear(), 30 * 60 * 1000); // estimates refresh hourly
 
 // Rail stations near the spot that carry a warning or flooding flag.
 function stationsHTML(pt) {

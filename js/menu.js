@@ -9,7 +9,7 @@ const MODE_KEY = "stormline.viewMode.v1";
 // Layer sets for "Show me". Grid isn't live yet, so presets leave it alone.
 export const PRESETS = [
   { id: "all", label: "Everything", note: "All official layers and neighbor reports", layers: ["alerts", "rivers", "rain", "storms", "reports"] },
-  { id: "flood", label: "Flooding", note: "Warnings, rivers, radar, flood zones, reports", layers: ["alerts", "rivers", "rain", "zones", "reports"] },
+  { id: "flood", label: "Flooding", note: "Warnings, rivers, radar, flood zones, reports", layers: ["alerts", "rivers", "rain", "zones", "reports", "satflood", "raintotal"] },
   { id: "storms", label: "Tornadoes and storms", note: "Warnings, storm outlook, radar, hail and damage reports", layers: ["alerts", "storms", "rain", "reports"] },
   { id: "winter", label: "Winter and ice", note: "Warnings, iced-road and power reports, rail", layers: ["alerts", "rain", "reports", "transit"] },
   { id: "power", label: "Power outages", note: "Warnings and neighbor power reports", layers: ["alerts", "reports"] },
@@ -24,6 +24,7 @@ const MODES = [
 
 // Newest first. Keep entries short and in plain words.
 const CHANGES = [
+  ["Oct 25, 2026", "Flood from space (NASA satellite flood map with flooded acres per county) and Rain totals for the last hour, 24 hours and 3 days."],
   ["Oct 25, 2026", "Side menu with Show me presets and Simple / Normal / Advanced views."],
   ["Oct 25, 2026", "Storms layer (NOAA storm outlook), faster warning checks during active weather, and a bar that tells you when you're inside a warning."],
   ["Oct 25, 2026", "Hail and storm damage reports. Trees and power lines down show in Roads to avoid."],
@@ -68,7 +69,7 @@ export function initMenu({ appName, getLayerState, applyPreset, actions, getFeed
 
   function activePreset() {
     const st = getLayerState();
-    return PRESETS.find((p) => ["alerts", "rivers", "rain", "storms", "zones", "transit", "reports"].every((id) => !!st[id] === p.layers.includes(id)))?.id || null;
+    return PRESETS.find((p) => ["alerts", "rivers", "rain", "storms", "zones", "transit", "reports", "satflood", "raintotal"].every((id) => !!st[id] === p.layers.includes(id)))?.id || null;
   }
 
   function render() {

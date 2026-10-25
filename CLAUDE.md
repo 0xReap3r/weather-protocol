@@ -33,6 +33,9 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - Open-Meteo multi-location hourly rain for all cities in one request
 - DART rail lines + stations (from DART GTFS): City of Dallas ArcGIS `services2.arcgis.com/rwnOSbfKSwyTBcwN/ArcGIS/rest/services/dart_rail/FeatureServer/{0 stops,1 routes}` (CORS OK). No TEXRail feed found yet.
 - Road names: nearest named line in the CARTO basemap's own z14 vector tile (`roads` layer), decoded in `js/data/roadnames.js`
+- NASA flood from space: GIBS WMTS `MODIS_Combined_Flood_2-Day` (GoogleMapsCompatible_Level9, max z9, date = yesterday UTC). Colors: flood 250,30,36 · recurring 255,255,0 · water 50,210,245 · insufficient 175,175,175. Recolored via a MapLibre `floodsat://` protocol in `js/satellite.js`
+- NOAA rain totals: `mapservices.weather.noaa.gov/raster/rest/services/obs/mrms_qpe/ImageServer` — renderingRule `rft_1hr|rft_24hr|rft_72hr` for tiles/legend; items `conus_QPE_01H…72H` for identify (spot) and computeStatisticsHistograms (county mean/max)
+- County outlines: Census TIGERweb `State_County/MapServer/1` (BASENAME + STATE FIPS), `js/data/counties.js`
 - ERCOT dashboard JSON is CORS-blocked in browsers; fetch it server-side.
 
 ## Layout
@@ -48,6 +51,8 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - `js/reports.js` also builds "Roads to avoid" (area-panel card + full list sheet), grouped by street name
 - `js/transit.js` / `js/data/transit.js` — Rail chip: DART lines and stations; stations flagged by NWS flood/tornado/winter warnings or confirmed flooding within 0.3 mi
 - `js/menu.js` — side menu: "Show me" layer presets, all views, Simple / Normal / Advanced (`body[data-view-mode]`; simple hides `.chips`, `.nd-more`; advanced shows `.adv-only`)
+- `js/satellite.js` — "Flood from space" chip: recolored NASA flood tiles + flooded acres per county labels (zoom < 11)
+- `js/raintotals.js` — "Rain totals" chip: MRMS tiles, period buttons, county avg/max labels; `rainTotalsAt()` feeds "Rain so far" in the area panel
 - `js/storms.js` — Storms chip: SPC day 1–3 outlook shading + legend card; `levelToday()` feeds fast polling
 - `js/app.js` also: fast alert polling (60 s during active weather), "you're inside the warning" bar (`#danger-bar`) from the Near me location
 - `supabase/migrations/` — run in order on an existing project (002 adds hail + damage kinds)

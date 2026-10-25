@@ -36,6 +36,22 @@ export const LAYERS = [
     defaultOn: false,
   },
   {
+    id: "satflood",
+    label: "Flood from space",
+    hint: "Flood water seen by NASA satellites over the last 2 days, with flooded acres per county when zoomed out. Misses small streets and anything under cloud.",
+    source: "NASA LANCE MODIS flood map (GIBS)",
+    phase: 4,
+    defaultOn: false,
+  },
+  {
+    id: "raintotal",
+    label: "Rain totals",
+    hint: "How much rain has fallen in the last hour, 24 hours or 3 days, with county averages when zoomed out.",
+    source: "NOAA MRMS radar estimates",
+    phase: 4,
+    defaultOn: false,
+  },
+  {
     id: "zones",
     label: "Flood zones",
     hint: "FEMA flood hazard zones (zoom in to see them)",

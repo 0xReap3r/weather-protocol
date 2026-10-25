@@ -826,3 +826,5 @@ body[data-view-mode="simple"] .chips,
 body[data-view-mode="simple"] .storms-legend,
 body[data-view-mode="simple"] .rl-note,
 body[data-view-mode="simple"] .nd-more { display: none !important; }
+.rt-sw { width: 14px; height: 10px; border-radius: 2px; }
+.rt-stats { margin-top: 0; }

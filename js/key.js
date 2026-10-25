@@ -68,6 +68,8 @@ export function renderKey() {
 
     <h3 class="key-h">Flood maps</h3>
     <ul class="key-list">
+      ${row(area("#3d9bff"), "Flood from space", "Flood water NASA satellites saw in the last 2 days. Light blue: places that flood often. Faint gray: clouds blocked the view.")}
+      ${row(area("#56c2ff"), "Rain totals", "Rain that has fallen, from NOAA radar, in NOAA's own colors. Pick 1 hour, 24 hours or 3 days.")}
       ${row(area("#4a90e2"), "FEMA flood zones", "Long-term flood risk, in FEMA's own map colors. Zoom in to see them; tap a spot for its zone.")}
       ${row(area("#2f6fd6"), "Modeled flooding", "From a gauge's detail panel: where water would reach at each flood level. A model, not observed flooding.")}
     </ul>
