@@ -2,6 +2,8 @@
 {
   "name": "weather-protocol",
   "compatibility_date": "2026-10-01",
+  // Keep variables added in the Cloudflare dashboard when GitHub deploys this config.
+  "keep_vars": true,
   "main": "worker/index.js",
   "assets": {
     "directory": "./",
