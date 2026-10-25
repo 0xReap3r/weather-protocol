@@ -12,8 +12,8 @@ create extension if not exists pgcrypto;
 create table if not exists public.reports (
   id          uuid primary key default gen_random_uuid(),
   user_id     uuid not null default auth.uid(),
-  kind        text not null check (kind in ('flood', 'ice', 'power_out', 'power_back')),
-  depth       smallint check (depth between 1 and 5),   -- flood only: 1 ankle … 5 over car
+  kind        text not null check (kind in ('flood', 'ice', 'power_out', 'power_back', 'hail', 'damage')),
+  depth       smallint check (depth between 1 and 5),   -- flood depth, hail size or damage type (see migrations/002)
   cell        text not null check (cell ~ '^[0-9a-f]{15}$'),
   cell_lat    double precision not null check (cell_lat between 31.0 and 35.0),   -- DFW region
   cell_lng    double precision not null check (cell_lng between -99.5 and -94.5),
@@ -24,7 +24,7 @@ create table if not exists public.reports (
 );
 create index if not exists reports_active_idx on public.reports (expires_at, cell_lat, cell_lng);
 
--- Expiry is set by the server, not the client: floods 6 h, ice 12 h, power 6 h.
+-- Expiry is set by the server, not the client: floods 6 h, ice 12 h, power 6 h, hail 3 h, damage 24 h.
 create or replace function public.reports_set_expiry() returns trigger
 language plpgsql as $$
 begin
@@ -33,10 +33,15 @@ begin
   new.expires_at := now() + case new.kind
     when 'flood' then interval '6 hours'
     when 'ice' then interval '12 hours'
+    when 'hail' then interval '3 hours'
+    when 'damage' then interval '24 hours'
     else interval '6 hours' end;
-  if new.kind <> 'flood' then new.depth := null; end if;
-  if new.kind = 'flood' and new.depth is null then
-    raise exception 'Flood reports need a depth';
+  if new.kind not in ('flood', 'hail', 'damage') then new.depth := null; end if;
+  if new.kind in ('flood', 'hail', 'damage') and new.depth is null then
+    raise exception 'This report needs a detail (depth, hail size or damage type)';
+  end if;
+  if new.kind = 'damage' and new.depth > 3 then
+    raise exception 'Unknown damage type';
   end if;
   return new;
 end $$;

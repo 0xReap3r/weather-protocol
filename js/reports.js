@@ -2,7 +2,7 @@
 // Rules from the plan: show areas, not people; one report stays faint until a second person
 // confirms; reports fade out on their own; SOS is a 911 link only; never call a road "safe".
 
-import { store, KINDS, DEPTHS, loadH3 } from "./data/reports.js";
+import { store, KINDS, DEPTHS, HAIL, DAMAGE, hasDetail, loadH3 } from "./data/reports.js";
 import { milesBetween } from "./near.js";
 import { roadNameAt } from "./data/roadnames.js";
 
@@ -20,6 +20,18 @@ const clock = (iso) => new Date(iso).toLocaleTimeString([], { hour: "numeric", m
 const DEPTH_COLOR = [null, "#7fd4ff", "#4fb3ff", "#2f7fe0", "#ff7a3d", "#ff3b3b"];
 const ICE_COLOR = "#c9f1ff";
 const POWER_COLOR = "#ffb020";
+const HAIL_COLOR = "#d94cff"; // matches the radar's hail drops
+const DAMAGE_COLOR = "#ff8fa3";
+const DETAIL = { flood: DEPTHS, hail: HAIL, damage: DAMAGE };
+const kindColor = (c) =>
+  c.kind === "flood" ? DEPTH_COLOR[c.depth || 3] : c.kind === "ice" ? ICE_COLOR : c.kind === "hail" ? HAIL_COLOR : c.kind === "damage" ? DAMAGE_COLOR : POWER_COLOR;
+function kindText(c) {
+  if (c.kind === "flood") return `Flooded road · ${DEPTHS[c.depth]?.label.toLowerCase() || "depth unknown"}`;
+  if (c.kind === "ice") return "Iced road";
+  if (c.kind === "hail") return `Hail · ${HAIL[c.depth] ? `${HAIL[c.depth].label.toLowerCase()} size (${HAIL[c.depth].range})` : "size unknown"}`;
+  if (c.kind === "damage") return DAMAGE[c.depth]?.label || "Storm damage";
+  return c.kind === "power_back" ? "Power back" : "Power out";
+}
 
 /* ---------- "How deep is it?" scene (car, motorbike rider, two people; original drawing) ---------- */
 export function depthScene(depth) {
@@ -62,7 +74,16 @@ export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast,
     id: "reports-power-line", type: "line", source: "reports", filter: ["==", ["get", "kind"], "power_out"],
     paint: { "line-color": POWER_COLOR, "line-width": 1.25, "line-opacity": ["case", [">=", ["get", "reporters"], 2], 0.9, 0.4], "line-dasharray": [2, 2] },
   });
-  // Roads: a dot per block-sized hexagon; faint until a second person confirms.
+  // Hail: neighborhood hexagons in the radar's hail purple.
+  map.addLayer({
+    id: "reports-hail-fill", type: "fill", source: "reports", filter: ["==", ["get", "kind"], "hail"],
+    paint: { "fill-color": HAIL_COLOR, "fill-opacity": ["case", [">=", ["get", "reporters"], 2], 0.22, 0.08] },
+  });
+  map.addLayer({
+    id: "reports-hail-line", type: "line", source: "reports", filter: ["==", ["get", "kind"], "hail"],
+    paint: { "line-color": HAIL_COLOR, "line-width": 1.25, "line-opacity": ["case", [">=", ["get", "reporters"], 2], 0.9, 0.4], "line-dasharray": [1, 2] },
+  });
+  // Roads and damage: a dot per block-sized hexagon; faint until a second person confirms.
   map.addLayer({
     id: "reports-road", type: "circle", source: "reports-points",
     paint: {
@@ -95,19 +116,19 @@ export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast,
     const h3 = await loadH3().catch(() => null);
     const polys = [], points = [];
     for (const c of cells) {
-      if (c.kind === "power_out" && h3) {
+      if ((c.kind === "power_out" || c.kind === "hail") && h3) {
         const ring = h3.cellToBoundary(c.cell, true);
         ring.push(ring[0]);
         polys.push({ type: "Feature", geometry: { type: "Polygon", coordinates: [ring] }, properties: { kind: c.kind, reporters: c.reporters } });
-      } else if (c.kind === "flood" || c.kind === "ice") {
+      } else if (c.kind === "flood" || c.kind === "ice" || c.kind === "damage") {
         const confirmed = c.reporters >= 2;
-        const label = c.kind === "flood"
-          ? `${DEPTHS[c.depth]?.label.toUpperCase() || "FLOODED"}${confirmed ? "" : " · 1 REPORT"}`
-          : `ICED${confirmed ? "" : " · 1 REPORT"}`;
+        const what = c.kind === "flood" ? DEPTHS[c.depth]?.label.toUpperCase() || "FLOODED"
+          : c.kind === "ice" ? "ICED" : DAMAGE[c.depth]?.short || "DAMAGE";
+        const label = `${what}${confirmed ? "" : " · 1 REPORT"}`;
         points.push({
           type: "Feature",
           geometry: { type: "Point", coordinates: [c.cell_lng, c.cell_lat] },
-          properties: { kind: c.kind, cell: c.cell, confirmed, label, color: c.kind === "ice" ? ICE_COLOR : DEPTH_COLOR[c.depth || 3] },
+          properties: { kind: c.kind, cell: c.cell, confirmed, label, color: kindColor(c) },
         });
       }
     }
@@ -126,7 +147,7 @@ export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast,
     if (resolving) return;
     const tileUrl = map.getStyle()?.sources?.protomaps?.tiles?.[0];
     if (!tileUrl) return;
-    const todo = cells.filter((c) => (c.kind === "flood" || c.kind === "ice") && !names.has(c.cell));
+    const todo = cells.filter((c) => blocksRoad(c) && !names.has(c.cell));
     if (!todo.length) return;
     resolving = true;
     for (const c of todo.slice(0, 40)) {
@@ -148,12 +169,15 @@ export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast,
     return best;
   };
 
+  // Flooded or iced roads, plus trees or power lines down (they can block a street).
+  const blocksRoad = (c) => c.kind === "flood" || c.kind === "ice" || (c.kind === "damage" && (c.depth === 1 || c.depth === 3));
+
   // One entry per street (several reported blocks on the same street group together).
   // Confirmed first, then deepest water, then ice, then most recent.
   function roads() {
     const groups = new Map();
     for (const c of cells) {
-      if (c.kind !== "flood" && c.kind !== "ice") continue;
+      if (!blocksRoad(c)) continue;
       const at = [c.cell_lng, c.cell_lat];
       const street = names.get(c.cell) || null;
       const city = nearestCity(at);
@@ -172,8 +196,8 @@ export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast,
   }
 
   function roadRow(r, from) {
-    const color = r.kind === "flood" ? DEPTH_COLOR[r.depth || 3] : ICE_COLOR;
-    const what = r.kind === "flood" ? `Flooded · ${DEPTHS[r.depth]?.label.toLowerCase() || "depth unknown"}` : "Iced";
+    const color = kindColor(r);
+    const what = r.kind === "flood" ? `Flooded · ${DEPTHS[r.depth]?.label.toLowerCase() || "depth unknown"}` : r.kind === "ice" ? "Iced" : DAMAGE[r.depth]?.label || "Storm damage";
     const who = r.confirmed ? `${r.reporters} neighbors` : "1 report, unconfirmed";
     const dist = from ? ` · ${milesBetween(from, r.at) < 0.1 ? "here" : `${milesBetween(from, r.at).toFixed(1)} mi`}` : "";
     return `<li><button type="button" class="nr-row road-row${r.confirmed ? "" : " faint"}" style="--rc:${color}" data-avoid-at="${r.at.join(",")}">
@@ -191,10 +215,10 @@ export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast,
     avoidRoot.innerHTML = `
       <p class="rp-911">Water over the road? <strong>Turn around, don't drown.</strong> A foot of moving water can float a car.</p>
       <p class="sheet-lead">${list.length
-        ? `${list.length} road${list.length > 1 ? "s" : ""} reported flooded or iced across ${esc(metro.name)}${confirmed ? `, ${confirmed} confirmed by more than one neighbor` : ""}. Tap one to see it on the map.`
-        : `No neighbor has reported a flooded or iced road in ${esc(metro.name)} right now.`}</p>
+        ? `${list.length} road${list.length > 1 ? "s" : ""} reported flooded, iced or blocked across ${esc(metro.name)}${confirmed ? `, ${confirmed} confirmed by more than one neighbor` : ""}. Tap one to see it on the map.`
+        : `No neighbor has reported a flooded, iced or blocked road in ${esc(metro.name)} right now.`}</p>
       ${list.length ? `<ul class="near-list">${list.map((r) => roadRow(r, null)).join("")}</ul>` : ""}
-      <p class="near-note">From neighbor reports, not official closures. A road that isn't listed can still be flooded or iced.</p>
+      <p class="near-note">From neighbor reports, not official closures. A road that isn't listed can still be flooded, iced or blocked.</p>
       <div class="near-actions">
         <a class="near-btn" href="https://drivetexas.org/" target="_blank" rel="noopener">DriveTexas closures</a>
         <button type="button" class="near-btn rp-open" data-report-open="flood">Report a road</button>
@@ -230,6 +254,8 @@ export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast,
       ["ice", "Iced road", "Ice or sleet on the road"],
       ["power_out", "Power out", "No electricity here"],
       ["power_back", "Power's back", "Electricity came back"],
+      ["hail", "Hail", "Hail falling or just fell"],
+      ["damage", "Storm damage", "Trees, roofs or power lines down"],
     ];
     root.innerHTML = `
       ${store.mode === "demo" ? `<p class="rp-demo">Demo mode: reports stay on this device until the shared database is connected.</p>` : ""}
@@ -245,11 +271,24 @@ export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast,
             <span class="rp-d-text"><span class="rp-d-l">${d.label}</span><span class="rp-d-r">${d.range} · ${d.note}</span></span></button>`)
           .join("")}</div>
         <p class="rp-note">Never wade or drive in to check. Estimate from what's around it: curbs, tires, mailboxes.</p>` : ""}
+      ${draft.kind === "hail" ? `<h3 class="rp-h">How big is it?</h3>
+        <div class="rp-depths">${HAIL.slice(1)
+          .map((d) => `<button type="button" class="rp-depth" data-depth="${d.n}" aria-pressed="${draft.depth === d.n}" style="--dc:${HAIL_COLOR}">
+            <span class="rp-d-bar"><span style="height:${d.n * 20}%"></span></span>
+            <span class="rp-d-text"><span class="rp-d-l">${d.label} · ${d.range}</span><span class="rp-d-r">${d.note}</span></span></button>`)
+          .join("")}</div>
+        <p class="rp-note">Stay inside to report. Judge from hail on the ground or a window ledge.</p>` : ""}
+      ${draft.kind === "damage" ? `<h3 class="rp-h">What's damaged?</h3>
+        <div class="rp-depths">${DAMAGE.slice(1)
+          .map((d) => `<button type="button" class="rp-depth" data-depth="${d.n}" aria-pressed="${draft.depth === d.n}" style="--dc:${d.n === 3 ? "#ff3b3b" : DAMAGE_COLOR}">
+            <span class="rp-d-text"><span class="rp-d-l">${d.label}</span>${d.note ? `<span class="rp-d-r">${d.note}</span>` : ""}</span></button>`)
+          .join("")}</div>
+        ${draft.depth === 3 ? `<p class="rp-911">Downed lines: stay 35 ft away and call <strong>911</strong>, then Oncor at 1-888-313-6862.</p>` : ""}` : ""}
       <h3 class="rp-h">Where</h3>
       <p class="rp-where">${esc(where)}</p>
-      <p class="rp-note">Tap the map first to report a different spot. We store only a ${draft.kind === "power_out" || draft.kind === "power_back" ? "neighborhood-sized area (about a third of a mile)" : "block-sized area"}, never your exact location.</p>
-      <button type="button" class="rp-send" id="rp-send" ${draft.kind && (draft.kind !== "flood" || draft.depth) ? "" : "disabled"}>Send report</button>
-      <p class="rp-note">Reports fade after ${draft.kind === "ice" ? "12" : "6"} hours unless someone reports again. One report shows faintly until a second neighbor confirms it.</p>`;
+      <p class="rp-note">Tap the map first to report a different spot. We store only a ${KINDS[draft.kind]?.res === 8 ? "neighborhood-sized area (about a third of a mile)" : "block-sized area"}, never your exact location.</p>
+      <button type="button" class="rp-send" id="rp-send" ${draft.kind && (!hasDetail(draft.kind) || draft.depth) ? "" : "disabled"}>Send report</button>
+      <p class="rp-note">Reports fade after ${KINDS[draft.kind]?.hours || 6} hours unless someone reports again. One report shows faintly until a second neighbor confirms it.</p>`;
   }
 
   root.addEventListener("click", async (e) => {
@@ -263,7 +302,7 @@ export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast,
       btn.textContent = "Sending…";
       try {
         await store.submit({ kind: draft.kind, depth: draft.depth, at: getSpot().at });
-        const kind = draft.kind;
+        const kind = draft.kind, sentDepth = draft.depth;
         draft = { kind: null, depth: null };
         closeSheet();
         await refresh();
@@ -272,7 +311,9 @@ export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast,
             ? "Report sent. Also tell your electric utility: Oncor serves most of DFW at 1-888-313-6862."
             : kind === "power_back"
               ? "Thanks. Your power-out report was cleared."
-              : "Report sent. It shows faintly until a second neighbor confirms it."
+              : kind === "damage" && sentDepth === 3
+                ? "Report sent. Stay away from the lines and call 911 if you haven't."
+                : "Report sent. It shows faintly until a second neighbor confirms it."
         );
       } catch (err) {
         btn.disabled = false;
@@ -292,7 +333,7 @@ export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast,
   function near(pt, miles = 1) {
     const list = cells
       .map((c) => ({ ...c, mi: milesBetween(pt, [c.cell_lng, c.cell_lat]) }))
-      .filter((c) => c.mi <= (c.kind === "power_out" || c.kind === "power_back" ? miles + 0.3 : miles))
+      .filter((c) => c.mi <= (KINDS[c.kind]?.res === 8 ? miles + 0.3 : miles))
       .sort((a, b) => a.mi - b.mi);
     const floods = list.filter((c) => c.kind === "flood");
     const nearestFlood = floods.find((c) => c.mi <= 0.5) || null;
@@ -306,9 +347,9 @@ export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast,
       .slice(0, 5)
       .map((c) => {
         const who = c.reporters >= 2 ? `${c.reporters} neighbors` : "1 report, unconfirmed";
-        const what = c.kind === "flood" ? `Flooded road · ${DEPTHS[c.depth]?.label.toLowerCase() || "depth unknown"}` : c.kind === "ice" ? "Iced road" : "Power out";
+        const what = kindText(c);
         const when = c.kind === "power_out" ? `since ${clock(c.first_at)}` : ago(c.last_at);
-        const color = c.kind === "flood" ? DEPTH_COLOR[c.depth || 3] : c.kind === "ice" ? ICE_COLOR : POWER_COLOR;
+        const color = kindColor(c);
         return `<li class="nr-row${c.reporters >= 2 ? "" : " faint"}" style="--rc:${color}">
           <span class="nr-dot"></span>
           <span class="nr-text"><span class="nr-what">${esc(what)}</span><span class="nr-meta">${esc(who)} · ${esc(when)} · ${c.mi < 0.1 ? "here" : `${c.mi.toFixed(1)} mi`}${c.mine ? " · includes yours" : ""}</span></span>
@@ -342,7 +383,7 @@ export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast,
   });
 
   return {
-    layerIds: ["reports-power-fill", "reports-power-line", "reports-road", "reports-road-label"],
+    layerIds: ["reports-power-fill", "reports-power-line", "reports-hail-fill", "reports-hail-line", "reports-road", "reports-road-label"],
     refresh,
     openReport,
     openAvoid,

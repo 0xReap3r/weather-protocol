@@ -3,6 +3,7 @@
 import { CATEGORY } from "./data/gauges.js";
 import { alertStyle } from "./data/alerts.js";
 import { RAIN_BANDS } from "./radar.js";
+import { SPC_LEVELS } from "./storms.js";
 
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -53,6 +54,10 @@ export function renderKey() {
     <p class="key-lead">Shaded areas from the National Weather Service, in its official colors. A pulsing outline means the warning or watch is active now.</p>
     <ul class="key-list">${WARNINGS.map(([e, note]) => row(area(alertStyle(e).color), e, note)).join("")}</ul>
 
+    <h3 class="key-h">Storm outlook (Storms layer)</h3>
+    <p class="key-lead">NOAA's Storm Prediction Center forecast for severe storms, in its own colors. A wide-area chance, not a warning.</p>
+    <ul class="key-list">${SPC_LEVELS.map((l) => row(area(l.fill), l.n ? `${l.n} · ${l.name}` : l.name, l.note)).join("")}</ul>
+
     <h3 class="key-h">Rivers and lakes</h3>
     <p class="key-lead">Each dot is an official gauge, colored by NWS flood stage. A pulsing ring means it's at or near flood stage.</p>
     <ul class="key-list">${gaugeRows}${row(dot(CATEGORY.unknown.color, true), "No recent reading", "The gauge hasn't reported in over 2 hours.")}</ul>
@@ -75,6 +80,8 @@ export function renderKey() {
       ${row(dot("#ff3b3b"), "Flooded road, waist-deep or more", "Life-threatening.")}
       ${row(dot("#c9f1ff"), "Iced road")}
       ${row(area("#ffb020"), "Power out", "Neighborhood-sized area; stronger with more neighbors.")}
+      ${row(area("#d94cff"), "Hail", "Neighborhood-sized area, with the reported size. Fades after 3 hours.")}
+      ${row(dot("#ff8fa3"), "Storm damage", "Trees down, roof damage or power lines down. Fades after 24 hours.")}
     </ul>
 
     <h3 class="key-h">Rail (DART)</h3>

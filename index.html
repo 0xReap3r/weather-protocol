@@ -37,6 +37,7 @@
     </div>
     <nav id="chips" class="chips" aria-label="Map layers"></nav>
     <button id="alert-banner" class="alert-banner" type="button" hidden></button>
+    <div id="danger-bar" class="danger-bar" role="alert" hidden></div>
     <div id="radar-legend" class="radar-legend" hidden>
       <div class="rl-head">
         <span class="rl-title">Rain radar</span>
@@ -55,7 +56,7 @@
   </header>
 
   <div class="fab-stack">
-    <button id="btn-report" class="fab fab-primary" type="button" aria-label="Report a flooded road, iced road or power outage">
+    <button id="btn-report" class="fab fab-primary" type="button" aria-label="Report a flooded road, iced road, power outage, hail or storm damage">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M6 9l6-6 6 6" fill="none"/><path d="M5 20h14" fill="none"/></svg>
       <span>Report</span>
     </button>
@@ -154,7 +155,7 @@
         <li><a href="https://mesonet.agron.iastate.edu/" target="_blank" rel="noopener">Iowa Environmental Mesonet</a> · NWS NEXRAD radar</li>
         <li><a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> · rain-now model nowcast (NOAA HRRR)</li>
         <li><a href="https://msc.fema.gov/" target="_blank" rel="noopener">FEMA National Flood Hazard Layer</a> · flood zones</li>
-        <li><a href="https://www.spc.noaa.gov/" target="_blank" rel="noopener">NOAA Storm Prediction Center</a> · severe-storm outlooks</li>
+        <li><a href="https://www.spc.noaa.gov/" target="_blank" rel="noopener">NOAA Storm Prediction Center</a> · severe-storm outlooks (Storms layer)</li>
         <li><a href="https://www.wpc.ncep.noaa.gov/qpf/excessive_rainfall_outlook_ero.php" target="_blank" rel="noopener">NOAA Weather Prediction Center</a> · flash-flood rainfall outlooks</li>
         <li><a href="https://www.dart.org/" target="_blank" rel="noopener">DART</a> · rail lines and stations (schedule data via City of Dallas GIS)</li>
         <li><a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a> and <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> · base map and street names</li>

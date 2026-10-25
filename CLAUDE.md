@@ -4,6 +4,9 @@ Live severe-weather situational map for Dallas–Fort Worth, inspired by the Ban
 (situational-bangkok-flood.web.app). Working name "Stormline"; the name lives in `js/config.js`,
 `manifest.webmanifest` and `<title>` in `index.html`.
 
+Long-term goal: DFW is the pilot, then all of Texas, then the rest of the US. Keep region
+settings in `METROS` (config.js) and prefer national feeds so expansion is config, not rewrites.
+
 ## Ground rules
 - Free, public data only for v1. No secret keys in the repo. The Supabase publishable (anon) key is the one exception: it is public by design; row-level security in `supabase/schema.sql` controls access.
 - Official data first; neighbor reports fill gaps. Never label a place or road "safe".
@@ -44,16 +47,19 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - `js/data/reports.js` — report store: demo (this browser) or Supabase (anonymous auth + REST); reports keep only an H3 cell (res 10 roads, res 8 power)
 - `js/reports.js` also builds "Roads to avoid" (area-panel card + full list sheet), grouped by street name
 - `js/transit.js` / `js/data/transit.js` — Rail chip: DART lines and stations; stations flagged by NWS flood/tornado/winter warnings or confirmed flooding within 0.3 mi
+- `js/storms.js` — Storms chip: SPC day 1–3 outlook shading + legend card; `levelToday()` feeds fast polling
+- `js/app.js` also: fast alert polling (60 s during active weather), "you're inside the warning" bar (`#danger-bar`) from the Near me location
+- `supabase/migrations/` — run in order on an existing project (002 adds hail + damage kinds)
 - `supabase/schema.sql` — tables, RLS, rate limit, expiry, flags, public `report_cells` view
 - `js/data/` — one module per data source; `fetch.js` adds timeouts
 - `sw.js` — offline app shell; bump `VERSION` whenever shell files change
 
 ## Debugging
-In the browser console: `stormlineMap`, `stormlineNear`, `stormlineDemo()` (fake flood warning + gauge to see pulsing), and in demo mode `stormlineReports.store.simulate([lng,lat], 'flood', 2, 3)` to add fake neighbors.
+In the browser console: `stormlineMap`, `stormlineNear`, `stormlineDemo()` / `stormlineDemo('tornado')` (fake warning around the map center + gauge; with Near me inside it, shows the danger bar), `stormlinePolling()`, and in demo mode `stormlineReports.store.simulate([lng,lat], 'flood', 2, 3)` to add fake neighbors.
 
 ## Revisit later (full list in the build plan doc, "Revisit later" section)
 - No free feed yet: TEXRail / Trinity Metro lines, low-water crossings (Fort Worth HWWS is on OneRain), TxDOT closures (DriveTexas), DART live service alerts, Oncor outages. Don't scrape; outreach is deferred.
 - ERCOT grid level needs a server-side fetch (Cloudflare Worker route) — Phase 4b.
-- Storms and Grid chips still "soon". Report photos/moderation history not built.
+- Grid chip still "soon". Push alerts for warnings wait for Phase 7. Report photos/moderation history not built.
 - Optimize the mobile version: chips overflow the edge, radar legend covers the map, side panel and sheets open too tall; check tap targets and test on real iPhone/Android.
 - Housekeeping: schedule `reports_cleanup()`, Supabase free tier pauses after ~1 week idle, leftover GitHub branches, final name, lawyer review of terms.

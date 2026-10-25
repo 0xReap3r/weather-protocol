@@ -30,7 +30,7 @@ export const LAYERS = [
   {
     id: "storms",
     label: "Storms",
-    hint: "Severe storm and tornado risk outlook, watches",
+    hint: "Severe-storm and tornado risk for today, tomorrow and day 3, in SPC's 1–5 levels. Watches and warnings are on the Warnings layer.",
     source: "NOAA Storm Prediction Center",
     phase: 4,
     defaultOn: false,
@@ -62,7 +62,7 @@ export const LAYERS = [
   {
     id: "reports",
     label: "Neighbors",
-    hint: "Neighbor reports: flooded or iced roads, power out. One report stays faint until a second neighbor confirms.",
+    hint: "Neighbor reports: flooded or iced roads, power out, hail, storm damage. One report stays faint until a second neighbor confirms.",
     source: "Community reports",
     phase: 5,
     defaultOn: true,

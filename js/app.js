@@ -8,6 +8,8 @@ import { renderKey } from "./key.js";
 import { initOutlook } from "./outlook.js";
 import { initReports } from "./reports.js";
 import { initTransit } from "./transit.js";
+import { initStorms } from "./storms.js";
+import { contains, milesBetween } from "./near.js";
 import { fimLayers, exportTiles, NFHL, NFHL_ZONES_LAYER } from "./data/floodmaps.js";
 
 const metro = METROS[DEFAULT_METRO];
@@ -64,11 +66,13 @@ const MAP_LAYERS = {
   rain: [], // filled in once the radar frames are added
   zones: ["fema-zones"],
   transit: [], // filled in once the map is ready
+  storms: [], // filled in once the map is ready
   reports: [], // filled in once the map is ready
 };
 let radar = null;
 let reports = null; // neighbor reports, created once the map is ready
 let transit = null; // DART rail, created once the map is ready
+let storms = null; // SPC outlook, created once the map is ready
 const LABEL_FONT = ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"]; // must exist in the basemap's glyphs
 
 // On desktop the Near-you column covers the right of the map, so offset the map's
@@ -107,6 +111,11 @@ map.on("load", () => {
     attribution: 'Flood zones: <a href="https://msc.fema.gov/" target="_blank" rel="noopener">FEMA NFHL</a>',
   });
   map.addLayer({ id: "fema-zones", type: "raster", source: "fema-zones", minzoom: 11, paint: { "raster-opacity": 0.6 } }, firstLabel);
+
+  // SPC severe-storm outlook (Storms chip), under everything else.
+  storms = initStorms({ map, beforeId: firstLabel });
+  MAP_LAYERS.storms = storms.layerIds;
+  window.stormlineStorms = storms; // debugging aid
 
   // Rain radar
   radar = initRadar(map, { beforeId: firstLabel, isOn: () => layerState.rain });
@@ -295,8 +304,10 @@ async function refreshAlerts() {
   if (currentView === "outlook") outlook.render();
   near?.render();
   transit?.refresh();
+  checkDanger();
   startPulse();
   updateStatus();
+  scheduleAlerts();
 }
 
 async function refreshGauges() {
@@ -346,7 +357,7 @@ function updateStatus() {
     kind = bad ? "stale" : "live";
     note = bad
       ? `${bad.err || "A data source is behind"}. Last good update ${oldest ? ago(new Date(oldest).toISOString()) : "never"}.`
-      : `Updated ${ago(new Date(oldest).toISOString())}`;
+      : `Updated ${ago(new Date(oldest).toISOString())}${alertDelayMs < metro.refresh.alertsMs ? " · checking warnings every minute during active weather" : ""}`;
   }
   badge.dataset.state = kind;
   $("#status-text").textContent = STATUS[kind].text;
@@ -397,6 +408,7 @@ for (const layer of LAYERS) {
 function applyLayerVisibility() {
   radar?.onToggle(!!layerState.rain);
   transit?.onToggle(!!layerState.transit);
+  storms?.onToggle(!!layerState.storms);
   for (const [id, ids] of Object.entries(MAP_LAYERS)) {
     for (const l of ids) if (map.getLayer(l)) map.setLayoutProperty(l, "visibility", layerState[id] ? "visible" : "none");
   }
@@ -626,6 +638,9 @@ function locateMe() {
       map.flyTo({ center: here, zoom: 13, speed: 1.6 });
       if (!inBounds(here, metro.bounds)) toast(`You're outside the ${metro.name} pilot area. Coverage there may be limited.`);
       near?.setMe(here);
+      meAt = here;
+      meAtTime = Date.now();
+      checkDanger();
     },
     (err) => {
       btn.classList.remove("busy");
@@ -636,6 +651,87 @@ function locateMe() {
     { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
   );
 }
+
+/* ---------- Fast polling during active weather ---------- */
+// Alerts are checked every 2 minutes normally, and every minute when a tornado, severe
+// thunderstorm or flash flood warning or watch is out for the area, or SPC outlines a
+// Slight risk or higher today.
+const ACTIVE = /Tornado|Severe Thunderstorm|Flash Flood|Extreme Wind/;
+let alertTimer = null;
+let alertDelayMs = metro.refresh.alertsMs;
+async function scheduleAlerts() {
+  const active = alertList.some((a) => ACTIVE.test(a.event));
+  const spc = storms ? await storms.levelToday([metro.center, ...metro.cities.map(([, lat, lng]) => [lng, lat])]) : 0;
+  alertDelayMs = active || spc >= 2 ? 60 * 1000 : metro.refresh.alertsMs;
+  clearTimeout(alertTimer);
+  alertTimer = setTimeout(refreshAlerts, alertDelayMs);
+}
+window.stormlinePolling = () => `${alertDelayMs / 1000}s`; // debugging aid
+
+/* ---------- "You're inside the warning" ---------- */
+// Uses the location from Near me only (never asked for on its own). While a dangerous
+// warning is anywhere near, the location is refreshed every 2 minutes without a prompt.
+const DANGER = [
+  { re: /Tornado Emergency/, level: "extreme", act: "Take cover now. A confirmed, damaging tornado is heading your way. Get to the lowest floor, an interior room away from windows, and cover your head." },
+  { re: /Tornado Warning/, level: "extreme", act: "Take shelter now. Go to the lowest floor, an interior room away from windows. Cover your head and neck." },
+  { re: /Flash Flood Emergency/, level: "extreme", act: "Get to higher ground now. Don't drive into water. If water is rising inside, go to the highest floor, not the attic." },
+  { re: /Flash Flood Warning/, level: "severe", act: "Move to higher ground. Never drive or walk into flooded roads. Turn around, don't drown." },
+  { re: /Extreme Wind Warning/, level: "extreme", act: "Take shelter now in an interior room on the lowest floor, as for a tornado." },
+  { re: /Severe Thunderstorm Warning/, level: "severe", act: "Get indoors and away from windows. Damaging wind or large hail is possible." },
+];
+let meAt = null, meAtTime = 0, lastDangerKey = "";
+const dangerBar = $("#danger-bar");
+function checkDanger() {
+  let hit = null, nearHit = null;
+  if (meAt) {
+    for (const rule of DANGER) {
+      for (const f of alertsFC.features) {
+        if (!rule.re.test(f.properties.event || "") || !f.geometry) continue;
+        if (contains(f.geometry, meAt)) { hit = { rule, f }; break; }
+        if (!nearHit && f.properties.storm && milesToFeature(f, meAt) <= 5) nearHit = { rule, f };
+      }
+      if (hit) break;
+    }
+  }
+  const show = hit || nearHit;
+  if (!show) { dangerBar.hidden = true; lastDangerKey = ""; return; }
+  const { rule, f } = show;
+  const inside = !!hit;
+  const until = f.properties.expires ? new Date(f.properties.expires).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : null;
+  dangerBar.dataset.level = inside ? rule.level : "near";
+  dangerBar.style.setProperty("--alert", f.properties.color || "#ff3b3b");
+  dangerBar.innerHTML = `
+    <span class="db-head"><strong>${esc(f.properties.event)}</strong> ${inside ? "· you're inside it" : "· within 5 miles of you"}${until ? ` · until ${esc(until)}` : ""}</span>
+    <span class="db-act">${esc(inside ? rule.act : "Be ready to act. Know where you'll take shelter.")}</span>
+    <span class="db-links"><button type="button" class="db-btn" data-danger-open="${esc(f.properties.id)}">Details</button><a class="db-btn" href="tel:911">Call 911</a></span>
+    <span class="db-src">From your last location ${esc(ago(new Date(meAtTime).toISOString()))} · NWS</span>`;
+  dangerBar.hidden = false;
+  const key = `${f.properties.id}|${inside}`;
+  if (key !== lastDangerKey && inside && navigator.vibrate && !reduceMotion.matches) navigator.vibrate([300, 150, 300]);
+  lastDangerKey = key;
+}
+function milesToFeature(f, pt) {
+  let best = Infinity;
+  const walk = (c) => (typeof c[0] === "number" ? (best = Math.min(best, milesBetween(pt, c))) : c.forEach(walk));
+  walk(f.geometry.coordinates || []);
+  return best;
+}
+dangerBar.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-danger-open]");
+  if (b) openAlerts(b.dataset.dangerOpen);
+});
+// Keep the location fresh while a dangerous warning is within 25 miles (only if Near me was used).
+setInterval(() => {
+  if (!meAt || document.hidden || !("geolocation" in navigator)) return;
+  const close = alertsFC.features.some((f) => f.geometry && DANGER.some((r) => r.re.test(f.properties.event || "")) && milesToFeature(f, meAt) <= 25);
+  if (!close) return;
+  navigator.geolocation.getCurrentPosition((pos) => {
+    meAt = [pos.coords.longitude, pos.coords.latitude];
+    meAtTime = Date.now();
+    meMarker?.setLngLat(meAt);
+    checkDanger();
+  }, () => {}, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+}, 2 * 60 * 1000);
 
 /* ---------- Toast ---------- */
 let toastTimer;
@@ -722,15 +818,16 @@ function openOutlook() {
 window.stormlineOutlook = outlook; // debugging aid
 window.stormlineNear = near; // debugging aid
 // Debug: stormlineDemo() paints a fake flood-stage gauge + warning so you can see pulsing. Reload to clear.
-window.stormlineDemo = () => {
+window.stormlineDemo = (kind = "flood") => {
+  const tornado = kind === "tornado";
   const g = gaugesFC.features[0];
   if (g) { g.properties = { ...g.properties, rank: 3, color: CATEGORY.minor.color, label: "31.2 ft · flood 30" }; map.getSource("gauges")?.setData(gaugesFC); }
   const [lng, lat] = map.getCenter().toArray(), d = 0.08;
   alertsFC = { type: "FeatureCollection", features: [...alertsFC.features, { type: "Feature",
     geometry: { type: "Polygon", coordinates: [[[lng - d, lat - d], [lng + d, lat - d], [lng + d, lat + d], [lng - d, lat + d], [lng - d, lat - d]]] },
-    properties: { id: "demo", event: "Flash Flood Warning (demo)", color: "#e0352b", rank: 85, storm: true, headline: "Demo", areaDesc: "Demo area", expires: new Date(Date.now() + 3600e3).toISOString(), sent: new Date().toISOString(), description: "Demo only.", instruction: "" } }] };
+    properties: { id: "demo", event: tornado ? "Tornado Warning (demo)" : "Flash Flood Warning (demo)", color: tornado ? "#ff00ff" : "#e0352b", rank: tornado ? 95 : 85, storm: true, headline: "Demo", areaDesc: "Demo area", expires: new Date(Date.now() + 3600e3).toISOString(), sent: new Date().toISOString(), description: "Demo only.", instruction: "" } }] };
   map.getSource("alerts")?.setData(alertsFC);
-  startPulse(); near?.render();
+  startPulse(); near?.render(); transit?.refresh(); checkDanger();
   return "Demo on — reload the page to clear it";
 };
 
@@ -744,6 +841,6 @@ if (atMatch) {
 // Data loads right away — it doesn't wait for the map. The map draws whatever has arrived
 // once it's ready (see addSource above), so the banner and status work even on a slow map.
 refreshAll();
-setInterval(refreshAlerts, metro.refresh.alertsMs);
+scheduleAlerts();
 setInterval(refreshGauges, metro.refresh.gaugesMs);
 setInterval(updateStatus, 30000); // ages "x min ago" and flips to DELAYED if a feed stalls

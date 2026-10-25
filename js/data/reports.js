@@ -11,7 +11,29 @@ export const KINDS = {
   ice: { res: 10, label: "Iced road", hours: 12 },
   power_out: { res: 8, label: "Power out", hours: 6 },
   power_back: { res: 8, label: "Power back", hours: 6 },
+  hail: { res: 8, label: "Hail", hours: 3, detail: true },
+  damage: { res: 10, label: "Storm damage", hours: 24, detail: true },
 };
+// Kinds that carry a 1–5 detail in the `depth` column (flood depth, hail size, damage type).
+export const hasDetail = (kind) => kind === "flood" || !!KINDS[kind]?.detail;
+
+// Hail size, by the everyday objects NWS spotters use. Quarter-size (1 in) is "severe".
+export const HAIL = [
+  null,
+  { n: 1, label: "Pea", range: "¼ in", note: "Small hail." },
+  { n: 2, label: "Quarter", range: "1 in", note: "Severe size. Dents cars and breaks some roof shingles." },
+  { n: 3, label: "Golf ball", range: "1¾ in", note: "Damages roofs, cars and windows. Stay indoors." },
+  { n: 4, label: "Tennis ball", range: "2½ in", note: "Dangerous to people outside. Stay away from windows." },
+  { n: 5, label: "Softball", range: "4 in +", note: "Life-threatening. Stay indoors, away from windows." },
+];
+
+// Storm damage types. Downed power lines are the most dangerous, so they rank highest.
+export const DAMAGE = [
+  null,
+  { n: 1, label: "Trees or limbs down", short: "TREE DOWN", note: "May block the road." },
+  { n: 2, label: "Roof or building damage", short: "BUILDING DAMAGE", note: "" },
+  { n: 3, label: "Power lines down", short: "POWER LINES DOWN", note: "Stay at least 35 ft away and call 911. Assume they're live." },
+];
 
 // Depth buckets, with the NWS "Turn Around Don't Drown" guidance for each.
 export const DEPTHS = [
@@ -69,7 +91,7 @@ const demo = {
       const outCell = cellFor(h3, "power_out", at).cell;
       for (let i = rows.length - 1; i >= 0; i--) if (rows[i].user === "me" && rows[i].kind === "power_out" && rows[i].cell === outCell) rows.splice(i, 1);
     }
-    rows.push({ user: "me", kind, depth: kind === "flood" ? depth : null, ...c, created_at: now(),
+    rows.push({ user: "me", kind, depth: hasDetail(kind) ? depth : null, ...c, created_at: now(),
       expires_at: new Date(Date.now() + KINDS[kind].hours * 3600e3).toISOString() });
     demoSave(rows);
     return c;
@@ -98,7 +120,7 @@ const demo = {
     const c = cellFor(h3, kind, at);
     const rows = demoActive();
     for (let i = 0; i < count; i++) {
-      rows.push({ user: `neighbor-${i}-${Math.random().toString(36).slice(2, 6)}`, kind, depth: kind === "flood" ? depth : null, ...c,
+      rows.push({ user: `neighbor-${i}-${Math.random().toString(36).slice(2, 6)}`, kind, depth: hasDetail(kind) ? depth : null, ...c,
         created_at: new Date(Date.now() - (i + 1) * 7 * 60e3).toISOString(),
         expires_at: new Date(Date.now() + KINDS[kind].hours * 3600e3).toISOString() });
     }
@@ -138,7 +160,11 @@ function liveStore(url, key) {
     });
     if (!res.ok) {
       let msg = `Report server error (${res.status})`;
-      try { const j = await res.json(); if (j.message) msg = j.message; } catch (_) {}
+      try {
+        const j = await res.json();
+        if (j.message) msg = j.message;
+        if (/reports_kind_check/.test(j.message || "")) msg = "Hail and damage reports aren't switched on yet. The database needs a one-time update.";
+      } catch (_) {}
       throw new Error(msg);
     }
     return res.status === 204 ? null : res.json().catch(() => null);
@@ -160,7 +186,7 @@ function liveStore(url, key) {
         method: "POST",
         signedIn: true,
         prefer: "resolution=merge-duplicates,return=minimal",
-        body: { kind, depth: kind === "flood" ? depth : null, ...c, expires_at: new Date().toISOString() },
+        body: { kind, depth: hasDetail(kind) ? depth : null, ...c, expires_at: new Date().toISOString() },
       });
       myCells.add(`${kind}|${c.cell}`);
       return c;

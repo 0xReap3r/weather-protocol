@@ -634,6 +634,8 @@ body.near-me-mode .crosshair { display: none; }
 .rp-i-ice::after { background: #c9f1ff; }
 .rp-i-power_out::after { background: #ffb020; }
 .rp-i-power_back::after { background: var(--live); }
+.rp-i-hail::after { background: #d94cff; }
+.rp-i-damage::after { background: #ff8fa3; }
 .rp-k-l { grid-area: label; font-size: 14px; font-weight: 600; }
 .rp-k-n { grid-area: note; font-size: 11.5px; color: var(--text-dim); }
 .rp-depths { display: grid; gap: 6px; }
@@ -706,3 +708,37 @@ body.near-me-mode .crosshair { display: none; }
 .st-line::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--lc); }
 .st-flags { margin-bottom: 10px; }
 .key-rail { width: 22px; height: 4px; border-radius: 2px; background: var(--c); align-self: center; }
+
+/* ---------- Phase 4c: "you're inside the warning" bar ---------- */
+.danger-bar {
+  --alert: #ff3b3b;
+  display: grid; gap: 6px; padding: 12px 14px; border-radius: var(--r);
+  background: color-mix(in srgb, var(--alert) 22%, #0b0f14); border: 2px solid var(--alert);
+  box-shadow: 0 6px 24px rgba(0,0,0,.45);
+}
+.danger-bar[data-level="near"] { border-width: 1px; background: color-mix(in srgb, var(--alert) 12%, #0b0f14); }
+.db-head { font-size: 15px; line-height: 1.3; }
+.db-head strong { color: var(--alert); text-transform: uppercase; letter-spacing: .04em; }
+.danger-bar[data-level="extreme"] .db-head strong { color: #fff; }
+.danger-bar[data-level="extreme"] { background: color-mix(in srgb, var(--alert) 45%, #0b0f14); }
+.db-act { font-size: 15px; font-weight: 600; line-height: 1.4; }
+.danger-bar[data-level="near"] .db-act { font-weight: 400; font-size: 14px; }
+.db-links { display: flex; gap: 8px; }
+.db-btn {
+  min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.5);
+  background: rgba(0,0,0,.25); color: #fff; font: inherit; font-size: 13px; font-weight: 600;
+  display: inline-flex; align-items: center; text-decoration: none; cursor: pointer;
+}
+.db-src { font-size: 11.5px; color: rgba(255,255,255,.7); }
+
+/* ---------- Phase 4c: storm outlook legend ---------- */
+.storms-legend { margin-top: 0; }
+.sl-days { display: flex; gap: 6px; margin-top: 8px; }
+.sl-day {
+  min-height: 28px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--ink-2); font-size: 12px; cursor: pointer; color: var(--text-dim);
+}
+.sl-day[aria-pressed="true"] { border-color: var(--signal); color: var(--text); }
+.sl-levels li { opacity: .55; }
+.sl-levels li.on { opacity: 1; color: var(--text); }
+.sl-sw { width: 12px; height: 12px; border-radius: 3px; background: var(--c); }
