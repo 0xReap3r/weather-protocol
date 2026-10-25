@@ -54,7 +54,7 @@ export const LAYERS = [
   {
     id: "reports",
     label: "Neighbors",
-    hint: "Neighbor reports: flooded or iced roads, power out",
+    hint: "Neighbor reports: flooded or iced roads, power out. One report stays faint until a second neighbor confirms.",
     source: "Community reports",
     phase: 5,
     defaultOn: true,

@@ -614,3 +614,64 @@ body.near-me-mode .crosshair { display: none; }
 .okw-pop span { position: absolute; inset: 0 auto 0 0; background: #3b7fb0; }
 .okw-pop em { position: relative; display: block; text-align: right; padding-right: 5px; font-style: normal; font-family: var(--font-data); font-size: 11px; line-height: 18px; }
 .ok-legal { margin: 18px 0 0; font-size: 11.5px; color: var(--text-dim); }
+
+/* ---------- Phase 5: neighbor reports ---------- */
+.fab-primary { background: var(--signal); border-color: var(--signal); color: #1a1200; font-weight: 700; }
+.fab-primary svg { fill: none; stroke: #1a1200; stroke-width: 2.2; }
+
+.rp-demo { margin: 4px 0 10px; padding: 10px 12px; border-radius: 10px; border: 1px dashed var(--warn); color: var(--warn); font-size: 12.5px; }
+.rp-911 { margin: 0 0 6px; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,92,92,.45); background: rgba(255,92,92,.08); font-size: 13px; }
+.rp-h { margin: 18px 0 8px; font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim); }
+.rp-kinds { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.rp-kind {
+  display: grid; grid-template-columns: auto 1fr; grid-template-areas: "icon label" "icon note"; column-gap: 10px; align-items: center;
+  padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--ink-2); text-align: left; cursor: pointer;
+}
+.rp-kind[aria-pressed="true"] { border-color: var(--signal); background: rgba(240,180,41,.12); }
+.rp-k-icon { grid-area: icon; width: 26px; height: 26px; border-radius: 8px; background: var(--ink-0); position: relative; }
+.rp-k-icon::after { content: ""; position: absolute; inset: 6px; border-radius: 50%; }
+.rp-i-flood::after { background: #4fb3ff; }
+.rp-i-ice::after { background: #c9f1ff; }
+.rp-i-power_out::after { background: #ffb020; }
+.rp-i-power_back::after { background: var(--live); }
+.rp-k-l { grid-area: label; font-size: 14px; font-weight: 600; }
+.rp-k-n { grid-area: note; font-size: 11.5px; color: var(--text-dim); }
+.rp-depths { display: grid; gap: 6px; }
+.rp-depth {
+  --dc: #4fb3ff;
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px;
+  border: 1px solid var(--line); background: var(--ink-2); text-align: left; cursor: pointer;
+}
+.rp-depth[aria-pressed="true"] { border-color: var(--dc); background: color-mix(in srgb, var(--dc) 14%, var(--ink-2)); }
+.rp-d-bar { flex: none; position: relative; width: 14px; height: 40px; border-radius: 4px; background: var(--ink-0); overflow: hidden; border: 1px solid var(--line); }
+.rp-d-bar span { position: absolute; inset: auto 0 0 0; background: var(--dc); }
+.rp-d-text { display: grid; gap: 2px; min-width: 0; }
+.rp-d-l { font-size: 14px; font-weight: 600; }
+.rp-d-r { font-size: 12px; color: var(--text-dim); }
+.rp-where { margin: 0; font-size: 15px; font-weight: 600; }
+.rp-note { margin: 6px 0 0; font-size: 12px; color: var(--text-dim); line-height: 1.45; }
+.rp-send {
+  width: 100%; margin-top: 16px; min-height: 52px; border-radius: 999px; border: 0;
+  background: var(--signal); color: #1a1200; font-size: 15px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; cursor: pointer;
+}
+.rp-send:disabled { background: var(--ink-2); color: var(--text-dim); cursor: not-allowed; border: 1px solid var(--line); }
+
+/* area panel: depth scene + report rows */
+.depth-wrap { padding: 10px 10px 4px; border-radius: 14px; border: 1px solid var(--line); background: var(--ink-0); }
+.depth-scene { width: 100%; height: auto; display: block; }
+.ds-figures { fill: #9aa7b4; opacity: .85; }
+.ds-ground { stroke: var(--line); stroke-width: 2; }
+.ds-label { font-family: var(--font-data); font-size: 11px; fill: var(--text); }
+.nr-row {
+  --rc: #4fb3ff;
+  display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px;
+  border: 1px solid var(--line); background: var(--ink-2); border-left: 4px solid var(--rc);
+}
+.nr-row.faint { opacity: .7; border-left-style: dashed; }
+.nr-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--rc); flex: none; }
+.nr-text { flex: 1; display: grid; gap: 2px; min-width: 0; }
+.nr-what { font-size: 14px; font-weight: 600; }
+.nr-meta { font-size: 12px; color: var(--text-dim); }
+.nr-flag { flex: none; background: none; border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; font-size: 11.5px; color: var(--text-dim); cursor: pointer; }
+.nr-flag:disabled { opacity: .6; cursor: default; }
+.rp-open { border-color: var(--signal) !important; color: var(--signal) !important; }

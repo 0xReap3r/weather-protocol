@@ -10,6 +10,10 @@ export const APP = {
   // Free basemap. CARTO Dark Matter is free for low-volume / non-commercial use (check terms before scaling).
   // Fully open alternative: "https://tiles.openfreemap.org/styles/liberty"
   basemapStyle: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+  // Neighbor reports database (Supabase). Leave blank for demo mode (reports stay on this device).
+  // The publishable/anon key is meant to be public; row-level security in supabase/schema.sql
+  // decides what anyone can do with it. Never put the service_role or secret key here.
+  reports: { supabaseUrl: "", supabaseKey: "" },
 };
 
 export const METROS = {

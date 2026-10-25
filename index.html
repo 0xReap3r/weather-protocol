@@ -55,6 +55,10 @@
   </header>
 
   <div class="fab-stack">
+    <button id="btn-report" class="fab fab-primary" type="button" aria-label="Report a flooded road, iced road or power outage">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M6 9l6-6 6 6" fill="none"/><path d="M5 20h14" fill="none"/></svg>
+      <span>Report</span>
+    </button>
     <button id="btn-locate" class="fab" type="button" aria-label="Show my location">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/><circle cx="12" cy="12" r="7.5" fill="none"/></svg>
       <span>Near me</span>
@@ -108,6 +112,10 @@
 
     <div data-view="gauge" hidden>
       <div id="gauge-body"></div>
+    </div>
+
+    <div data-view="report" hidden>
+      <div id="report-body"></div>
     </div>
 
     <div data-view="outlook" hidden>

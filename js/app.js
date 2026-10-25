@@ -6,6 +6,7 @@ import { initNearPanel } from "./near.js";
 import { initRadar } from "./radar.js";
 import { renderKey } from "./key.js";
 import { initOutlook } from "./outlook.js";
+import { initReports } from "./reports.js";
 import { fimLayers, exportTiles, NFHL, NFHL_ZONES_LAYER } from "./data/floodmaps.js";
 
 const metro = METROS[DEFAULT_METRO];
@@ -63,6 +64,7 @@ const MAP_LAYERS = {
   zones: ["fema-zones"],
 };
 let radar = null;
+let reports = null; // neighbor reports, created once the map is ready
 const LABEL_FONT = ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"]; // must exist in the basemap's glyphs
 
 // On desktop the Near-you column covers the right of the map, so offset the map's
@@ -190,8 +192,22 @@ map.on("load", () => {
     paint: { "text-color": "#e8edf2", "text-halo-color": "#0b0f14", "text-halo-width": 1.5 },
   });
 
+  // Neighbor reports draw on top of official layers.
+  reports = initReports({
+    map,
+    isOn: () => layerState.reports,
+    openSheet,
+    closeSheet,
+    toast,
+    getSpot: () => near.getSpot(),
+    onChange: () => near?.render(),
+  });
+  MAP_LAYERS.reports = reports.layerIds;
+  window.stormlineReports = reports; // debugging aid
+
   applyLayerVisibility();
   near?.render();
+  reports.refresh();
   startPulse();
 
   for (const id of ["gauges-circle", "alerts-fill"]) {
@@ -366,6 +382,7 @@ function applyLayerVisibility() {
 }
 function toggleLayer(id) {
   layerState[id] = !layerState[id];
+  if (id === "reports" && layerState.reports) reports?.refresh();
   if (id === "zones" && layerState.zones && map.getZoom() < 11) toast("Zoom in closer to see FEMA flood zones.");
   saveLayerState(layerState);
   $(`#chip-${id}`).setAttribute("aria-pressed", String(layerState[id]));
@@ -638,7 +655,9 @@ near = initNearPanel({
   openAlerts,
   locate: locateMe,
   openAbout,
+  getReportsHTML: (pt) => reports?.summaryHTML(pt),
 });
+$("#btn-report").addEventListener("click", () => reports?.openReport());
 
 /* ---------- What's coming (outlook) ---------- */
 const outlook = initOutlook({

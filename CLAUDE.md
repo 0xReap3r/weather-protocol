@@ -5,7 +5,7 @@ Live severe-weather situational map for Dallas–Fort Worth, inspired by the Ban
 `manifest.webmanifest` and `<title>` in `index.html`.
 
 ## Ground rules
-- Free, public data only for v1. No API keys in the repo.
+- Free, public data only for v1. No secret keys in the repo. The Supabase publishable (anon) key is the one exception: it is public by design; row-level security in `supabase/schema.sql` controls access.
 - Official data first; neighbor reports fill gaps. Never label a place or road "safe".
   Gray / no data means "no data", not "no flooding".
 - Every reading shows its time; stale data is visibly faded.
@@ -38,8 +38,11 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - `js/radar.js` — radar as rain drops: reads IEM tile pixels, palette index → dBZ (index×0.5−32.5), drops on a map-anchored grid, 6-frame loop
 - `js/key.js` — map key, built from the same color tables the layers use
 - `js/outlook.js` — "What's coming" view (opened from the warnings banner): risk levels Low/Elevated/High/Extreme from NWS alerts, gauges, SPC, WPC ERO and city rain
+- `js/reports.js` — neighbor reports: report flow, map layers, "How deep is it?" scene, area-panel summary
+- `js/data/reports.js` — report store: demo (this browser) or Supabase (anonymous auth + REST); reports keep only an H3 cell (res 10 roads, res 8 power)
+- `supabase/schema.sql` — tables, RLS, rate limit, expiry, flags, public `report_cells` view
 - `js/data/` — one module per data source; `fetch.js` adds timeouts
 - `sw.js` — offline app shell; bump `VERSION` whenever shell files change
 
 ## Debugging
-In the browser console: `stormlineMap`, `stormlineNear`, and `stormlineDemo()` (fake flood warning + gauge to see pulsing).
+In the browser console: `stormlineMap`, `stormlineNear`, `stormlineDemo()` (fake flood warning + gauge to see pulsing), and in demo mode `stormlineReports.store.simulate([lng,lat], 'flood', 2, 3)` to add fake neighbors.

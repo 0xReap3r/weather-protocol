@@ -134,7 +134,8 @@ function rainChart(w) {
 }
 
 /* ---------- Panel ---------- */
-export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, openAlerts, locate, openAbout }) {
+export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, openAlerts, locate, openAbout, getReportsHTML }) {
+  let lastPlace = null;
   const panel = document.getElementById("near");
   const body = document.getElementById("near-body");
   let mode = "center"; // "center" | "me" | "pin"
@@ -253,6 +254,7 @@ export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, o
   function paint({ verdict, tone, color, hereList, nearList, gaugeRows, cityRows, info, rain, zone, pt }) {
     const inPilot = pt[0] >= metro.bounds[0] && pt[0] <= metro.bounds[2] && pt[1] >= metro.bounds[1] && pt[1] <= metro.bounds[3];
     const where = mode === "pin" ? "Dropped pin" : mode === "me" ? "Your location" : "Map center";
+    if (info?.place) lastPlace = info.place;
     const place = info?.place ? `${info.place} · ${where}` : where;
     const w = info?.hourly;
     const weather = w
@@ -290,6 +292,7 @@ export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, o
         <button type="button" class="near-btn" id="near-share">Copy link</button>
         ${mode === "pin" ? '<button type="button" class="near-btn" id="near-clear">Clear pin</button>' : ""}
       </div>
+      ${getReportsHTML?.(pt) || ""}
       <h3 class="near-h">Nearest gauges</h3>
       <ul class="near-list">${gaugeRows || '<li class="near-note">Loading gauges…</li>'}</ul>
       ${cityRows ? `<h3 class="near-h">Nearby cities</h3><ul class="near-list">${cityRows}</ul>` : ""}
@@ -317,6 +320,9 @@ export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, o
   const api = {
     render,
     setMe(pt) { mePoint = pt; setMode("me"); },
+    getSpot() {
+      return { at: spot(), label: mode === "pin" ? "Dropped pin" : mode === "me" ? "Your location" : "Map center", place: lastPlace };
+    },
     setPin(pt) {
       pinPoint = pt;
       if (!pinMarker) {

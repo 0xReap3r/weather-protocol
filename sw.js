@@ -1,6 +1,6 @@
 // Service worker: caches the app shell so it opens instantly and survives a dropped connection.
 // Live data (added in Phase 2) is always fetched fresh — never served stale from this cache.
-const VERSION = "shell-v16";
+const VERSION = "shell-v17";
 const SHELL = [
   "./",
   "./index.html",
@@ -17,6 +17,8 @@ const SHELL = [
   "./js/radar.js",
   "./js/key.js",
   "./js/outlook.js",
+  "./js/reports.js",
+  "./js/data/reports.js",
   "./js/data/outlook.js",
   "./manifest.webmanifest",
   "./icons/icon.svg",
