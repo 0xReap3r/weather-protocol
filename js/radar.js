@@ -18,16 +18,16 @@ const FRAMES = [
   { suffix: "", minsAgo: 0 },
 ];
 const TILE_ZOOM = 8;     // native radar tiles: ~600 m pixels around DFW, exact palette colors
-const GRID_PX = 26;      // one drop every ~26 screen pixels
-const MIN_DBZ = 20;      // below this is drizzle, clutter or insects — no drop
+const GRID_PX = 18;      // one drop every ~18 screen pixels: dense enough to fill the rain area
+const MIN_DBZ = 15;      // light rain and drizzle start here; below is mostly clutter
 
 // NWS-style intensity bands (dBZ). Rain rates use Marshall–Palmer, Z = 200·R^1.6.
 export const RAIN_BANDS = [
-  { min: 55, key: "extreme", label: "Hail / torrential", color: "#d94cff", size: 0.24 },
-  { min: 45, key: "vheavy", label: "Very heavy", color: "#ff4d4d", size: 0.22 },
-  { min: 38, key: "heavy", label: "Heavy", color: "#ffb020", size: 0.2 },
-  { min: 30, key: "moderate", label: "Moderate", color: "#4fb3ff", size: 0.18 },
-  { min: MIN_DBZ, key: "light", label: "Light", color: "#7fd4ff", size: 0.16 },
+  { min: 55, key: "extreme", label: "Hail / torrential", color: "#d94cff", size: 0.135 },
+  { min: 45, key: "vheavy", label: "Very heavy", color: "#ff4d4d", size: 0.13 },
+  { min: 38, key: "heavy", label: "Heavy", color: "#ffb020", size: 0.125 },
+  { min: 30, key: "moderate", label: "Moderate", color: "#4fb3ff", size: 0.12 },
+  { min: MIN_DBZ, key: "light", label: "Light", color: "#7fd4ff", size: 0.115 },
 ];
 const bandFor = (dbz) => RAIN_BANDS.find((b) => dbz >= b.min) || null;
 export const rainRateInHr = (dbz) => Math.pow(Math.pow(10, dbz / 10) / 200, 1 / 1.6) / 25.4;
@@ -153,7 +153,7 @@ export function initRadar(map, { beforeId, isOn }) {
     const gx0 = Math.floor(px(w) / stepPx) * stepPx, gx1 = px(e);
     const gy0 = Math.floor(py(n) / stepPx) * stepPx, gy1 = py(s);
     const half = stepPx / 2;
-    const sub = Math.max(1, Math.min(4, Math.round(half / 2))); // sample a few points per cell
+    const sub = Math.max(2, Math.min(4, Math.round(half / 2))); // sample a few points per cell
     const features = [];
     for (let gy = gy0; gy <= gy1; gy += stepPx) {
       for (let gx = gx0; gx <= gx1; gx += stepPx) {
