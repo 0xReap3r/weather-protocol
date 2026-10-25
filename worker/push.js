@@ -5,6 +5,8 @@
 //     waiting messages from /api/push/inbox. VAPID private key is a Worker secret, never in the repo.
 // Saved places are stored rounded to ~100 m, with their county name for zone-based alerts.
 
+import { recordHealth } from "./health.js";
+
 const NWS = "https://api.weather.gov/alerts/active";
 const UA = "Stormline/1.0 (public severe-weather map; https://weather-protocol.protocolxv-dev.workers.dev)";
 const MAX_PUSHES_PER_RUN = 35;   // free plan allows 50 subrequests per invocation
@@ -155,8 +157,11 @@ export async function checkAlerts(env) {
   const now = Date.now();
   const q = `${NWS}?area=TX&status=actual&message_type=alert&event=${encodeURIComponent(ALL_EVENTS.join(","))}`;
   const r = await fetch(q, { headers: { Accept: "application/geo+json", "User-Agent": UA } });
-  if (!r.ok) return;
+  // Every 10 minutes, note that the checker ran (shows on the Data status sheet).
+  const tick = new Date().getUTCMinutes() % 10 === 0;
+  if (!r.ok) { if (tick) await recordHealth(env, "Push alert checker", "Alerts for My places", false, `NWS HTTP ${r.status}`); return; }
   const data = await r.json();
+  if (tick) await recordHealth(env, "Push alert checker", "Alerts for My places", true, null);
   const fresh = (data.features || []).filter((f) => f.properties?.sent && now - Date.parse(f.properties.sent) < 30 * 60e3);
   if (fresh.length) {
     const ids = fresh.map((f) => f.properties.id);
