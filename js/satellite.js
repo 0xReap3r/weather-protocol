@@ -11,6 +11,9 @@ const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 const LAYER = "MODIS_Combined_Flood_2-Day";
+// Totals under this are within the product's noise (a handful of ~16-acre pixels), so they're
+// reported as "little or no flood water seen" rather than a number.
+const MIN_ACRES = 100;
 const Z = 9; // GIBS serves this product up to zoom 9
 const tileUrl = (date, z, x, y) =>
   `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/${LAYER}/default/${date}/GoogleMapsCompatible_Level9/${z}/${y}/${x}.png`;
@@ -47,7 +50,7 @@ function addProtocol() {
   if (protocolAdded) return;
   protocolAdded = true;
   const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
-  const OUT = { flood: [...hex(SAT_COLORS.flood), 235], recurring: [...hex(SAT_COLORS.recurring), 200], nodata: [...hex(SAT_COLORS.nodata), 40] };
+  const OUT = { flood: [...hex(SAT_COLORS.flood), 235], recurring: [...hex(SAT_COLORS.recurring), 200], nodata: [...hex(SAT_COLORS.nodata), 28] };
   maplibregl.addProtocol("floodsat", async (params, abort) => {
     const [date, z, x, y] = params.url.replace("floodsat://", "").split("/");
     const { c, g, img } = await tileImageData(tileUrl(date, z, x, y), abort?.signal);
@@ -140,7 +143,7 @@ export function initSatellite({ map, metro, beforeId }) {
       "text-font": ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"],
       "text-size": 12, "text-line-height": 1.2, "text-max-width": 14, "text-allow-overlap": false,
     },
-    paint: { "text-color": ["case", [">", ["get", "acres"], 0], SAT_COLORS.flood, "#9aa7b4"], "text-halo-color": "#0b0f14", "text-halo-width": 1.8 },
+    paint: { "text-color": ["case", [">=", ["get", "acres"], MIN_ACRES], SAT_COLORS.flood, "#9aa7b4"], "text-halo-color": "#0b0f14", "text-halo-width": 1.8 },
   });
 
   const card = document.createElement("div");
@@ -159,7 +162,7 @@ export function initSatellite({ map, metro, beforeId }) {
         <li class="on"><span class="sl-sw" style="--c:${SAT_COLORS.recurring}"></span>Floods often</li>
         <li class="on"><span class="sl-sw" style="--c:${SAT_COLORS.nodata}"></span>Clouds, no view</li>
       </ul>
-      <p class="rl-note">${err ? "Satellite data isn't loading right now. " : total == null ? "Adding up flooded acres… " : total ? `About ${total.toLocaleString()} acres of flood water seen across the metro. ` : "No flood water seen across the metro. "}Satellites miss small streets and anything under cloud, so this never means a road is dry.</p>`;
+      <p class="rl-note">${err ? "Satellite data isn't loading right now. " : total == null ? "Adding up flooded acres… " : total >= MIN_ACRES ? `The satellite flags about ${total.toLocaleString()} acres of possible flood water across the metro. ` : "Little or no flood water seen across the metro. "}Some can be false alarms near lakes. Satellites miss small streets and anything under cloud, so this never means a road is dry.</p>`;
   }
 
   async function loadTotals() {
@@ -176,7 +179,7 @@ export function initSatellite({ map, metro, beforeId }) {
             type: "Feature", geometry: { type: "Point", coordinates: c.center },
             properties: {
               name: `${c.name.toUpperCase()} CO.`, acres: c.acres,
-              line: c.acres ? `${c.acres.toLocaleString()} acres flooded · satellite` : `no flood water seen${c.cloudPct >= 20 ? ` · ${c.cloudPct}% under cloud` : ""}`,
+              line: c.acres >= MIN_ACRES ? `~${c.acres.toLocaleString()} acres possible flooding · satellite` : `little or no flood water seen${c.cloudPct >= 20 ? ` · ${c.cloudPct}% under cloud` : ""}`,
             },
           })),
         });
