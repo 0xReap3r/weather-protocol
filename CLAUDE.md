@@ -52,7 +52,7 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - `supabase/migrations/` — run in order on an existing project (002 adds hail + damage kinds)
 - `supabase/schema.sql` — tables, RLS, rate limit, expiry, flags, public `report_cells` view
 - `js/data/` — one module per data source; `fetch.js` adds timeouts
-- `sw.js` — offline app shell; bump `VERSION` whenever shell files change
+- `sw.js` — offline app shell (network first); bump `VERSION` whenever shell files change. A new version shows open pages a "new version ready · Refresh" bar (`#update-bar`, app.js)
 
 ## Debugging
 In the browser console: `stormlineMap`, `stormlineNear`, `stormlineDemo()` / `stormlineDemo('tornado')` (fake warning around the map center + gauge; with Near me inside it, shows the danger bar), `stormlinePolling()`, and in demo mode `stormlineReports.store.simulate([lng,lat], 'flood', 2, 3)` to add fake neighbors.
