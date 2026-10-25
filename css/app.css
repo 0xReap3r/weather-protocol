@@ -494,7 +494,7 @@ body.near-me-mode .crosshair { display: none; }
 .rl-drops { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 12px; }
 .rl-drops li { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-dim); }
 .rl-drop {
-  width: calc(11px * var(--s, 1)); height: calc(14px * var(--s, 1)); background: var(--c);
+  width: calc(8px * var(--s, 1)); height: calc(10px * var(--s, 1)); background: var(--c);
   -webkit-mask: no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 52'%3E%3Cpath d='M20 0C22 8 40 18 40 32a20 20 0 0 1-40 0C0 18 18 8 20 0z'/%3E%3C/svg%3E");
           mask: no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 52'%3E%3Cpath d='M20 0C22 8 40 18 40 32a20 20 0 0 1-40 0C0 18 18 8 20 0z'/%3E%3C/svg%3E");
 }

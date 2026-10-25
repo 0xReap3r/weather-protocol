@@ -18,16 +18,16 @@ const FRAMES = [
   { suffix: "", minsAgo: 0 },
 ];
 const TILE_ZOOM = 8;     // native radar tiles: ~600 m pixels around DFW, exact palette colors
-const GRID_PX = 30;      // one drop every ~30 screen pixels
+const GRID_PX = 26;      // one drop every ~26 screen pixels
 const MIN_DBZ = 20;      // below this is drizzle, clutter or insects — no drop
 
 // NWS-style intensity bands (dBZ). Rain rates use Marshall–Palmer, Z = 200·R^1.6.
 export const RAIN_BANDS = [
-  { min: 55, key: "extreme", label: "Hail / torrential", color: "#d94cff", size: 0.62 },
-  { min: 45, key: "vheavy", label: "Very heavy", color: "#ff4d4d", size: 0.56 },
-  { min: 38, key: "heavy", label: "Heavy", color: "#ffb020", size: 0.5 },
-  { min: 30, key: "moderate", label: "Moderate", color: "#4fb3ff", size: 0.44 },
-  { min: MIN_DBZ, key: "light", label: "Light", color: "#7fd4ff", size: 0.38 },
+  { min: 55, key: "extreme", label: "Hail / torrential", color: "#d94cff", size: 0.24 },
+  { min: 45, key: "vheavy", label: "Very heavy", color: "#ff4d4d", size: 0.22 },
+  { min: 38, key: "heavy", label: "Heavy", color: "#ffb020", size: 0.2 },
+  { min: 30, key: "moderate", label: "Moderate", color: "#4fb3ff", size: 0.18 },
+  { min: MIN_DBZ, key: "light", label: "Light", color: "#7fd4ff", size: 0.16 },
 ];
 const bandFor = (dbz) => RAIN_BANDS.find((b) => dbz >= b.min) || null;
 export const rainRateInHr = (dbz) => Math.pow(Math.pow(10, dbz / 10) / 200, 1 / 1.6) / 25.4;
@@ -125,7 +125,7 @@ export function initRadar(map, { beforeId, isOn }) {
         "icon-ignore-placement": true,
         "symbol-sort-key": ["get", "dbz"],
       },
-      paint: { "icon-color": ["get", "color"], "icon-opacity": 0.92, "icon-halo-color": "rgba(11,15,20,.8)", "icon-halo-width": 1 },
+      paint: { "icon-color": ["get", "color"], "icon-opacity": 0.9 },
     },
     beforeId
   );
