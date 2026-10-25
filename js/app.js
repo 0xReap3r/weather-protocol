@@ -7,6 +7,7 @@ import { initRadar } from "./radar.js";
 import { renderKey } from "./key.js";
 import { initOutlook } from "./outlook.js";
 import { initReports } from "./reports.js";
+import { initTransit } from "./transit.js";
 import { fimLayers, exportTiles, NFHL, NFHL_ZONES_LAYER } from "./data/floodmaps.js";
 
 const metro = METROS[DEFAULT_METRO];
@@ -62,9 +63,12 @@ const MAP_LAYERS = {
   rivers: ["gauges-pulse", "gauges-circle", "gauges-label"],
   rain: [], // filled in once the radar frames are added
   zones: ["fema-zones"],
+  transit: [], // filled in once the map is ready
+  reports: [], // filled in once the map is ready
 };
 let radar = null;
 let reports = null; // neighbor reports, created once the map is ready
+let transit = null; // DART rail, created once the map is ready
 const LABEL_FONT = ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"]; // must exist in the basemap's glyphs
 
 // On desktop the Near-you column covers the right of the map, so offset the map's
@@ -192,15 +196,28 @@ map.on("load", () => {
     paint: { "text-color": "#e8edf2", "text-halo-color": "#0b0f14", "text-halo-width": 1.5 },
   });
 
+  // DART rail sits under warnings' labels but above the shading.
+  transit = initTransit({
+    map,
+    beforeId: "alerts-label",
+    getAlertsFC: () => alertsFC,
+    getRoadCells: () => reports?.getCells(),
+    openSheet,
+    onPick: pickSpot,
+  });
+  MAP_LAYERS.transit = transit.layerIds;
+  window.stormlineTransit = transit; // debugging aid
+
   // Neighbor reports draw on top of official layers.
   reports = initReports({
     map,
-    isOn: () => layerState.reports,
+    metro,
     openSheet,
     closeSheet,
     toast,
     getSpot: () => near.getSpot(),
-    onChange: () => near?.render(),
+    onChange: () => { near?.render(); transit?.refresh(); },
+    onPick: pickSpot,
   });
   MAP_LAYERS.reports = reports.layerIds;
   window.stormlineReports = reports; // debugging aid
@@ -210,14 +227,16 @@ map.on("load", () => {
   reports.refresh();
   startPulse();
 
-  for (const id of ["gauges-circle", "alerts-fill"]) {
+  for (const id of ["gauges-circle", "alerts-fill", "reports-road"]) {
     map.on("mouseenter", id, () => (map.getCanvas().style.cursor = "pointer"));
     map.on("mouseleave", id, () => (map.getCanvas().style.cursor = ""));
   }
   map.on("click", (e) => {
-    const hit = map.queryRenderedFeatures(e.point, { layers: ["gauges-circle", "alerts-fill"].filter((l) => map.getLayer(l)) });
+    const hit = map.queryRenderedFeatures(e.point, { layers: ["gauges-circle", "transit-station", "alerts-fill"].filter((l) => map.getLayer(l)) });
     const gauge = hit.find((f) => f.layer.id === "gauges-circle");
     if (gauge) return openGauge(gauge.properties.lid);
+    const station = hit.find((f) => f.layer.id === "transit-station");
+    if (station) return transit.openStation(station.properties.id);
     // Anywhere else (including inside a warning area): show that spot in the Near-you panel.
     near?.setPin(e.lngLat.toArray());
   });
@@ -275,6 +294,7 @@ async function refreshAlerts() {
   if (currentView === "alerts") renderAlertList();
   if (currentView === "outlook") outlook.render();
   near?.render();
+  transit?.refresh();
   startPulse();
   updateStatus();
 }
@@ -376,6 +396,7 @@ for (const layer of LAYERS) {
 
 function applyLayerVisibility() {
   radar?.onToggle(!!layerState.rain);
+  transit?.onToggle(!!layerState.transit);
   for (const [id, ids] of Object.entries(MAP_LAYERS)) {
     for (const l of ids) if (map.getLayer(l)) map.setLayoutProperty(l, "visibility", layerState[id] ? "visible" : "none");
   }
@@ -655,8 +676,30 @@ near = initNearPanel({
   openAlerts,
   locate: locateMe,
   openAbout,
-  getReportsHTML: (pt) => reports?.summaryHTML(pt),
+  getReportsHTML: (pt) => (reports?.summaryHTML(pt) || "") + stationsHTML(pt),
 });
+
+// Rail stations near the spot that carry a warning or flooding flag.
+function stationsHTML(pt) {
+  const list = transit?.flaggedNear(pt, 1.5) || [];
+  if (!list.length) return "";
+  return `<h3 class="near-h">DART stations <span class="near-h-note">within 1.5 mi</span></h3>
+    <ul class="near-list">${list.slice(0, 3).map((s) => `<li><button type="button" class="nr-row road-row" style="--rc:${s.flags.some((f) => f.type === "warning") ? "#ff3b3b" : "#4fb3ff"}" data-station-open="${esc(s.id)}">
+      <span class="nr-dot"></span><span class="nr-text"><span class="nr-what">${esc(s.name)}</span><span class="nr-meta">${esc(s.flags[0].text)}</span></span><span class="road-go" aria-hidden="true">›</span></button></li>`).join("")}</ul>`;
+}
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-station-open]");
+  if (b) {
+    if (!layerState.transit) toggleLayer("transit");
+    transit?.openStation(b.dataset.stationOpen);
+  }
+});
+// Fly to a spot and describe it in the side panel (Roads to avoid, stations).
+function pickSpot(at) {
+  closeSheet();
+  map.flyTo({ center: at, zoom: Math.max(map.getZoom(), 15), speed: 1.4 });
+  near?.setPin(at);
+}
 $("#btn-report").addEventListener("click", () => reports?.openReport());
 
 /* ---------- What's coming (outlook) ---------- */

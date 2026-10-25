@@ -52,6 +52,14 @@ export const LAYERS = [
     defaultOn: true,
   },
   {
+    id: "transit",
+    label: "Rail",
+    hint: "DART light rail, TRE, Silver Line and streetcar. Stations are flagged when a flood or tornado warning covers them or neighbors confirm flooding nearby.",
+    source: "DART schedule data (GTFS)",
+    phase: 4,
+    defaultOn: false,
+  },
+  {
     id: "reports",
     label: "Neighbors",
     hint: "Neighbor reports: flooded or iced roads, power out. One report stays faint until a second neighbor confirms.",

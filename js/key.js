@@ -67,6 +67,24 @@ export function renderKey() {
       ${row(area("#2f6fd6"), "Modeled flooding", "From a gauge's detail panel: where water would reach at each flood level. A model, not observed flooding.")}
     </ul>
 
+    <h3 class="key-h">Neighbor reports</h3>
+    <p class="key-lead">Faint with a dashed edge until a second neighbor confirms. Reports fade after 6 hours (ice: 12).</p>
+    <ul class="key-list">
+      ${row(dot("#7fd4ff"), "Flooded road, shallow", "Ankle-deep to over the curb.")}
+      ${row(dot("#2f7fe0"), "Flooded road, knee-deep")}
+      ${row(dot("#ff3b3b"), "Flooded road, waist-deep or more", "Life-threatening.")}
+      ${row(dot("#c9f1ff"), "Iced road")}
+      ${row(area("#ffb020"), "Power out", "Neighborhood-sized area; stronger with more neighbors.")}
+    </ul>
+
+    <h3 class="key-h">Rail (DART)</h3>
+    <ul class="key-list">
+      ${row('<span class="key-sw key-rail" style="--c:#198BC3"></span>', "Rail lines", "In each line's own color.")}
+      ${row(dot("#e8edf2"), "Station")}
+      ${row(dot("#ff3b3b"), "Station inside a warning", "A flood or tornado warning covers it. Check DART before you go.")}
+      ${row(dot("#4fb3ff"), "Flooding confirmed nearby", "Neighbors confirm a flooded road within a few blocks.")}
+    </ul>
+
     <h3 class="key-h">Marks on the map</h3>
     <ul class="key-list">
       ${row('<span class="key-sw key-pin"></span>', "Dropped pin", "The spot the side panel is describing. Tap the map anywhere to move it.")}

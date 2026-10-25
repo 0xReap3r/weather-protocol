@@ -28,6 +28,8 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - SPC severe outlook: `spc.noaa.gov/products/outlook/day{1,2,3}otlk_cat.lyr.geojson` (LABEL TSTM…HIGH)
 - WPC excessive rainfall: `mapservices.weather.noaa.gov/vector/rest/services/hazards/wpc_precip_hazards/MapServer/{0,1,2}` (dn 1–4)
 - Open-Meteo multi-location hourly rain for all cities in one request
+- DART rail lines + stations (from DART GTFS): City of Dallas ArcGIS `services2.arcgis.com/rwnOSbfKSwyTBcwN/ArcGIS/rest/services/dart_rail/FeatureServer/{0 stops,1 routes}` (CORS OK). No TEXRail feed found yet.
+- Road names: nearest named line in the CARTO basemap's own z14 vector tile (`roads` layer), decoded in `js/data/roadnames.js`
 - ERCOT dashboard JSON is CORS-blocked in browsers; fetch it server-side.
 
 ## Layout
@@ -40,6 +42,8 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - `js/outlook.js` — "What's coming" view (opened from the warnings banner): risk levels Low/Elevated/High/Extreme from NWS alerts, gauges, SPC, WPC ERO and city rain
 - `js/reports.js` — neighbor reports: report flow, map layers, "How deep is it?" scene, area-panel summary
 - `js/data/reports.js` — report store: demo (this browser) or Supabase (anonymous auth + REST); reports keep only an H3 cell (res 10 roads, res 8 power)
+- `js/reports.js` also builds "Roads to avoid" (area-panel card + full list sheet), grouped by street name
+- `js/transit.js` / `js/data/transit.js` — Rail chip: DART lines and stations; stations flagged by NWS flood/tornado/winter warnings or confirmed flooding within 0.3 mi
 - `supabase/schema.sql` — tables, RLS, rate limit, expiry, flags, public `report_cells` view
 - `js/data/` — one module per data source; `fetch.js` adds timeouts
 - `sw.js` — offline app shell; bump `VERSION` whenever shell files change

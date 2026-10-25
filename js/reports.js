@@ -4,6 +4,7 @@
 
 import { store, KINDS, DEPTHS, loadH3 } from "./data/reports.js";
 import { milesBetween } from "./near.js";
+import { roadNameAt } from "./data/roadnames.js";
 
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -46,9 +47,9 @@ export function depthScene(depth) {
 }
 
 /* ---------- Map layers ---------- */
-export function initReports({ map, isOn, openSheet, closeSheet, getSpot, toast, onChange }) {
+export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast, onChange, onPick }) {
   let cells = [];
-  let timer = null;
+  const names = new Map(); // cell -> street name (or null when none found)
 
   map.addSource("reports", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
   map.addSource("reports-points", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
@@ -82,12 +83,12 @@ export function initReports({ map, isOn, openSheet, closeSheet, getSpot, toast, 
     paint: { "text-color": ["get", "color"], "text-halo-color": "#0b0f14", "text-halo-width": 1.6, "text-opacity": ["case", ["get", "confirmed"], 1, 0.6] },
   });
 
+  // The whole pilot area in one request (reports outside it are refused by the database),
+  // so the "Roads to avoid" list covers DFW whatever the map is showing.
   async function refresh() {
-    if (!isOn()) return;
-    const b = map.getBounds();
-    const pad = 0.05;
+    const [w, s, e, n] = metro.maxBounds ? metro.maxBounds.flat() : metro.bounds;
     try {
-      cells = await store.cells([b.getWest() - pad, b.getSouth() - pad, b.getEast() + pad, b.getNorth() + pad]);
+      cells = await store.cells([w, s, e, n]);
     } catch (_) {
       return; // keep what's shown; the status badge covers official feeds
     }
@@ -113,10 +114,109 @@ export function initReports({ map, isOn, openSheet, closeSheet, getSpot, toast, 
     map.getSource("reports")?.setData({ type: "FeatureCollection", features: polys });
     map.getSource("reports-points")?.setData({ type: "FeatureCollection", features: points });
     onChange?.();
+    if (avoidOpen()) renderAvoid();
+    resolveNames();
   }
 
-  map.on("moveend", () => { clearTimeout(timer); timer = setTimeout(refresh, 300); });
   setInterval(() => !document.hidden && refresh(), 60 * 1000);
+
+  /* ---------- Street names (from the basemap's vector tiles) ---------- */
+  let resolving = false;
+  async function resolveNames() {
+    if (resolving) return;
+    const tileUrl = map.getStyle()?.sources?.protomaps?.tiles?.[0];
+    if (!tileUrl) return;
+    const todo = cells.filter((c) => (c.kind === "flood" || c.kind === "ice") && !names.has(c.cell));
+    if (!todo.length) return;
+    resolving = true;
+    for (const c of todo.slice(0, 40)) {
+      try { names.set(c.cell, await roadNameAt(tileUrl, c.cell, [c.cell_lng, c.cell_lat])); }
+      catch (_) { names.set(c.cell, null); }
+    }
+    resolving = false;
+    onChange?.();
+    if (avoidOpen()) renderAvoid();
+  }
+
+  /* ---------- Roads to avoid ---------- */
+  const nearestCity = (pt) => {
+    let best = null, bestMi = Infinity;
+    for (const [name, lat, lng] of metro.cities || []) {
+      const mi = milesBetween(pt, [lng, lat]);
+      if (mi < bestMi) { bestMi = mi; best = name; }
+    }
+    return best;
+  };
+
+  // One entry per street (several reported blocks on the same street group together).
+  // Confirmed first, then deepest water, then ice, then most recent.
+  function roads() {
+    const groups = new Map();
+    for (const c of cells) {
+      if (c.kind !== "flood" && c.kind !== "ice") continue;
+      const at = [c.cell_lng, c.cell_lat];
+      const street = names.get(c.cell) || null;
+      const city = nearestCity(at);
+      const key = street ? `${street}|${city}|${c.kind}` : `${c.cell}|${c.kind}`;
+      const g = groups.get(key) || { key, street, city, kind: c.kind, spots: 0, reporters: 0, depth: 0, last_at: c.last_at, at, mine: false };
+      g.spots++;
+      g.mine ||= !!c.mine;
+      if (c.reporters > g.reporters || (c.reporters === g.reporters && (c.depth || 0) > g.depth)) { g.reporters = c.reporters; g.at = at; }
+      g.depth = Math.max(g.depth, c.depth || 0);
+      if (c.last_at > g.last_at) g.last_at = c.last_at;
+      groups.set(key, g);
+    }
+    return [...groups.values()]
+      .map((g) => ({ ...g, confirmed: g.reporters >= 2 }))
+      .sort((a, b) => (b.confirmed - a.confirmed) || ((b.kind === "flood") - (a.kind === "flood")) || (b.depth - a.depth) || (b.last_at > a.last_at ? 1 : -1));
+  }
+
+  function roadRow(r, from) {
+    const color = r.kind === "flood" ? DEPTH_COLOR[r.depth || 3] : ICE_COLOR;
+    const what = r.kind === "flood" ? `Flooded · ${DEPTHS[r.depth]?.label.toLowerCase() || "depth unknown"}` : "Iced";
+    const who = r.confirmed ? `${r.reporters} neighbors` : "1 report, unconfirmed";
+    const dist = from ? ` · ${milesBetween(from, r.at) < 0.1 ? "here" : `${milesBetween(from, r.at).toFixed(1)} mi`}` : "";
+    return `<li><button type="button" class="nr-row road-row${r.confirmed ? "" : " faint"}" style="--rc:${color}" data-avoid-at="${r.at.join(",")}">
+      <span class="nr-dot"></span>
+      <span class="nr-text"><span class="nr-what">${esc(r.street || "Unnamed street")}${r.city ? ` <span class="road-city">${esc(r.city)}</span>` : ""}</span>
+      <span class="nr-meta">${esc(what)} · ${esc(who)} · ${esc(ago(r.last_at))}${r.spots > 1 ? ` · ${r.spots} spots` : ""}${dist}</span></span>
+      <span class="road-go" aria-hidden="true">›</span></button></li>`;
+  }
+
+  const avoidOpen = () => !document.getElementById("sheet").hidden && !avoidRoot.parentElement.hidden;
+  const avoidRoot = document.getElementById("avoid-body");
+  function renderAvoid() {
+    const list = roads();
+    const confirmed = list.filter((r) => r.confirmed).length;
+    avoidRoot.innerHTML = `
+      <p class="rp-911">Water over the road? <strong>Turn around, don't drown.</strong> A foot of moving water can float a car.</p>
+      <p class="sheet-lead">${list.length
+        ? `${list.length} road${list.length > 1 ? "s" : ""} reported flooded or iced across ${esc(metro.name)}${confirmed ? `, ${confirmed} confirmed by more than one neighbor` : ""}. Tap one to see it on the map.`
+        : `No neighbor has reported a flooded or iced road in ${esc(metro.name)} right now.`}</p>
+      ${list.length ? `<ul class="near-list">${list.map((r) => roadRow(r, null)).join("")}</ul>` : ""}
+      <p class="near-note">From neighbor reports, not official closures. A road that isn't listed can still be flooded or iced.</p>
+      <div class="near-actions">
+        <a class="near-btn" href="https://drivetexas.org/" target="_blank" rel="noopener">Official closures: DriveTexas</a>
+        <button type="button" class="near-btn rp-open" data-report-open="flood">Report a road</button>
+      </div>`;
+  }
+  function openAvoid() {
+    renderAvoid();
+    openSheet("avoid", "Roads to avoid");
+  }
+
+  function avoidCardHTML(pt) {
+    const list = roads();
+    const close = list.filter((r) => milesBetween(pt, r.at) <= 3).sort((a, b) => (b.confirmed - a.confirmed) || milesBetween(pt, a.at) - milesBetween(pt, b.at));
+    const n = list.length;
+    return `
+      <div class="avoid-card" data-level="${close.some((r) => r.confirmed) ? "on" : n ? "some" : "none"}">
+        <p class="rc-head"><span>Roads to avoid</span><span>${store.mode === "demo" ? "demo · " : ""}neighbor reports</span></p>
+        <p class="avoid-title">${close.length ? `${close.length} road${close.length > 1 ? "s" : ""} within 3 mi` : n ? "None reported within 3 mi" : "None reported in DFW"}</p>
+        ${close.length ? `<ul class="near-list">${close.slice(0, 3).map((r) => roadRow(r, pt)).join("")}</ul>` : `<p class="near-note">That doesn't mean roads are clear. Never drive into water you can't see the bottom of.</p>`}
+        ${n ? `<button type="button" class="avoid-all" data-avoid-open>See all ${n} across DFW ›</button>` : ""}
+      </div>`;
+  }
 
   /* ---------- Report flow ---------- */
   const root = document.getElementById("report-body");
@@ -218,6 +318,7 @@ export function initReports({ map, isOn, openSheet, closeSheet, getSpot, toast, 
       .join("");
     const backs = list.filter((c) => c.kind === "power_back").reduce((n, c) => n + c.reporters, 0);
     return `
+      ${avoidCardHTML(pt)}
       <h3 class="near-h">How deep is it? <span class="near-h-note">${nearestFlood ? `${esc(DEPTHS[nearestFlood.depth]?.label || "")} · ${nearestFlood.reporters >= 2 ? `${nearestFlood.reporters} neighbors` : "1 report"}` : "no water reported"}</span></h3>
       <div class="depth-wrap">${depthScene(nearestFlood?.depth || null)}</div>
       ${nearestFlood ? `<p class="near-note">${esc(DEPTHS[nearestFlood.depth].note)} Turn around, don't drown.</p>` : `<p class="near-note">No neighbor has reported water within half a mile. That doesn't mean roads are clear.</p>`}
@@ -230,6 +331,9 @@ export function initReports({ map, isOn, openSheet, closeSheet, getSpot, toast, 
   document.addEventListener("click", async (e) => {
     const open = e.target.closest("[data-report-open]");
     if (open) { openReport(open.dataset.reportOpen || null); return; }
+    if (e.target.closest("[data-avoid-open]")) { openAvoid(); return; }
+    const go = e.target.closest("[data-avoid-at]");
+    if (go) { closeSheet(); onPick(go.dataset.avoidAt.split(",").map(Number)); return; }
     const f = e.target.closest("[data-flag-kind]");
     if (f) {
       try { await store.flag({ kind: f.dataset.flagKind, cell: f.dataset.flagCell }); f.textContent = "Flagged"; f.disabled = true; toast("Thanks. Reports flagged by enough neighbors are hidden."); }
@@ -241,6 +345,9 @@ export function initReports({ map, isOn, openSheet, closeSheet, getSpot, toast, 
     layerIds: ["reports-power-fill", "reports-power-line", "reports-road", "reports-road-label"],
     refresh,
     openReport,
+    openAvoid,
+    roads,
+    getCells: () => cells,
     summaryHTML,
     store,
   };

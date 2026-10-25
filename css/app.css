@@ -675,3 +675,34 @@ body.near-me-mode .crosshair { display: none; }
 .nr-flag { flex: none; background: none; border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; font-size: 11.5px; color: var(--text-dim); cursor: pointer; }
 .nr-flag:disabled { opacity: .6; cursor: default; }
 .rp-open { border-color: var(--signal) !important; color: var(--signal) !important; }
+
+/* ---------- Roads to avoid ---------- */
+.avoid-card {
+  --rc: var(--line);
+  margin-top: 18px; padding: 16px 16px 14px; border-radius: 14px;
+  border: 1.5px solid var(--rc); background: color-mix(in srgb, var(--rc) 7%, var(--ink-1));
+}
+.avoid-card[data-level="some"] { --rc: #4fb3ff; }
+.avoid-card[data-level="on"] { --rc: #ff7a3d; }
+.avoid-title { margin: 8px 0 10px; font-size: 22px; font-weight: 300; line-height: 1.2; }
+.avoid-card[data-level="on"] .avoid-title { color: var(--rc); }
+.avoid-card .near-note { margin: 0; }
+.avoid-all {
+  display: block; width: 100%; margin-top: 10px; padding: 10px 12px; border-radius: 10px; cursor: pointer;
+  background: none; border: 1px solid var(--line); color: var(--text); font: inherit; font-size: 14px; text-align: left;
+}
+.avoid-all:hover { border-color: var(--signal); }
+.road-row { width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.road-row:hover { border-color: var(--signal); border-left-color: var(--rc); }
+.road-city { font-weight: 400; color: var(--text-dim); font-size: 12.5px; margin-left: 4px; }
+.road-go { flex: none; color: var(--text-dim); font-size: 20px; line-height: 1; }
+
+/* ---------- Rail station sheet ---------- */
+.st-lines { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 14px; }
+.st-line {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--line); font-size: 13px; font-weight: 600;
+}
+.st-line::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--lc); }
+.st-flags { margin-bottom: 10px; }
+.key-rail { width: 22px; height: 4px; border-radius: 2px; background: var(--c); align-self: center; }
