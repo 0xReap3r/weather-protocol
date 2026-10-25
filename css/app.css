@@ -934,3 +934,7 @@ button.feed-item:hover { border-color: var(--signal); border-left-color: var(--f
 @media (max-width: 380px) {
   .alert-banner .ab-next { display: none; }
 }
+/* Phones: the map-credits (i) button sat under the Layers button; move it above the scale bar */
+@media (max-width: 719px) {
+  .maplibregl-ctrl-bottom-right { right: auto; left: 0; bottom: calc(env(safe-area-inset-bottom, 0px) + 150px); }
+}
