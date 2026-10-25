@@ -37,27 +37,20 @@
     </div>
     <nav id="chips" class="chips" aria-label="Map layers"></nav>
     <button id="alert-banner" class="alert-banner" type="button" hidden></button>
-    <div id="radar-legend" class="radar-legend" data-mode="drops" hidden>
+    <div id="radar-legend" class="radar-legend" hidden>
       <div class="rl-head">
         <span class="rl-title">Rain radar</span>
         <span id="radar-time" class="rl-time"></span>
-        <div class="rl-modes" role="group" aria-label="Radar style">
-          <button type="button" data-radar-mode="drops" aria-pressed="true">Drops</button>
-          <button type="button" data-radar-mode="loop" aria-pressed="false">Loop</button>
-        </div>
-      </div>
-      <div id="radar-drops-key" class="rl-drops"></div>
-      <div class="rl-loop">
-        <ul class="rl-drops">
-          <li><span class="rl-drop" style="--c:#7fd4ff;--s:.78"></span>Light</li>
-          <li><span class="rl-drop" style="--c:#4fb3ff;--s:.88"></span>Moderate</li>
-          <li><span class="rl-drop" style="--c:#ffb020;--s:1"></span>Heavy</li>
-          <li><span class="rl-drop" style="--c:#ff4d4d;--s:1.1"></span>Very heavy</li>
-          <li><span class="rl-drop" style="--c:#d94cff;--s:1.2"></span>Hail</li>
-        </ul>
         <button id="radar-play" class="rl-play" type="button" aria-pressed="true">Pause</button>
       </div>
-      <p class="rl-note">Shows rain falling, not flood water on the ground.</p>
+      <ul class="rl-drops">
+        <li><span class="rl-drop" style="--c:#7fd4ff;--s:.78"></span>Light</li>
+        <li><span class="rl-drop" style="--c:#4fb3ff;--s:.88"></span>Moderate</li>
+        <li><span class="rl-drop" style="--c:#ffb020;--s:1"></span>Heavy</li>
+        <li><span class="rl-drop" style="--c:#ff4d4d;--s:1.1"></span>Very heavy</li>
+        <li><span class="rl-drop" style="--c:#d94cff;--s:1.2"></span>Hail</li>
+      </ul>
+      <p class="rl-note">Drops show rain falling from live radar, not flood water on the ground.</p>
     </div>
   </header>
 

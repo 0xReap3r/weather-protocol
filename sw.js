@@ -15,7 +15,6 @@ const SHELL = [
   "./js/data/rain.js",
   "./js/data/floodmaps.js",
   "./js/radar.js",
-  "./js/raindrops.js",
   "./manifest.webmanifest",
   "./icons/icon.svg",
   "./icons/icon-192.png",
