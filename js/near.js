@@ -292,6 +292,7 @@ export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, o
       <div class="near-actions">
         <a class="near-btn" href="https://www.google.com/maps/dir/?api=1&destination=${pt[1].toFixed(5)},${pt[0].toFixed(5)}" target="_blank" rel="noopener">Directions</a>
         <button type="button" class="near-btn" id="near-share">Copy link</button>
+        <button type="button" class="near-btn" data-places-open>Save place</button>
         ${mode === "pin" ? '<button type="button" class="near-btn" id="near-clear">Clear pin</button>' : ""}
       </div>
       ${getReportsHTML?.(pt) || ""}

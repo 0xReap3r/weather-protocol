@@ -11,6 +11,9 @@ import { initTransit } from "./transit.js";
 import { initStorms } from "./storms.js";
 import { initMenu } from "./menu.js";
 import { initSatellite } from "./satellite.js";
+import { initFeed } from "./feed.js";
+import { initPlaces } from "./places.js";
+import { initRoute } from "./route.js";
 import { initRainTotals, rainTotalsAt, formatInches } from "./raintotals.js";
 import { contains, milesBetween } from "./near.js";
 import { fimLayers, exportTiles, NFHL, NFHL_ZONES_LAYER } from "./data/floodmaps.js";
@@ -80,6 +83,7 @@ let reports = null; // neighbor reports, created once the map is ready
 let transit = null; // DART rail, created once the map is ready
 let storms = null; // SPC outlook, created once the map is ready
 let satellite = null, rainTotals = null; // NASA flood map and NOAA rain totals
+let feed = null, places = null, route = null; // What's happened, My places, Check a route
 const LABEL_FONT = ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"]; // must exist in the basemap's glyphs
 
 // On desktop the Near-you column covers the right of the map, so offset the map's
@@ -252,6 +256,24 @@ map.on("load", () => {
   MAP_LAYERS.reports = reports.layerIds;
   window.stormlineReports = reports; // debugging aid
 
+  // What's happened, My places and Check a route (the route line draws on top of everything).
+  feed = initFeed({
+    metro,
+    getGauges: () => gauges,
+    getReports: () => ({ cells: reports.getCells(), roads: reports.roads() }),
+    openSheet, openAlerts, openGauge, onPick: pickSpot,
+    isActiveAlert: (id) => alertsFC.features.some((f) => f.properties.id === id),
+  });
+  route = initRoute({
+    map, getSpot: () => near.getSpot(), getMe: () => meAt, getPlaces: () => places?.list() || [],
+    getAlertsFC: () => alertsFC, getRoads: () => reports.roads(), openSheet, closeSheet, onPick: pickSpot, toast,
+  });
+  places = initPlaces({
+    getSpot: () => near.getSpot(), getAlertsFC: () => alertsFC, getRoads: () => reports.roads(),
+    openSheet, onPick: pickSpot, onRoute: (p) => route.open(p), toast,
+  });
+  window.stormlinePlaces = places; window.stormlineRoute = route; window.stormlineFeed = feed; // debugging aids
+
   applyLayerVisibility();
   near?.render();
   reports.refresh();
@@ -262,6 +284,7 @@ map.on("load", () => {
     map.on("mouseleave", id, () => (map.getCanvas().style.cursor = ""));
   }
   map.on("click", (e) => {
+    if (route?.takeClick(e.lngLat.toArray())) return; // choosing a route destination
     const hit = map.queryRenderedFeatures(e.point, { layers: ["gauges-circle", "transit-station", "alerts-fill"].filter((l) => map.getLayer(l)) });
     const gauge = hit.find((f) => f.layer.id === "gauges-circle");
     if (gauge) return openGauge(gauge.properties.lid);
@@ -839,6 +862,7 @@ function stationsHTML(pt) {
       <span class="nr-dot"></span><span class="nr-text"><span class="nr-what">${esc(s.name)}</span><span class="nr-meta">${esc(s.flags[0].text)}</span></span><span class="road-go" aria-hidden="true">›</span></button></li>`).join("")}</ul>`;
 }
 document.addEventListener("click", (e) => {
+  if (e.target.closest("[data-places-open]")) { places?.open(); return; }
   const b = e.target.closest("[data-station-open]");
   if (b) {
     if (!layerState.transit) toggleLayer("transit");
@@ -906,6 +930,9 @@ const menu = initMenu({
     toast,
     map: () => {},
     warnings: () => openAlerts(),
+    feed: () => feed?.open(),
+    places: () => places?.open(),
+    route: () => route?.open(),
     coming: () => openOutlook(),
     area: () => expandNear(),
     reports: () => expandNear("Neighbor reports"),

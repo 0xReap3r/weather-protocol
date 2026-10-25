@@ -36,6 +36,7 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - NASA flood from space: GIBS WMTS `MODIS_Combined_Flood_2-Day` (GoogleMapsCompatible_Level9, max z9, date = yesterday UTC). Colors: flood 250,30,36 · recurring 255,255,0 · water 50,210,245 · insufficient 175,175,175. Recolored via a MapLibre `floodsat://` protocol in `js/satellite.js`
 - NOAA rain totals: `mapservices.weather.noaa.gov/raster/rest/services/obs/mrms_qpe/ImageServer` — renderingRule `rft_1hr|rft_24hr|rft_72hr` for tiles/legend; items `conus_QPE_01H…72H` for identify (spot) and computeStatisticsHistograms (county mean/max)
 - County outlines: Census TIGERweb `State_County/MapServer/1` (BASENAME + STATE FIPS), `js/data/counties.js`
+- Routing: OSRM public demo `router.project-osrm.org` (fair-use only; self-host or pay before launch)
 - ERCOT dashboard JSON is CORS-blocked in browsers; fetch it server-side.
 
 ## Layout
@@ -53,6 +54,9 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - `js/menu.js` — side menu: "Show me" layer presets, all views, Simple / Normal / Advanced (`body[data-view-mode]`; simple hides `.chips`, `.nd-more`; advanced shows `.adv-only`)
 - `js/satellite.js` — "Flood from space" chip: recolored NASA flood tiles + flooded acres per county labels (zoom < 11)
 - `js/raintotals.js` — "Rain totals" chip: MRMS tiles, period buttons, county avg/max labels; `rainTotalsAt()` feeds "Rain so far" in the area panel
+- `js/feed.js` — "What's happened": last 24 h NWS alerts (`loadRecentAlerts`), rivers at action+, neighbor reports
+- `js/places.js` — My places (localStorage `stormline.places.v1`, max 10) with live status
+- `js/route.js` — Check a route: OSRM public demo router → warnings crossed + reported roads within 120 m
 - `js/storms.js` — Storms chip: SPC day 1–3 outlook shading + legend card; `levelToday()` feeds fast polling
 - `js/app.js` also: fast alert polling (60 s during active weather), "you're inside the warning" bar (`#danger-bar`) from the Near me location
 - `supabase/migrations/` — run in order on an existing project (002 adds hail + damage kinds)

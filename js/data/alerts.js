@@ -110,3 +110,25 @@ export function uniqueAlerts(fc) {
   for (const f of fc.features) if (!seen.has(f.properties.id)) seen.set(f.properties.id, f.properties);
   return [...seen.values()].sort((a, b) => b.rank - a.rank);
 }
+
+// Alerts issued in the last `hours` for the metro, newest first (for the "What's happened" feed).
+// Lighter than loadAlerts: no zone outlines; a zone alert counts if it names one of our counties.
+export async function loadRecentAlerts(metro, hours = 24) {
+  const start = new Date(Date.now() - hours * 3600e3).toISOString().replace(/\.\d+Z$/, "Z");
+  const data = await fetchJSON(`${NWS}/alerts?area=${metro.nwsAlertArea}&start=${start}&limit=500`, { timeout: 15000 });
+  const countyRe = new RegExp(`\\b(${metro.counties.join("|")})\\b`, "i");
+  const out = [];
+  for (const f of data.features || []) {
+    const p = f.properties || {};
+    if (p.status && p.status !== "Actual") continue;
+    const inMetro = f.geometry ? overlaps(bboxOfGeometry(f.geometry), metro.maxBounds) && countyRe.test(p.areaDesc || "") : countyRe.test(p.areaDesc || "");
+    if (!inMetro) continue;
+    const st = alertStyle(p.event);
+    out.push({
+      id: p.id, event: p.event, headline: p.headline || p.event, areaDesc: p.areaDesc,
+      sent: p.sent, expires: p.ends || p.expires, messageType: p.messageType,
+      description: p.description || "", color: st.color, rank: st.rank,
+    });
+  }
+  return out.sort((a, b) => Date.parse(b.sent) - Date.parse(a.sent));
+}
