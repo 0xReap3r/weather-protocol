@@ -85,6 +85,8 @@ export async function recordHealth(env, name, powers, ok, detail) {
 export async function statusJSON(env) {
   if (!env.DB) return { sources: [] };
   await schema(env.DB);
+  // Sources not checked in the last hour (removed from the list) are dropped.
+  await env.DB.prepare("DELETE FROM health WHERE at < ?").bind(Date.now() - 3600e3).run();
   const { results } = await env.DB.prepare("SELECT source, powers, ok, detail, ms, at, last_ok FROM health ORDER BY ok ASC, source ASC").all();
   return { sources: results.map((r) => ({ ...r, ok: !!r.ok, at: new Date(r.at).toISOString(), last_ok: r.last_ok ? new Date(r.last_ok).toISOString() : null })) };
 }
