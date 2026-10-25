@@ -25,6 +25,9 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - Flood inundation maps: NWS FIM MapServer per gauge (url from NWPS gauge `inundation.url`); category layers Minor/Moderate/Major
 - FEMA flood zones: NFHL MapServer layer 28 (query for the zone at a point; export for the map layer, zoom 11+)
 - Dead: the TxDOT ArcGIS DriveTexas service (0 features, last edited 2017). DriveTexas.org has no public feed.
+- SPC severe outlook: `spc.noaa.gov/products/outlook/day{1,2,3}otlk_cat.lyr.geojson` (LABEL TSTM…HIGH)
+- WPC excessive rainfall: `mapservices.weather.noaa.gov/vector/rest/services/hazards/wpc_precip_hazards/MapServer/{0,1,2}` (dn 1–4)
+- Open-Meteo multi-location hourly rain for all cities in one request
 - ERCOT dashboard JSON is CORS-blocked in browsers; fetch it server-side.
 
 ## Layout
@@ -34,6 +37,7 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - `js/near.js` — "Near you" area panel (verdict, rain now, 12-hr rain chance, nearest gauges)
 - `js/radar.js` — radar as rain drops: reads IEM tile pixels, palette index → dBZ (index×0.5−32.5), drops on a map-anchored grid, 6-frame loop
 - `js/key.js` — map key, built from the same color tables the layers use
+- `js/outlook.js` — "What's coming" view (opened from the warnings banner): risk levels Low/Elevated/High/Extreme from NWS alerts, gauges, SPC, WPC ERO and city rain
 - `js/data/` — one module per data source; `fetch.js` adds timeouts
 - `sw.js` — offline app shell; bump `VERSION` whenever shell files change
 

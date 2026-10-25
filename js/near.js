@@ -11,7 +11,7 @@ const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 /* ---------- Geometry ---------- */
-function milesBetween([lng1, lat1], [lng2, lat2]) {
+export function milesBetween([lng1, lat1], [lng2, lat2]) {
   const R = 3958.8, toRad = (d) => (d * Math.PI) / 180;
   const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
   const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
@@ -28,7 +28,7 @@ function inRing([x, y], ring) {
 function inPolygon(pt, rings) {
   return inRing(pt, rings[0]) && !rings.slice(1).some((hole) => inRing(pt, hole));
 }
-function contains(geom, pt) {
+export function contains(geom, pt) {
   if (!geom) return false;
   if (geom.type === "Polygon") return inPolygon(pt, geom.coordinates);
   if (geom.type === "MultiPolygon") return geom.coordinates.some((p) => inPolygon(pt, p));

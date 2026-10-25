@@ -5,6 +5,7 @@ import { loadGauges, loadStageflow, CATEGORY } from "./data/gauges.js";
 import { initNearPanel } from "./near.js";
 import { initRadar } from "./radar.js";
 import { renderKey } from "./key.js";
+import { initOutlook } from "./outlook.js";
 import { fimLayers, exportTiles, NFHL, NFHL_ZONES_LAYER } from "./data/floodmaps.js";
 
 const metro = METROS[DEFAULT_METRO];
@@ -256,6 +257,7 @@ async function refreshAlerts() {
   }
   renderBanner();
   if (currentView === "alerts") renderAlertList();
+  if (currentView === "outlook") outlook.render();
   near?.render();
   startPulse();
   updateStatus();
@@ -327,7 +329,7 @@ function renderBanner() {
   if (!alertList.length) {
     b.dataset.level = "none";
     b.style.removeProperty("--alert");
-    b.innerHTML = `<span class="ab-dot" aria-hidden="true"></span><span>No active NWS alerts for ${esc(metro.name)}</span>`;
+    b.innerHTML = `<span class="ab-dot" aria-hidden="true"></span><span class="ab-text">No active NWS alerts for ${esc(metro.name)}</span><span class="ab-next">What's coming ›</span>`;
     return;
   }
   const top = alertList[0];
@@ -336,9 +338,9 @@ function renderBanner() {
   b.style.setProperty("--alert", top.color);
   b.innerHTML = `<span class="ab-dot" aria-hidden="true"></span><span class="ab-text"><strong>${esc(top.event)}</strong>${
     others ? ` <span class="ab-more">+${others} more</span>` : ""
-  }</span><span class="ab-go" aria-hidden="true">›</span>`;
+  }</span><span class="ab-next">What's coming ›</span>`;
 }
-$("#alert-banner").addEventListener("click", () => openAlerts());
+$("#alert-banner").addEventListener("click", () => openOutlook());
 
 /* ---------- Layer chips ---------- */
 const layerState = loadLayerState();
@@ -637,6 +639,25 @@ near = initNearPanel({
   locate: locateMe,
   openAbout,
 });
+
+/* ---------- What's coming (outlook) ---------- */
+const outlook = initOutlook({
+  metro,
+  getAlertsFC: () => alertsFC,
+  getGauges: () => gauges,
+  getAlertCount: () => alertList.length,
+  openAlerts: () => openAlerts(),
+  onPickCity: (at) => {
+    closeSheet();
+    map.easeTo({ center: at, zoom: Math.max(map.getZoom(), 11) });
+    near.setPin(at);
+  },
+});
+function openOutlook() {
+  openSheet("outlook", "What's coming");
+  outlook.render();
+}
+window.stormlineOutlook = outlook; // debugging aid
 window.stormlineNear = near; // debugging aid
 // Debug: stormlineDemo() paints a fake flood-stage gauge + warning so you can see pulsing. Reload to clear.
 window.stormlineDemo = () => {
