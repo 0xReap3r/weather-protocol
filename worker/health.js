@@ -2,6 +2,8 @@
 // every 10 minutes; results kept in D1 and served at /api/status for the in-app "Data status"
 // sheet. Also runs the Supabase report cleanup each time, which keeps the free project from pausing.
 
+import { getGrid } from "./grid.js";
+
 const UA = "Stormline/1.0 (public severe-weather map; https://weather-protocol.protocolxv-dev.workers.dev)";
 const today = () => new Date(Date.now() - 864e5).toISOString().slice(0, 10);
 
@@ -14,7 +16,6 @@ const SOURCES = [
   ["NOAA rain totals", "Rain totals, Rain so far", () => "https://mapservices.weather.noaa.gov/raster/rest/services/obs/mrms_qpe/ImageServer?f=json", (j) => !!j.name],
   ["SPC storm outlook", "Storms layer, What's coming", () => "https://www.spc.noaa.gov/products/outlook/day1otlk_cat.lyr.geojson", (j) => Array.isArray(j.features)],
   ["NASA flood map", "Flood from space", () => `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Combined_Flood_2-Day/default/${today()}/GoogleMapsCompatible_Level9/8/104/59.png`, null],
-  ["ERCOT grid", "Texas grid pill", () => "https://www.ercot.com/api/1/services/read/dashboards/daily-prc.json", (j) => !!j.current_condition],
   ["DART rail", "Rail layer", () => "https://services2.arcgis.com/rwnOSbfKSwyTBcwN/ArcGIS/rest/services/dart_rail/FeatureServer?f=json", (j) => Array.isArray(j.layers)],
   ["Routing (OSRM)", "Check a route", () => "https://router.project-osrm.org/route/v1/driving/-96.80,32.78;-96.70,32.80?overview=false", (j) => j.code === "Ok"],
 ];
@@ -54,6 +55,13 @@ export async function runHealth(env) {
   await schema(env.DB);
   const now = Date.now();
   const results = await Promise.all(SOURCES.map(probe));
+  // ERCOT: uses the same fetch as /api/grid (and refreshes its saved copy).
+  {
+    const t0 = Date.now();
+    const g = await getGrid(env).catch((e) => ({ data: null, error: e.message }));
+    results.push({ name: "ERCOT grid", powers: "Texas grid pill", ok: !!g.data,
+      detail: g.fresh ? null : g.data ? `ERCOT refused (${g.error}); showing reading from ${Math.round((Date.now() - g.savedAt) / 60e3)} min ago` : g.error, ms: Date.now() - t0 });
+  }
   // Supabase: run the report cleanup (also counts as activity, so the free project doesn't pause).
   if (env.SUPABASE_URL && env.SUPABASE_ANON_KEY) {
     const t0 = Date.now();

@@ -37,7 +37,7 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - NOAA rain totals: `mapservices.weather.noaa.gov/raster/rest/services/obs/mrms_qpe/ImageServer` — renderingRule `rft_1hr|rft_24hr|rft_72hr` for tiles/legend; items `conus_QPE_01H…72H` for identify (spot) and computeStatisticsHistograms (county mean/max)
 - County outlines: Census TIGERweb `State_County/MapServer/1` (BASENAME + STATE FIPS), `js/data/counties.js`
 - Routing: OSRM public demo `router.project-osrm.org` (fair-use only; self-host or pay before launch)
-- ERCOT grid: `ercot.com/api/1/services/read/dashboards/daily-prc.json` → `current_condition` {state normal|weather|vcn|conservation|eea1|eea2|eea3, title, condition_note, eea_level, prc_value}. CORS-blocked, so `worker/index.js` serves it trimmed at `/api/grid` (60 s edge cache)
+- ERCOT grid: `ercot.com/api/1/services/read/dashboards/daily-prc.json` → `current_condition` {state normal|weather|vcn|conservation|eea1|eea2|eea3, title, condition_note, eea_level, prc_value}. CORS-blocked, so the Worker serves it trimmed at `/api/grid` (60 s edge cache). ERCOT sometimes 403s cloud requests for a few minutes: `worker/grid.js` keeps the last good reading in D1 `kv` and serves it (stale: true) for up to 30 min
 
 ## Layout
 - `js/config.js` — app name, disclaimer, basemap, metro config (DFW counties, gauges, cities, refresh rates)

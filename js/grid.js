@@ -50,7 +50,7 @@ export function initGrid({ isOn, openSheet }) {
     const n = levelOf(status.state), L = GRID_LEVELS[n];
     const old = status.at && Date.now() - Date.parse(status.at) > 20 * 60e3;
     pill.dataset.level = String(n);
-    pill.classList.toggle("stale", !!old || !!failedAt);
+    pill.classList.toggle("stale", !!old || !!failedAt || !!status.stale);
     pill.style.setProperty("--gc", L.color);
     pill.innerHTML = `<span class="gp-dot"></span><span><span class="gp-l">Texas grid:</span><span class="gp-s">Grid:</span> <strong><span class="gp-l">${esc(status.title || L.short)}</span><span class="gp-s">${esc(L.short)}</span></strong></span><span class="gp-src">ERCOT${status.at ? ` · ${esc(new Date(status.at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }))}` : ""}</span>`;
   }
