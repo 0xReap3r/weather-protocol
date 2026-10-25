@@ -1,0 +1,25 @@
+/* Privacy and terms pages: same dark tokens as the app, plain readable text. */
+:root {
+  color-scheme: dark;
+  --ink-0: #0b0f14; --ink-1: #121820; --ink-2: #1b2430; --line: #2a3542;
+  --text: #e8edf2; --text-dim: #9aa7b4; --signal: #f0b429; --danger: #ff5c5c;
+  --font-display: "Saira Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ink-0); color: var(--text); font: 16px/1.6 var(--font-body); }
+main { max-width: 760px; margin: 0 auto; padding: 24px 16px 64px; }
+a { color: var(--signal); }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.wordmark { font-family: var(--font-display); font-weight: 700; font-size: 22px; letter-spacing: .04em; text-transform: uppercase; color: var(--text); text-decoration: none; }
+h1 { font-size: 30px; line-height: 1.2; margin: 8px 0 4px; }
+h2 { font-size: 19px; margin: 32px 0 8px; }
+.meta { color: var(--text-dim); font-size: 14px; margin: 0 0 18px; }
+.draft { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--signal); background: rgba(240,180,41,.08); font-size: 14px; }
+.danger { padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,92,92,.5); background: rgba(255,92,92,.08); }
+table { width: 100%; border-collapse: collapse; font-size: 14.5px; margin: 8px 0; }
+th, td { text-align: left; vertical-align: top; padding: 10px 8px; border-bottom: 1px solid var(--line); }
+th { color: var(--text-dim); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; }
+.table-wrap { overflow-x: auto; }
+li { margin: 4px 0; }
+footer { margin-top: 40px; color: var(--text-dim); font-size: 14px; }

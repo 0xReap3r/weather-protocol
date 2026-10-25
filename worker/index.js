@@ -4,6 +4,7 @@
 // Keep it read-only and keyless (CLAUDE.md ground rules).
 
 import { handlePush, checkAlerts } from "./push.js";
+import { runHealth, statusJSON } from "./health.js";
 
 const ERCOT = "https://www.ercot.com/api/1/services/read/dashboards/daily-prc.json";
 const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET, POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type" };
@@ -46,12 +47,14 @@ export default {
       if (req.method !== "GET" && !url.pathname.startsWith("/api/push/")) return json({ error: "Method not allowed" }, 405);
       if (url.pathname === "/api/grid") return grid(ctx, req);
       if (url.pathname.startsWith("/api/push/")) return handlePush(req, env, url, json);
+      if (url.pathname === "/api/status") return json(await statusJSON(env), 200, { "Cache-Control": "public, max-age=60" });
       return json({ error: "Not found" }, 404);
     }
     return env.ASSETS.fetch(req);
   },
   // Every minute: look for new warnings that cover someone's saved places and push them.
+  // Every 10 minutes (second cron): check every data source and run the report cleanup.
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(checkAlerts(env));
+    ctx.waitUntil(event.cron === "*/10 * * * *" ? runHealth(env) : checkAlerts(env));
   },
 };

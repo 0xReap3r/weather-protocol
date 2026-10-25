@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stormline privacy</title>
+  <meta name="description" content="What Stormline collects, why, and how long it keeps it.">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=Saira+Semi+Condensed:wght@700&display=swap">
+  <link rel="stylesheet" href="css/legal.css">
+</head>
+<body>
+<main>
+  <div class="top"><a class="wordmark" href="./">Stormline</a><a href="terms.html">Terms</a></div>
+  <h1>Privacy</h1>
+  <p class="meta">Last updated October 25, 2026</p>
+  <p class="draft"><strong>Draft.</strong> This plain-language policy describes how the app works today. It hasn't been reviewed by a lawyer yet and may change before public launch.</p>
+
+  <p>Stormline is a free severe-weather map for Dallas–Fort Worth. It has no accounts, no ads, no tracking cookies and no analytics. Most of what you do stays on your device.</p>
+
+  <h2>What stays on your device</h2>
+  <ul>
+    <li><strong>Your location.</strong> When you tap Near me, your browser shares your location with the app on your device. It isn't stored on our servers. (See "Spots you look up" below for the lookups it triggers.)</li>
+    <li><strong>My places, settings and view choices</strong> (layers, view mode, folded legends) are saved in your browser's local storage. Clearing your browser data removes them.</li>
+  </ul>
+
+  <h2>What we store, and for how long</h2>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>What</th><th>Why</th><th>How long</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Neighbor reports</strong>: the kind (flooded road, iced road, power out or back, hail, storm damage), a depth, size or damage type, the time, and an area: a block-sized hexagon for roads and damage, or a neighborhood-sized one (about a third of a mile) for power and hail. Never the exact spot you tapped.</td><td>To show neighbors what's happening and to count independent reports.</td><td>Reports fade from the map after 3 to 24 hours depending on the kind, and are deleted from the database about a day later.</td></tr>
+      <tr><td><strong>An anonymous reporter ID</strong> created by our database provider (Supabase) the first time you send a report. No name, email or phone number.</td><td>So one person counts once, to limit spam (12 reports an hour), and so you can remove or update your own reports.</td><td>Kept with your reports; the ID itself has no personal details.</td></tr>
+      <tr><td><strong>"Wrong?" flags</strong> on reports.</td><td>To hide reports enough neighbors say are wrong.</td><td>About 2 days.</td></tr>
+      <tr><td><strong>Push alert subscription</strong>, if you turn alerts on: your browser's push address, your saved places' names, their locations rounded to about a block, their county, and the warning types you picked.</td><td>To send you a notification when a warning covers one of your places.</td><td>Until you turn alerts off (that deletes it right away) or your browser cancels the subscription. Alert messages are deleted after 2 days.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Spots you look up</h2>
+  <p>To show conditions, the app sends the coordinates of the spot you're viewing (the map center, a dropped pin or your Near me location) to public data services: the National Weather Service, NOAA, FEMA, Open-Meteo and, if you check a route, the OSRM routing service. They receive your device's IP address like any website you visit. They don't receive your name or any ID from us. Their own privacy policies apply.</p>
+
+  <h2>Who runs it</h2>
+  <ul>
+    <li><strong>Cloudflare</strong> hosts the site and the small server that checks ERCOT, sends push alerts and stores alert subscriptions. Like most hosts, it may log technical details such as IP addresses for security.</li>
+    <li><strong>Supabase</strong> stores neighbor reports.</li>
+    <li>Push notifications travel through your browser maker's push service (Google, Apple, Mozilla or Microsoft).</li>
+  </ul>
+  <p>We don't sell or share personal information, and we don't use it for advertising.</p>
+
+  <h2>Your choices</h2>
+  <ul>
+    <li>Use the map without Near me, reports or alerts. Everything else still works.</li>
+    <li>Turn alerts off in My places to delete your subscription.</li>
+    <li>Clear your browser's site data to remove saved places and settings.</li>
+  </ul>
+
+  <h2>Children</h2>
+  <p>Stormline isn't directed at children under 13 and doesn't knowingly collect their information.</p>
+
+  <h2>Contact</h2>
+  <p>Questions or requests: open an issue on the project's <a href="https://github.com/0xReap3r/weather-protocol/issues" target="_blank" rel="noopener">GitHub page</a>.</p>
+
+  <footer><a href="./">Back to the map</a> · <a href="terms.html">Terms</a></footer>
+</main>
+</body>
+</html>

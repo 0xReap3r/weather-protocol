@@ -60,6 +60,8 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - `worker/index.js` — Cloudflare Worker for `/api/*` only (`run_worker_first`); everything else is static assets
 - `js/grid.js` — Grid chip: ERCOT pill under the warnings banner + detail sheet; uses `APP.apiBase` off the live site
 - `worker/push.js` — push alerts: D1 tables `subs`/`seen`/`inbox` (auto-created), cron every minute checks NWS for new storm warnings, empty VAPID pushes; SW fetches `/api/push/inbox`. Secret `VAPID_PRIVATE_KEY` (dashboard only), public key in `wrangler.jsonc` vars
+- `worker/health.js` — every 10 min (second cron): probes each data source into D1 `health`, runs Supabase `reports_cleanup` (keeps the free project awake); `/api/status` feeds the Data status sheet
+- `privacy.html`, `terms.html` (+ `css/legal.css`) — DRAFT legal pages, need lawyer review before public promotion
 - `js/push.js` — "Alerts on this device" card in My places (subscribe/test/off, kinds)
 - `js/legends.js` — tap a legend card's title row to fold it; cards live in `#legend-dock`
 - `js/storms.js` — Storms chip: SPC day 1–3 outlook shading + legend card; `levelToday()` feeds fast polling
@@ -76,4 +78,4 @@ In the browser console: `stormlineMap`, `stormlineNear`, `stormlineDemo()` / `st
 - No free feed yet: TEXRail / Trinity Metro lines, low-water crossings (Fort Worth HWWS is on OneRain), TxDOT closures (DriveTexas), DART live service alerts, Oncor outages. Don't scrape; outreach is deferred.
 - Report photos/moderation history not built. Push: free plan caps ~35 pushes per minute-run (50 subrequests); fine for the pilot, revisit if subscribers grow.
 - Mobile pass 1 done Oct 25 (`js/legends.js` folds legend cards, folded by default < 720 px; status row; icon-only FABs). Still test on a real iPhone, landscape, and very small phones.
-- Housekeeping: schedule `reports_cleanup()`, Supabase free tier pauses after ~1 week idle, leftover GitHub branches, final name, lawyer review of terms.
+- Housekeeping: final name; lawyer review of privacy.html/terms.html. (Report cleanup + Supabase keep-alive now run from the Worker every 10 min.)

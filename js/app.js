@@ -970,9 +970,31 @@ const menu = initMenu({
     guide: () => { $("#guide-body").innerHTML = menu.guideHTML(); openSheet("guide", "How to use it"); },
     news: () => { $("#news-body").innerHTML = menu.newsHTML(); openSheet("news", "What's new"); },
     about: () => openAbout(),
+    status: () => openDataStatus(),
+    privacy: () => window.open("privacy.html", "_blank", "noopener"),
   },
 });
 window.stormlineMenu = menu; // debugging aid
+
+/* ---------- Data status (server checks every 10 minutes) ---------- */
+const STATUS_API = /workers\.dev$|^stormline/.test(location.hostname) ? "/api/status" : `${APP.apiBase}/api/status`;
+async function openDataStatus() {
+  const body = $("#status-body");
+  body.innerHTML = `<p class="near-note">Checking…</p>`;
+  openSheet("status", "Data status");
+  try {
+    const j = await (await fetch(STATUS_API, { cache: "no-store" })).json();
+    const rows = j.sources || [];
+    const bad = rows.filter((r) => !r.ok);
+    body.innerHTML = `
+      <p class="sheet-lead">${rows.length ? (bad.length ? `${bad.length} of ${rows.length} sources had a problem at the last check.` : `All ${rows.length} sources answered at the last check.`) : "No checks have run yet. They run every 10 minutes."}</p>
+      <ul class="mn-feeds">${rows.map((r) => `<li class="${r.ok ? "" : "bad"}"><span><strong>${esc(r.source)}</strong><br><small style="color:var(--text-dim)">${esc(r.powers || "")}</small></span>
+        <span>${r.ok ? `OK · ${esc(ago(r.at))}` : `${esc(r.detail || "Problem")}${r.last_ok ? ` · last OK ${esc(ago(r.last_ok))}` : ""}`}</span></li>`).join("")}</ul>
+      <p class="sheet-small">Our server checks each public source every 10 minutes. When one is down, the parts of the map it powers show their last good data with its time, or say they're unavailable.</p>`;
+  } catch (_) {
+    body.innerHTML = `<p class="near-note">Couldn't load the status check right now.</p>`;
+  }
+}
 window.stormlineNear = near; // debugging aid
 // Debug: stormlineDemo() paints a fake flood-stage gauge + warning so you can see pulsing. Reload to clear.
 window.stormlineDemo = (kind = "flood") => {

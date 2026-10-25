@@ -24,6 +24,7 @@ const MODES = [
 
 // Newest first. Keep entries short and in plain words.
 const CHANGES = [
+  ["Oct 25, 2026", "Data status page, plus draft privacy policy and terms."],
   ["Oct 25, 2026", "Push alerts: get notified when an NWS warning covers one of My places."],
   ["Oct 25, 2026", "Texas power grid status from ERCOT, and a freeze card in the panel when temperatures will drop below freezing."],
   ["Oct 25, 2026", "What's happened (last 3 days), My places, and Check a route against warnings and neighbor reports."],
@@ -121,6 +122,8 @@ export function initMenu({ appName, getLayerState, applyPreset, actions, getFeed
             ${item("guide", "guide", "How to use it")}
             ${item("news", "news", "What's new")}
             ${item("about", "info", "Sources and terms")}
+            ${item("status", "layers", "Data status")}
+            ${item("privacy", "guide", "Privacy")}
           </ul>
           <a class="mn-911" href="tel:911">${icon("phone")}<span>In danger? Call <strong>911</strong></span></a>
         </section>

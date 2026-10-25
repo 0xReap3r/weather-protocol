@@ -190,11 +190,15 @@ export async function checkAlerts(env) {
   // Send pushes for anything waiting (also retries from earlier runs).
   const pending = (await env.DB.prepare(`SELECT DISTINCT inbox.sub_id AS id, subs.endpoint AS endpoint FROM inbox JOIN subs ON subs.id = inbox.sub_id
     WHERE inbox.pushed = 0 AND inbox.created > ? LIMIT ?`).bind(now - 60 * 60e3, MAX_PUSHES_PER_RUN).all()).results;
-  for (const s of pending) {
-    const res = await sendPush(env, s.endpoint).catch(() => "err");
-    if (res === "gone") await env.DB.batch([env.DB.prepare("DELETE FROM subs WHERE id = ?").bind(s.id), env.DB.prepare("DELETE FROM inbox WHERE sub_id = ?").bind(s.id)]);
-    else if (res === "ok") await env.DB.prepare("UPDATE inbox SET pushed = 1 WHERE sub_id = ? AND pushed = 0").bind(s.id).run();
+  // Pushes go out in parallel; the database updates for all of them go in one batch
+  // (free plan: 50 subrequests and 50 D1 queries per run).
+  const outcomes = await Promise.all(pending.map(async (s) => ({ id: s.id, res: await sendPush(env, s.endpoint).catch(() => "err") })));
+  const updates = [];
+  for (const { id, res } of outcomes) {
+    if (res === "gone") updates.push(env.DB.prepare("DELETE FROM subs WHERE id = ?").bind(id), env.DB.prepare("DELETE FROM inbox WHERE sub_id = ?").bind(id));
+    else if (res === "ok") updates.push(env.DB.prepare("UPDATE inbox SET pushed = 1 WHERE sub_id = ? AND pushed = 0").bind(id));
   }
+  if (updates.length) await env.DB.batch(updates);
   // Housekeeping: forget old alerts and messages after 2 days.
   if (new Date().getUTCMinutes() === 0) {
     await env.DB.batch([

@@ -14,11 +14,15 @@
   "d1_databases": [
     { "binding": "DB", "database_name": "stormline", "database_id": "346040de-8a28-44b0-9083-916306990648" }
   ],
-  "triggers": { "crons": ["* * * * *"] },
+  "triggers": { "crons": ["* * * * *", "*/10 * * * *"] },
   "vars": {
     // Public half of the VAPID key pair (safe to publish). The private half is the Worker
     // secret VAPID_PRIVATE_KEY, set in the Cloudflare dashboard, never in this repo.
     "VAPID_PUBLIC_KEY": "BHzsKhm4oCUQI_NFEdUAFjLa5bWZLUa2rzVtZ_nxaM2jvBIg08nnH3dt2gZs4Ffc_-dZNx9KBYImh811ByAqLWM",
-    "VAPID_SUBJECT": "https://weather-protocol.protocolxv-dev.workers.dev"
+    "VAPID_SUBJECT": "https://weather-protocol.protocolxv-dev.workers.dev",
+    // Public Supabase project URL and publishable (anon) key, same as js/config.js; used for the
+    // report cleanup every 10 minutes. Row-level security protects the data.
+    "SUPABASE_URL": "https://iiozdkcgxqvzukziovhq.supabase.co",
+    "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlpb3pka2NneHF2enVremlvdmhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI5NDczODksImV4cCI6MjEwODUyMzM4OX0.VHGVKkFDdN89dtlohVJ04pZDJ50hN4m0qUVx9SeB1OQ"
   }
 }
