@@ -710,6 +710,7 @@ body.near-me-mode .crosshair { display: none; }
 .key-rail { width: 22px; height: 4px; border-radius: 2px; background: var(--c); align-self: center; }
 
 /* ---------- Phase 4c: "you're inside the warning" bar ---------- */
+.danger-bar[hidden] { display: none; }
 .danger-bar {
   --alert: #ff3b3b;
   display: grid; gap: 6px; padding: 12px 14px; border-radius: var(--r);
