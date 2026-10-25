@@ -149,11 +149,12 @@ export function initRadar(map, { beforeId, isOn }) {
 
     // Grid anchored to the map (not the screen) so drops don't swim while panning.
     const z = Math.round(map.getZoom() * 2) / 2;
-    const stepPx = GRID_PX * (WORLD / (256 * 2 ** z)); // grid step in tile-zoom pixels
+    // MapLibre's world is 512 px wide at zoom 0 (512-px tiles); the radar tiles are 256 px.
+    const stepPx = GRID_PX * (WORLD / (512 * 2 ** z)); // grid step in radar-tile pixels
     const gx0 = Math.floor(px(w) / stepPx) * stepPx, gx1 = px(e);
     const gy0 = Math.floor(py(n) / stepPx) * stepPx, gy1 = py(s);
     const half = stepPx / 2;
-    const sub = Math.max(2, Math.min(4, Math.round(half / 2))); // sample a few points per cell
+    const sub = Math.max(1, Math.min(4, Math.ceil(half / 2))); // sample a few points per cell
     const features = [];
     for (let gy = gy0; gy <= gy1; gy += stepPx) {
       for (let gx = gx0; gx <= gx1; gx += stepPx) {
