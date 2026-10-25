@@ -106,6 +106,13 @@ map.on("load", () => {
     paint: { "line-color": "#f0b429", "line-width": 1.25, "line-opacity": 0.55, "line-dasharray": [3, 3] },
   });
 
+  // Blue water: the basemap draws lakes and rivers in gray; tint them so water reads as water
+  // (blue means water or rain everywhere in the app).
+  for (const [id, prop, color] of [
+    ["water", "fill-color", "#0e2f4a"], ["waterway", "line-color", "#1d5f8f"],
+    ["watername_lake", "text-color", "#6fa8d6"], ["waterway_label", "text-color", "#5f95c2"],
+  ]) if (map.getLayer(id)) map.setPaintProperty(id, prop, color);
+
   // Raster layers go under the basemap's place labels so town names stay readable.
   const firstLabel = map.getStyle().layers.find((l) => l.type === "symbol")?.id;
 

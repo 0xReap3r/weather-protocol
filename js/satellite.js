@@ -21,14 +21,15 @@ const tileUrl = (date, z, x, y) =>
 
 // GIBS colormap for MODIS flood (gibs.earthdata.nasa.gov/colormaps/v1.0/output/MODIS_Flood.html)
 const CLASS = { flood: [250, 30, 36], recurring: [255, 255, 0], water: [50, 210, 245], nodata: [175, 175, 175] };
-export const SAT_COLORS = { flood: "#3d9bff", recurring: "#9fd3ff", nodata: "#8a96a3" };
+export const SAT_COLORS = { flood: "#38c6ff", recurring: "#a5e4ff", water: "#2b7fd4", nodata: "#8a96a3" };
 const near = (d, i, [r, g, b]) => Math.abs(d[i] - r) < 12 && Math.abs(d[i + 1] - g) < 12 && Math.abs(d[i + 2] - b) < 12;
 function classify(d, i) {
   if (!d[i + 3]) return null;
   if (near(d, i, CLASS.flood)) return "flood";
   if (near(d, i, CLASS.recurring)) return "recurring";
   if (near(d, i, CLASS.nodata)) return "nodata";
-  return null; // normal water or no water
+  if (near(d, i, CLASS.water)) return "water";
+  return null; // no water
 }
 
 // The latest complete 2-day composite: yesterday (UTC) covers yesterday and the day before.
@@ -51,7 +52,7 @@ function addProtocol() {
   if (protocolAdded) return;
   protocolAdded = true;
   const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
-  const OUT = { flood: [...hex(SAT_COLORS.flood), 235], recurring: [...hex(SAT_COLORS.recurring), 200], nodata: [...hex(SAT_COLORS.nodata), 28] };
+  const OUT = { flood: [...hex(SAT_COLORS.flood), 255], recurring: [...hex(SAT_COLORS.recurring), 220], water: [...hex(SAT_COLORS.water), 170], nodata: [...hex(SAT_COLORS.nodata), 16] };
   maplibregl.addProtocol("floodsat", async (params, abort) => {
     const [date, z, x, y] = params.url.replace("floodsat://", "").split("/");
     const { c, g, img } = await tileImageData(tileUrl(date, z, x, y), abort?.signal);
@@ -108,7 +109,7 @@ async function countyTotals(counties, date) {
         // Lone flood pixels are usually cloud shadows or noise: count flood water only where
         // at least 2 of the 8 neighboring pixels are water too.
         if ((k === "flood" || k === "recurring") && wetNeighbors(d, size, px, py) < 2) k = null;
-        if (k) t[k]++;
+        if (k && k !== "water") t[k]++;
       }
     }
   }));
@@ -145,12 +146,12 @@ export function initSatellite({ map, metro, beforeId, getAlertsFC }) {
   map.addSource("satflood-labels", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
   map.addLayer({
     id: "satflood-county-line", type: "line", source: "satflood-counties", maxzoom: 11,
-    paint: { "line-color": "#5b6b7c", "line-width": 1, "line-opacity": 0.6, "line-dasharray": [2, 2] },
+    paint: { "line-color": "#3aa3c9", "line-width": 1.1, "line-opacity": 0.55, "line-dasharray": [2, 2] },
   }, beforeId);
   map.addLayer({
     id: "satflood-label", type: "symbol", source: "satflood-labels", maxzoom: 11,
     layout: {
-      "text-field": ["format", ["get", "name"], { "font-scale": 1 }, "\n", {}, ["get", "line"], { "font-scale": 0.85 }],
+      "text-field": ["format", ["get", "name"], { "font-scale": 1, "text-color": "#e8edf2" }, "\n", {}, ["get", "line"], { "font-scale": 0.85 }],
       "text-font": ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"],
       "text-size": 12, "text-line-height": 1.2, "text-max-width": 14, "text-allow-overlap": false,
     },
@@ -171,6 +172,7 @@ export function initSatellite({ map, metro, beforeId, getAlertsFC }) {
       <ul class="rl-drops sl-levels">
         <li class="on"><span class="sl-sw" style="--c:${SAT_COLORS.flood}"></span>Flood water</li>
         <li class="on"><span class="sl-sw" style="--c:${SAT_COLORS.recurring}"></span>Floods often</li>
+        <li class="on"><span class="sl-sw" style="--c:${SAT_COLORS.water}"></span>Normal water</li>
         <li class="on"><span class="sl-sw" style="--c:${SAT_COLORS.nodata}"></span>Clouds, no view</li>
       </ul>
       <p class="rl-note">${err ? "Satellite data isn't loading right now. " : total == null ? "Adding up flooded acres… " : total >= MIN_ACRES ? `The satellite flags about ${total.toLocaleString()} acres of possible flood water across the metro. ` : "Little or no flood water seen across the metro. "}Totals count only counties with an inch of rain in 3 days or an NWS flood alert; blue specks elsewhere are usually lake edges or cloud shadows. Satellites miss small streets and anything under cloud, so this never means a road is dry.</p>`;
