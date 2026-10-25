@@ -24,7 +24,7 @@ const MODES = [
 
 // Newest first. Keep entries short and in plain words.
 const CHANGES = [
-  ["Oct 25, 2026", "What's happened (last 24 hours), My places, and Check a route against warnings and neighbor reports."],
+  ["Oct 25, 2026", "What's happened (last 3 days), My places, and Check a route against warnings and neighbor reports."],
   ["Oct 25, 2026", "Flood from space (NASA satellite flood map with flooded acres per county) and Rain totals for the last hour, 24 hours and 3 days."],
   ["Oct 25, 2026", "Side menu with Show me presets and Simple / Normal / Advanced views."],
   ["Oct 25, 2026", "Storms layer (NOAA storm outlook), faster warning checks during active weather, and a bar that tells you when you're inside a warning."],

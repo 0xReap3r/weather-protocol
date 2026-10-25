@@ -54,7 +54,7 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - `js/menu.js` — side menu: "Show me" layer presets, all views, Simple / Normal / Advanced (`body[data-view-mode]`; simple hides `.chips`, `.nd-more`; advanced shows `.adv-only`)
 - `js/satellite.js` — "Flood from space" chip: recolored NASA flood tiles + flooded acres per county labels (zoom < 11)
 - `js/raintotals.js` — "Rain totals" chip: MRMS tiles, period buttons, county avg/max labels; `rainTotalsAt()` feeds "Rain so far" in the area panel
-- `js/feed.js` — "What's happened": last 24 h NWS alerts (`loadRecentAlerts`), rivers at action+, neighbor reports
+- `js/feed.js` — "What's happened": last 3 days of NWS alerts (`loadRecentAlerts`), rivers at action+, neighbor reports
 - `js/places.js` — My places (localStorage `stormline.places.v1`, max 10) with live status
 - `js/route.js` — Check a route: OSRM public demo router → warnings crossed + reported roads within 120 m
 - `js/storms.js` — Storms chip: SPC day 1–3 outlook shading + legend card; `levelToday()` feeds fast polling

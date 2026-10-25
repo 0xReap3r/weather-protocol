@@ -1,4 +1,4 @@
-// "What's happened": one timeline, newest first, of the last 24 hours across sources:
+// "What's happened": one timeline, newest first, of the last 3 days across sources:
 // NWS warnings issued, updated or canceled; rivers at or near flood stage; neighbor reports.
 // Every item shows its time and source.
 import { loadRecentAlerts } from "./data/alerts.js";
@@ -24,7 +24,7 @@ export function initFeed({ metro, getGauges, getReports, openSheet, openAlerts, 
 
   async function loadAlerts(force) {
     if (!force && alerts && Date.now() - alertsAt < 3 * 60 * 1000) return;
-    try { alerts = await loadRecentAlerts(metro, 24); alertsAt = Date.now(); failed = false; }
+    try { alerts = await loadRecentAlerts(metro, 72); alertsAt = Date.now(); failed = false; }
     catch (_) { failed = true; }
   }
 
@@ -61,13 +61,13 @@ export function initFeed({ metro, getGauges, getReports, openSheet, openAlerts, 
     const list = items().filter((i) => filter === "all" || i.type === filter);
     root.innerHTML = `
       <div class="sl-days feed-filters" role="group" aria-label="Show">${FILTERS.map(([id, l]) => `<button type="button" class="sl-day" data-feed-filter="${id}" aria-pressed="${filter === id}">${l}</button>`).join("")}</div>
-      ${failed ? `<p class="near-note">Couldn't load recent NWS alerts. Showing what's loaded.</p>` : alerts == null ? `<p class="near-note">Loading the last 24 hours…</p>` : ""}
+      ${failed ? `<p class="near-note">Couldn't load recent NWS alerts. Showing what's loaded.</p>` : alerts == null ? `<p class="near-note">Loading the last 3 days…</p>` : ""}
       ${list.length ? `<ul class="feed-list">${list.map((i) => `<li><${i.act ? "button type=\"button\"" : "div"} class="feed-item${i.faded ? " faded" : ""}" style="--fc:${i.color}" ${i.act}>
           <span class="feed-dot"></span>
           <span class="feed-text"><span class="feed-title">${esc(i.title)}</span><span class="feed-meta">${esc(i.meta)}</span><span class="feed-src">${esc(when(i.at))} · ${esc(i.src)}</span></span>
         </${i.act ? "button" : "div"}></li>`).join("")}</ul>`
-        : alerts == null ? "" : `<p class="near-note">Nothing in the last 24 hours${filter === "all" ? "" : " for this filter"}. Quiet doesn't mean safe: keep Wireless Emergency Alerts on.</p>`}
-      <p class="sheet-small">Last 24 hours of NWS alerts for ${esc(metro.name)} counties, rivers now at or near flood stage, and active neighbor reports.</p>`;
+        : alerts == null ? "" : `<p class="near-note">Nothing in the last 3 days${filter === "all" ? "" : " for this filter"}. Quiet doesn't mean safe: keep Wireless Emergency Alerts on.</p>`}
+      <p class="sheet-small">Last 3 days of NWS alerts for ${esc(metro.name)} counties, rivers now at or near flood stage, and active neighbor reports.</p>`;
   }
 
   root.addEventListener("click", (e) => {
