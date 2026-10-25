@@ -6,6 +6,7 @@
 import { handlePush, checkAlerts } from "./push.js";
 import { runHealth, statusJSON } from "./health.js";
 import { getGrid } from "./grid.js";
+import { handleGeo } from "./geo.js";
 
 const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET, POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type" };
 
@@ -32,6 +33,7 @@ export default {
       if (req.method !== "GET" && !url.pathname.startsWith("/api/push/")) return json({ error: "Method not allowed" }, 405);
       if (url.pathname === "/api/grid") return grid(ctx, req, env);
       if (url.pathname.startsWith("/api/push/")) return handlePush(req, env, url, json);
+      if (url.pathname === "/api/gauges" || url.pathname.startsWith("/api/geo/")) return handleGeo(req, env, ctx, url, json);
       if (url.pathname === "/api/status") return json(await statusJSON(env), 200, { "Cache-Control": "public, max-age=60" });
       return json({ error: "Not found" }, 404);
     }
