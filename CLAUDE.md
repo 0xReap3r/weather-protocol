@@ -21,6 +21,9 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - NWS point + hourly forecast: `api.weather.gov/points/{lat},{lon}`
 - NOAA NWPS gauges: `api.water.noaa.gov/nwps/v1/gauges/{lid}` and `/stageflow`
 - Rain now: Open-Meteo `minutely_15` (HRRR model nowcast, non-commercial use)
+- Radar: IEM NEXRAD tiles `mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913[-mNNm]/{z}/{x}/{y}.png`
+- Flood inundation maps: NWS FIM MapServer per gauge (url from NWPS gauge `inundation.url`); category layers Minor/Moderate/Major
+- FEMA flood zones: NFHL MapServer layer 28 (query for the zone at a point; export for the map layer, zoom 11+)
 - Dead: the TxDOT ArcGIS DriveTexas service (0 features, last edited 2017). DriveTexas.org has no public feed.
 - ERCOT dashboard JSON is CORS-blocked in browsers; fetch it server-side.
 
@@ -29,6 +32,7 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - `js/layers.js` — layer chips and which phase connects each
 - `js/app.js` — map, layers, status badge, sheets, pulse animation, PWA
 - `js/near.js` — "Near you" area panel (verdict, rain now, 12-hr rain chance, nearest gauges)
+- `js/radar.js` — radar frames, loop and legend
 - `js/data/` — one module per data source; `fetch.js` adds timeouts
 - `sw.js` — offline app shell; bump `VERSION` whenever shell files change
 

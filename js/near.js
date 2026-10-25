@@ -5,6 +5,7 @@
 import { fetchJSON } from "./data/fetch.js";
 import { CATEGORY } from "./data/gauges.js";
 import { loadRainNow } from "./data/rain.js";
+import { femaZone } from "./data/floodmaps.js";
 
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -99,6 +100,17 @@ function rainCard(rain) {
       <p class="rc-advice">${esc(l.advice)}</p>
       <p class="rc-src">Model nowcast (Open-Meteo, NOAA HRRR), updated every 15 min. Not a radar reading.</p>
     </section>`;
+}
+
+/* ---------- FEMA flood zone for the spot ---------- */
+function zoneRow(zone) {
+  if (!zone) return `<h3 class="near-h">FEMA flood zone</h3><p class="near-note">Checking FEMA's flood map…</p>`;
+  if (zone.failed) return `<h3 class="near-h">FEMA flood zone</h3><p class="near-note">FEMA's flood map isn't responding right now.</p>`;
+  return `<h3 class="near-h">FEMA flood zone</h3>
+    <div class="near-zone" data-risk="${esc(zone.risk)}">
+      <span class="nz-label">${esc(zone.label)}</span>
+      <span class="nz-note">${esc(zone.note)}</span>
+    </div>`;
 }
 
 /* ---------- Rain chance, next 12 hours ---------- */
@@ -209,16 +221,18 @@ export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, o
       .join("");
 
     // Draw what we have now; weather fills in when it arrives.
-    let info = null, rain = null;
-    paint({ verdict, tone, color, hereList, nearList, gaugeRows, info, rain, pt });
+    let info = null, rain = null, zone = null;
+    const args = () => ({ verdict, tone, color, hereList, nearList, gaugeRows, info, rain, zone, pt });
+    paint(args());
     await Promise.all([
       pointInfo(pt).then((x) => (info = x)).catch(() => (info = { failed: true })),
       loadRainNow(pt).then((x) => (rain = x)).catch(() => (rain = { failed: true })),
+      femaZone(pt).then((x) => (zone = x)).catch(() => (zone = { failed: true })),
     ]);
-    if (token === renderToken) paint({ verdict, tone, color, hereList, nearList, gaugeRows, info, rain, pt });
+    if (token === renderToken) paint(args());
   }
 
-  function paint({ verdict, tone, color, hereList, nearList, gaugeRows, info, rain, pt }) {
+  function paint({ verdict, tone, color, hereList, nearList, gaugeRows, info, rain, zone, pt }) {
     const inPilot = pt[0] >= metro.bounds[0] && pt[0] <= metro.bounds[2] && pt[1] >= metro.bounds[1] && pt[1] <= metro.bounds[3];
     const where = mode === "pin" ? "Dropped pin" : mode === "me" ? "Your location" : "Map center";
     const place = info?.place ? `${info.place} · ${where}` : where;
@@ -251,6 +265,7 @@ export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, o
       ${alertItems ? `<ul class="near-list">${alertItems}</ul>` : ""}
       ${rainCard(rain)}
       ${weather}
+      ${zoneRow(zone)}
       ${rainChart(w)}
       <div class="near-actions">
         <a class="near-btn" href="https://www.google.com/maps/dir/?api=1&destination=${pt[1].toFixed(5)},${pt[0].toFixed(5)}" target="_blank" rel="noopener">Directions</a>

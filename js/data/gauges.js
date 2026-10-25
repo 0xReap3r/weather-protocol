@@ -56,6 +56,9 @@ function parseGauge(g, cfg) {
       major: num(cats.major?.stage),
     },
     pageUrl: `https://water.noaa.gov/gauges/${g.lid.toLowerCase()}`,
+    // NWS flood inundation map service, where one exists for this gauge (modeled extents)
+    fimUrl: g.inundation?.enabled && g.inundation?.url ? g.inundation.url : null,
+    zeroDatum: num(g.inundation?.zeroDatum?.value ?? g.datums?.zeroDatum?.value),
   };
 }
 

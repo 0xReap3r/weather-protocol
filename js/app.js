@@ -3,6 +3,8 @@ import { LAYERS, loadLayerState, saveLayerState } from "./layers.js";
 import { loadAlerts, uniqueAlerts } from "./data/alerts.js";
 import { loadGauges, loadStageflow, CATEGORY } from "./data/gauges.js";
 import { initNearPanel } from "./near.js";
+import { initRadar } from "./radar.js";
+import { fimLayers, exportTiles, NFHL, NFHL_ZONES_LAYER } from "./data/floodmaps.js";
 
 const metro = METROS[DEFAULT_METRO];
 const $ = (sel) => document.querySelector(sel);
@@ -55,7 +57,10 @@ window.addEventListener("pageshow", resizeMap);
 const MAP_LAYERS = {
   alerts: ["alerts-fill", "alerts-line", "alerts-pulse", "alerts-label"],
   rivers: ["gauges-pulse", "gauges-circle", "gauges-label"],
+  rain: [], // filled in once the radar frames are added
+  zones: ["fema-zones"],
 };
+let radar = null;
 const LABEL_FONT = ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"]; // must exist in the basemap's glyphs
 
 // On desktop the Near-you column covers the right of the map, so offset the map's
@@ -81,6 +86,23 @@ map.on("load", () => {
     source: "pilot-area",
     paint: { "line-color": "#f0b429", "line-width": 1.25, "line-opacity": 0.55, "line-dasharray": [3, 3] },
   });
+
+  // Raster layers go under the basemap's place labels so town names stay readable.
+  const firstLabel = map.getStyle().layers.find((l) => l.type === "symbol")?.id;
+
+  // FEMA flood zones (National Flood Hazard Layer). FEMA only draws them when zoomed in.
+  map.addSource("fema-zones", {
+    type: "raster",
+    tiles: [exportTiles(NFHL, [NFHL_ZONES_LAYER])],
+    tileSize: 256,
+    minzoom: 11,
+    attribution: 'Flood zones: <a href="https://msc.fema.gov/" target="_blank" rel="noopener">FEMA NFHL</a>',
+  });
+  map.addLayer({ id: "fema-zones", type: "raster", source: "fema-zones", minzoom: 11, paint: { "raster-opacity": 0.6 } }, firstLabel);
+
+  // Rain radar
+  radar = initRadar(map, { beforeId: firstLabel, isOn: () => layerState.rain });
+  MAP_LAYERS.rain = radar.layerIds;
 
   // Warnings
   map.addSource("alerts", { type: "geojson", data: alertsFC });
@@ -333,12 +355,14 @@ for (const layer of LAYERS) {
 }
 
 function applyLayerVisibility() {
+  radar?.onToggle(!!layerState.rain);
   for (const [id, ids] of Object.entries(MAP_LAYERS)) {
     for (const l of ids) if (map.getLayer(l)) map.setLayoutProperty(l, "visibility", layerState[id] ? "visible" : "none");
   }
 }
 function toggleLayer(id) {
   layerState[id] = !layerState[id];
+  if (id === "zones" && layerState.zones && map.getZoom() < 11) toast("Zoom in closer to see FEMA flood zones.");
   saveLayerState(layerState);
   $(`#chip-${id}`).setAttribute("aria-pressed", String(layerState[id]));
   applyLayerVisibility();
@@ -445,9 +469,23 @@ async function openGauge(lid) {
     <div id="g-chart" class="g-chart" aria-label="Water level, last 48 hours"><p class="g-loading">Loading 48-hour trend…</p></div>
     ${g.forecastStage != null ? `<p class="g-fc">NWS forecast: ${g.forecastStage.toFixed(1)} ft${g.forecastAt ? ` by ${esc(clock(g.forecastAt))}` : ""}</p>` : `<p class="g-fc">No NWS forecast issued for this gauge right now.</p>`}
     ${ladder ? `<table class="ladder"><caption>Official flood stages</caption><tbody>${ladder}</tbody></table>` : `<p class="g-fc">This ${g.kind === "lake" ? "lake" : "gauge"} has no official flood stages.</p>`}
+    ${g.fimUrl ? `<section class="g-fim">
+      <h4>Flood map <span class="g-fim-tag">modeled</span></h4>
+      <p class="g-fim-lead">Where water would reach if the river hits each flood level. From NWS hydraulic models, not observed flooding.</p>
+      <div class="g-fim-btns" role="group" aria-label="Show modeled flooding">
+        <button type="button" data-fim="minor">Minor</button>
+        <button type="button" data-fim="moderate">Moderate</button>
+        <button type="button" data-fim="major">Major</button>
+        <button type="button" data-fim="off" aria-pressed="true">Off</button>
+      </div>
+      <p class="g-fim-note" id="g-fim-note"></p>
+    </section>` : ""}
     <p class="g-links"><a href="${esc(g.pageUrl)}" target="_blank" rel="noopener">Full NWS gauge page ↗</a></p>
     <p class="ai-meta">Source: NOAA National Water Prediction Service · ${esc(g.lid)}</p>`;
   openSheet("gauge", g.name);
+  $("#gauge-body").querySelectorAll("[data-fim]").forEach((b) =>
+    b.addEventListener("click", () => showInundation(g, b.dataset.fim))
+  );
 
   try {
     const sf = await loadStageflow(lid);
@@ -491,6 +529,35 @@ function trendChart(sf, g) {
     ${last ? `<circle cx="${X(last.t)}" cy="${Y(last.v)}" r="3.5" class="end"/>` : ""}
     <text x="${L}" y="${H - 6}">48 hr ago</text><text x="${W - R}" y="${H - 6}" text-anchor="end">${sf.forecast.length > 1 ? "forecast" : "now"}</text>
   </svg>`;
+}
+
+/* ---------- Modeled flood extent (NWS inundation maps) ---------- */
+let inundationFor = null;
+async function showInundation(g, level) {
+  const note = $("#g-fim-note");
+  $("#gauge-body").querySelectorAll("[data-fim]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.fim === level)));
+  if (map.getLayer("inundation")) map.removeLayer("inundation");
+  if (map.getSource("inundation")) map.removeSource("inundation");
+  inundationFor = null;
+  if (level === "off") { if (note) note.textContent = ""; return; }
+  try {
+    const { categories } = await fimLayers(g.fimUrl);
+    const id = categories[level];
+    if (id == null) { note.textContent = `No ${level} flood map for this gauge.`; return; }
+    map.addSource("inundation", {
+      type: "raster",
+      tiles: [exportTiles(g.fimUrl, [id])],
+      tileSize: 256,
+      attribution: "Flood maps: NOAA NWS (modeled)",
+    });
+    map.addLayer({ id: "inundation", type: "raster", source: "inundation", paint: { "raster-opacity": 0.75 } }, "alerts-fill");
+    inundationFor = g.lid;
+    const stage = g.stages[level];
+    note.textContent = `Showing ${level} flooding${stage != null ? ` (river at ${stage.toFixed(0)} ft)` : ""}. Today's reading: ${g.stage != null ? g.stage.toFixed(1) + " ft" : "unknown"}.`;
+    map.easeTo({ center: [g.lng, g.lat], zoom: Math.max(map.getZoom(), 12) });
+  } catch (_) {
+    note.textContent = "Couldn't load the flood map. Try again in a minute.";
+  }
 }
 
 /* ---------- Near me ---------- */

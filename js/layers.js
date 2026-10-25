@@ -22,7 +22,7 @@ export const LAYERS = [
   {
     id: "rain",
     label: "Radar",
-    hint: "Rain radar, last hour",
+    hint: "Rain radar, looping the last 50 minutes",
     source: "NEXRAD via Iowa Environmental Mesonet",
     phase: 3,
     defaultOn: true,
@@ -38,7 +38,7 @@ export const LAYERS = [
   {
     id: "zones",
     label: "Flood zones",
-    hint: "FEMA flood hazard zones",
+    hint: "FEMA flood hazard zones (zoom in to see them)",
     source: "FEMA",
     phase: 3,
     defaultOn: false,

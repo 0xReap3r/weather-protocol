@@ -442,3 +442,48 @@ body.near-me-mode .crosshair { display: none; }
 .rc-bar span.on { background: var(--rc); }
 .rc-advice { margin: 12px 0 0; font-size: 15px; line-height: 1.5; }
 .rc-src { margin: 10px 0 0; font-size: 12px; color: var(--text-dim); }
+
+/* ---------- Phase 3: radar legend ---------- */
+.radar-legend {
+  justify-self: start; width: min(300px, 100%);
+  padding: 10px 12px; border-radius: var(--r);
+  background: rgba(18,24,32,.94); border: 1px solid var(--line);
+}
+.rl-head { display: flex; align-items: center; gap: 8px; }
+.rl-title { font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+.rl-time { flex: 1; font-family: var(--font-data); font-size: 12px; color: var(--text-dim); }
+.rl-play {
+  min-height: 28px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--ink-2); font-size: 12px; cursor: pointer;
+}
+.rl-bar {
+  height: 8px; margin-top: 8px; border-radius: 4px;
+  background: linear-gradient(90deg, #04e9e7 0%, #019ff4 12%, #02fd02 25%, #01c501 38%, #fdf802 52%, #e5bc00 60%, #fd9500 68%, #fd0000 78%, #d40000 86%, #f800fd 94%, #9854c6 100%);
+}
+.rl-labels { display: flex; justify-content: space-between; margin-top: 4px; font-size: 11px; color: var(--text-dim); }
+.rl-note { margin: 6px 0 0; font-size: 11px; color: var(--text-dim); }
+@media (prefers-reduced-motion: reduce) { .rl-play { display: none; } }
+
+/* ---------- Phase 3: FEMA zone in the area panel ---------- */
+.near-zone {
+  display: grid; gap: 4px; padding: 12px 14px; border-radius: 14px;
+  border: 1px solid var(--line); background: var(--ink-2); border-left: 4px solid var(--text-dim);
+}
+.near-zone[data-risk="high"] { border-left-color: #4a90e2; }
+.near-zone[data-risk="moderate"] { border-left-color: #8fb8e8; }
+.nz-label { font-size: 16px; font-weight: 600; }
+.near-zone[data-risk="high"] .nz-label::after { content: " · high risk"; color: #7fb2ee; font-weight: 500; }
+.nz-note { font-size: 13px; color: var(--text-dim); line-height: 1.45; }
+
+/* ---------- Phase 3: flood map controls in the gauge sheet ---------- */
+.g-fim { margin-top: 16px; padding: 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--ink-2); }
+.g-fim h4 { margin: 0; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-dim); }
+.g-fim-tag { margin-left: 6px; padding: 1px 6px; border-radius: 4px; border: 1px solid var(--warn); color: var(--warn); font-size: 10px; }
+.g-fim-lead { margin: 6px 0 10px; font-size: 13px; color: var(--text-dim); }
+.g-fim-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.g-fim-btns button {
+  min-height: 38px; border-radius: 999px; border: 1px solid var(--line); background: var(--ink-1);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.g-fim-btns button[aria-pressed="true"] { border-color: var(--signal); color: var(--signal); }
+.g-fim-note { margin: 8px 0 0; font-size: 12px; color: var(--text-dim); }

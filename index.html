@@ -37,6 +37,16 @@
     </div>
     <nav id="chips" class="chips" aria-label="Map layers"></nav>
     <button id="alert-banner" class="alert-banner" type="button" hidden></button>
+    <div id="radar-legend" class="radar-legend" hidden>
+      <div class="rl-head">
+        <span class="rl-title">Rain radar</span>
+        <span id="radar-time" class="rl-time"></span>
+        <button id="radar-play" class="rl-play" type="button" aria-pressed="true">Pause</button>
+      </div>
+      <div class="rl-bar" aria-hidden="true"></div>
+      <div class="rl-labels"><span>Light</span><span>Moderate</span><span>Heavy</span><span>Severe</span></div>
+      <p class="rl-note">Shows rain falling, not flood water on the ground.</p>
+    </div>
   </header>
 
   <div class="fab-stack">
