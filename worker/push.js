@@ -151,17 +151,25 @@ export async function handlePush(req, env, url, json) {
 }
 
 /* ---------- Cron: new warnings → inbox → pushes ---------- */
+// Runs every minute. Records its own result on the Data status sheet, including any error.
 export async function checkAlerts(env) {
-  if (!env.DB || !env.VAPID_PRIVATE_KEY) return;
+  if (!env.DB) return;
+  try {
+    if (!env.VAPID_PRIVATE_KEY) throw new Error("VAPID_PRIVATE_KEY secret is missing");
+    const n = await checkAlertsInner(env);
+    await recordHealth(env, "Push alert checker", "Alerts for My places", true, n ? `${n} alert(s) sent last run` : null);
+  } catch (e) {
+    await recordHealth(env, "Push alert checker", "Alerts for My places", false, String(e?.message || e).slice(0, 120)).catch(() => {});
+  }
+}
+
+async function checkAlertsInner(env) {
   await schema(env.DB);
   const now = Date.now();
   const q = `${NWS}?area=TX&status=actual&message_type=alert&event=${encodeURIComponent(ALL_EVENTS.join(","))}`;
   const r = await fetch(q, { headers: { Accept: "application/geo+json", "User-Agent": UA } });
-  // Every 10 minutes, note that the checker ran (shows on the Data status sheet).
-  const tick = new Date().getUTCMinutes() % 10 === 0;
-  if (!r.ok) { if (tick) await recordHealth(env, "Push alert checker", "Alerts for My places", false, `NWS HTTP ${r.status}`); return; }
+  if (!r.ok) throw new Error(`NWS HTTP ${r.status}`);
   const data = await r.json();
-  if (tick) await recordHealth(env, "Push alert checker", "Alerts for My places", true, null);
   const fresh = (data.features || []).filter((f) => f.properties?.sent && now - Date.parse(f.properties.sent) < 30 * 60e3);
   if (fresh.length) {
     const ids = fresh.map((f) => f.properties.id);
@@ -204,6 +212,7 @@ export async function checkAlerts(env) {
     else if (res === "ok") updates.push(env.DB.prepare("UPDATE inbox SET pushed = 1 WHERE sub_id = ? AND pushed = 0").bind(id));
   }
   if (updates.length) await env.DB.batch(updates);
+  const sent = outcomes.filter((o) => o.res === "ok").length;
   // Housekeeping: forget old alerts and messages after 2 days.
   if (new Date().getUTCMinutes() === 0) {
     await env.DB.batch([
@@ -211,4 +220,5 @@ export async function checkAlerts(env) {
       env.DB.prepare("DELETE FROM inbox WHERE created < ?").bind(now - 2 * 864e5),
     ]);
   }
+  return sent;
 }
