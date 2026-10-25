@@ -55,4 +55,5 @@ In the browser console: `stormlineMap`, `stormlineNear`, `stormlineDemo()` (fake
 - No free feed yet: TEXRail / Trinity Metro lines, low-water crossings (Fort Worth HWWS is on OneRain), TxDOT closures (DriveTexas), DART live service alerts, Oncor outages. Don't scrape; outreach is deferred.
 - ERCOT grid level needs a server-side fetch (Cloudflare Worker route) — Phase 4b.
 - Storms and Grid chips still "soon". Report photos/moderation history not built.
+- Optimize the mobile version: chips overflow the edge, radar legend covers the map, side panel and sheets open too tall; check tap targets and test on real iPhone/Android.
 - Housekeeping: schedule `reports_cleanup()`, Supabase free tier pauses after ~1 week idle, leftover GitHub branches, final name, lawyer review of terms.
