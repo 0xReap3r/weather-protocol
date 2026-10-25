@@ -8,7 +8,7 @@ export const DART_ALERTS_URL = "https://www.dart.org/trip/trip-planner/service-a
 export const DART_WINTER_URL = "https://www.dart.org/trip/trip-planner/severe-winter-weather-operating-plans";
 
 const LINE_NAMES = { BLUE: "Blue", RED: "Red", GREEN: "Green", ORANGE: "Orange", SILVER: "Silver", TRE: "TRE", 620: "Streetcar", 425: "M-Line" };
-const ACRONYMS = new Set(["DFW", "UNT", "TRE", "UTD", "UTSW", "CBD", "VA", "II", "NW"]);
+const ACRONYMS = new Set(["DFW", "UNT", "TRE", "UTD", "UTSW", "CBD", "VA", "II", "NW", "TC"]);
 
 const titleCase = (s) =>
   s.toLowerCase().replace(/[a-z0-9]+/g, (w) => (ACRONYMS.has(w.toUpperCase()) ? w.toUpperCase() : /^\d/.test(w) ? w : w[0].toUpperCase() + w.slice(1)));

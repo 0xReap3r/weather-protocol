@@ -27,7 +27,7 @@ export function initTransit({ map, beforeId, getAlertsFC, getRoadCells, openShee
     layout: { "line-join": "round", "line-cap": "round" },
     paint: {
       "line-color": ["get", "color"],
-      "line-width": ["case", ["get", "rail"], ["interpolate", ["linear"], ["zoom"], 9, 1.5, 14, 4], 1.5],
+      "line-width": ["interpolate", ["linear"], ["zoom"], 9, ["case", ["get", "rail"], 1.5, 1], 14, ["case", ["get", "rail"], 4, 1.5]],
       "line-opacity": 0.85,
     },
   }, beforeId);
