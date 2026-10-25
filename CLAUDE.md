@@ -32,7 +32,7 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - `js/layers.js` — layer chips and which phase connects each
 - `js/app.js` — map, layers, status badge, sheets, pulse animation, PWA
 - `js/near.js` — "Near you" area panel (verdict, rain now, 12-hr rain chance, nearest gauges)
-- `js/radar.js` — radar frames, loop and legend
+- `js/radar.js` — radar as rain drops: reads IEM tile pixels, palette index → dBZ (index×0.5−32.5), drops on a map-anchored grid, 6-frame loop
 - `js/data/` — one module per data source; `fetch.js` adds timeouts
 - `sw.js` — offline app shell; bump `VERSION` whenever shell files change
 

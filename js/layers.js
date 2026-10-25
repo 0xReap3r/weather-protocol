@@ -22,7 +22,7 @@ export const LAYERS = [
   {
     id: "rain",
     label: "Radar",
-    hint: "Rain radar, looping the last 50 minutes",
+    hint: "Rain drops from live radar, looping the last 50 minutes",
     source: "NEXRAD via Iowa Environmental Mesonet",
     phase: 3,
     defaultOn: true,

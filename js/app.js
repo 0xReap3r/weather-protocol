@@ -103,6 +103,7 @@ map.on("load", () => {
   // Rain radar
   radar = initRadar(map, { beforeId: firstLabel, isOn: () => layerState.rain });
   MAP_LAYERS.rain = radar.layerIds;
+  window.stormlineRadar = radar; // debugging aid
 
   // Warnings
   map.addSource("alerts", { type: "geojson", data: alertsFC });

@@ -48,8 +48,13 @@
       </div>
       <div id="radar-drops-key" class="rl-drops"></div>
       <div class="rl-loop">
-        <div class="rl-bar" aria-hidden="true"></div>
-        <div class="rl-labels"><span>Light</span><span>Moderate</span><span>Heavy</span><span>Severe</span></div>
+        <ul class="rl-drops">
+          <li><span class="rl-drop" style="--c:#7fd4ff;--s:.78"></span>Light</li>
+          <li><span class="rl-drop" style="--c:#4fb3ff;--s:.88"></span>Moderate</li>
+          <li><span class="rl-drop" style="--c:#ffb020;--s:1"></span>Heavy</li>
+          <li><span class="rl-drop" style="--c:#ff4d4d;--s:1.1"></span>Very heavy</li>
+          <li><span class="rl-drop" style="--c:#d94cff;--s:1.2"></span>Hail</li>
+        </ul>
         <button id="radar-play" class="rl-play" type="button" aria-pressed="true">Pause</button>
       </div>
       <p class="rl-note">Shows rain falling, not flood water on the ground.</p>
