@@ -121,6 +121,10 @@ function byDay(periods) {
       short: (day || first).short,
       nightShort: night && day ? night.short : null,
       storms: d.periods.some((p) => /thunder/i.test(p.short)),
+      stormsWhen: (() => {
+        const dayT = day && /thunder/i.test(day.short), nightT = night && /thunder/i.test(night.short);
+        return dayT && nightT ? "" : dayT ? "day" : nightT ? "night" : "";
+      })(),
     };
   });
 }
@@ -243,7 +247,7 @@ function renderWeek(ctx) {
     .map(
       (d, i) => `<li>
         <span class="okw-day">${esc(i === 0 ? "Today" : new Date(`${d.date}T12:00:00`).toLocaleDateString([], { weekday: "short" }))}</span>
-        <span class="okw-wx">${d.storms ? '<span class="okw-storm">Storms</span>' : ""}${esc(d.short)}</span>
+        <span class="okw-wx">${d.storms ? `<span class="okw-storm">${d.stormsWhen === "night" ? "Storms tonight" : "Storms"}</span>` : ""}${esc(d.short)}</span>
         <span class="okw-temp">${d.hi != null ? `${d.hi}°` : "–"} <span>${d.lo != null ? `${d.lo}°` : ""}</span></span>
         <span class="okw-pop"><span style="width:${d.pop}%"></span><em>${d.pop}%</em></span>
       </li>`
