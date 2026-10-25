@@ -918,6 +918,7 @@ button.feed-item:hover { border-color: var(--signal); border-left-color: var(--f
   .grid-pill .gp-src, .gp-l, .txt-long { display: none; }
   .gp-s, .txt-short { display: inline; }
   .legend-dock > .radar-legend:not(.lg-collapsed) { width: 100%; }
+  .radar-legend.lg-collapsed .rl-time { display: none; }
   /* Near me and Layers become round icon buttons; Report keeps its label */
   .fab:not(.fab-primary) { width: 46px; min-height: 46px; padding: 0; justify-content: center; }
   .fab:not(.fab-primary) span { display: none; }

@@ -97,6 +97,8 @@ desktop.addEventListener("change", applyPadding);
 
 map.on("load", () => {
   resizeMap();
+  // On phones, start with the map credits folded into the (i) button so they don't cover the map.
+  if (window.matchMedia("(max-width: 719px)").matches) map.getContainer().querySelector(".maplibregl-ctrl-attrib")?.classList.remove("maplibregl-compact-show");
   applyPadding();
   map.fitBounds(metro.bounds, { padding: 24, duration: 0 });
 
