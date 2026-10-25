@@ -759,6 +759,17 @@ $("#btn-install").addEventListener("click", async () => {
 });
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+  // "New version available": when a newer app shell takes over while this page is open,
+  // offer a one-tap refresh (pages left open for days otherwise keep running old code).
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (hadController) $("#update-bar").hidden = false;
+  });
+  const checkForUpdate = () => navigator.serviceWorker.getRegistration().then((r) => r?.update()).catch(() => {});
+  setInterval(() => !document.hidden && checkForUpdate(), 15 * 60 * 1000);
+  document.addEventListener("visibilitychange", () => !document.hidden && checkForUpdate());
+  $("#update-reload").addEventListener("click", () => location.reload());
+  $("#update-later").addEventListener("click", () => ($("#update-bar").hidden = true));
 }
 
 updateStatus();

@@ -743,3 +743,17 @@ body.near-me-mode .crosshair { display: none; }
 .sl-levels li { opacity: .55; }
 .sl-levels li.on { opacity: 1; color: var(--text); }
 .sl-sw { width: 12px; height: 12px; border-radius: 3px; background: var(--c); }
+
+/* ---------- New version available ---------- */
+.update-bar {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: 72px; z-index: 60;
+  display: flex; align-items: center; gap: 10px; width: max-content; max-width: calc(100% - 32px);
+  padding: 8px 8px 8px 16px; border-radius: 999px; font-size: 14px;
+  background: var(--ink-1); border: 1px solid var(--signal); box-shadow: 0 6px 24px rgba(0,0,0,.45);
+}
+.update-bar[hidden] { display: none; }
+.update-btn {
+  min-height: 36px; padding: 0 16px; border-radius: 999px; border: 0; cursor: pointer;
+  background: var(--signal); color: #0b0f14; font: inherit; font-weight: 700;
+}
+.update-x { width: 36px; height: 36px; border: 0; background: none; color: var(--text-dim); font-size: 22px; cursor: pointer; }
