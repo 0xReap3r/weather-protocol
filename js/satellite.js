@@ -99,7 +99,9 @@ async function countyTotals(counties, date) {
   const acresPerPx = (m * m) / 4046.86;
   return counties.map((c) => {
     const t = totals.get(c.geoid);
-    return { ...c, acres: Math.round((t.flood + t.recurring) * acresPerPx), cloudPct: t.all ? Math.round((t.nodata / t.all) * 100) : null };
+    // "Recurring flood" is water where it shows up often (reservoir edges, river bottoms), so it
+    // isn't counted as new flooding; it still shows on the map in a lighter blue.
+    return { ...c, acres: Math.round(t.flood * acresPerPx), oftenAcres: Math.round(t.recurring * acresPerPx), cloudPct: t.all ? Math.round((t.nodata / t.all) * 100) : null };
   });
 }
 
