@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Stormline</title>
+  <meta name="description" content="Live severe-weather map for Dallas–Fort Worth: warnings, rivers, radar, grid status and neighbor reports. Official data first.">
+  <meta name="theme-color" content="#0b0f14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Semi+Condensed:wght@700&display=swap">
+
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <link rel="stylesheet" href="css/app.css">
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+</head>
+<body>
+  <div id="map" role="region" aria-label="Map of Dallas–Fort Worth"></div>
+  <div class="crosshair" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand-row">
+      <div class="brand">
+        <span id="app-name" class="wordmark">Stormline</span>
+        <span id="metro-name" class="metro">Dallas–Fort Worth</span>
+      </div>
+      <button id="status" class="status" type="button" data-state="loading" aria-describedby="status-note">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="status-text">LOADING</span>
+      </button>
+    </div>
+    <nav id="chips" class="chips" aria-label="Map layers"></nav>
+    <button id="alert-banner" class="alert-banner" type="button" hidden></button>
+  </header>
+
+  <div class="fab-stack">
+    <button id="btn-locate" class="fab" type="button" aria-label="Show my location">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/><circle cx="12" cy="12" r="7.5" fill="none"/></svg>
+      <span>Near me</span>
+    </button>
+    <button id="btn-layers" class="fab" type="button" aria-label="Layer details">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.5 8 12 13l9.5-5L12 3Z"/><path d="m2.5 12 9.5 5 9.5-5M2.5 16l9.5 5 9.5-5" fill="none"/></svg>
+      <span>Layers</span>
+    </button>
+  </div>
+
+  <aside id="near" class="near" aria-label="Near you" data-tone="none">
+    <button id="near-toggle" class="near-peek" type="button" aria-controls="near-body">
+      <span id="near-peek"><span class="np-dot"></span><span class="np-text"><strong>Checking this area…</strong></span></span>
+      <span class="near-chev" aria-hidden="true">⌃</span>
+    </button>
+    <div class="near-modes" role="group" aria-label="Which spot to check">
+      <button id="near-mode-center" type="button" aria-pressed="true">Map center</button>
+      <button id="near-mode-me" type="button" aria-pressed="false">My location</button>
+    </div>
+    <div id="near-body" class="near-body"></div>
+  </aside>
+
+  <footer class="footbar">
+    <p id="disclaimer" class="disclaimer"></p>
+    <div class="foot-actions">
+      <button id="btn-install" class="link-btn" type="button" hidden>Install app</button>
+      <button id="btn-about" class="link-btn" type="button">About</button>
+    </div>
+  </footer>
+
+  <p id="status-note" class="visually-hidden"></p>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <section id="sheet" class="sheet" role="dialog" aria-modal="false" aria-labelledby="sheet-title" hidden>
+    <div class="sheet-grip" aria-hidden="true"></div>
+    <div class="sheet-head">
+      <h2 id="sheet-title">Details</h2>
+      <button class="sheet-close" type="button" aria-label="Close">×</button>
+    </div>
+
+    <div data-view="layers">
+      <p class="sheet-lead">Choose what shows on the map. Official sources load first; neighbor reports fill the gaps between gauges.</p>
+      <ul id="layer-list" class="layer-list"></ul>
+    </div>
+
+    <div data-view="alerts" hidden>
+      <div id="alert-list" class="alert-list"></div>
+      <p class="sheet-small">Alerts from the National Weather Service. Keep Wireless Emergency Alerts on; this map can lag behind official warnings.</p>
+    </div>
+
+    <div data-view="gauge" hidden>
+      <div id="gauge-body"></div>
+    </div>
+
+    <div data-view="about" hidden>
+      <p class="sheet-lead">A live picture of severe weather across Dallas–Fort Worth, built from public government data and reports from neighbors.</p>
+      <ul class="about-list">
+        <li><strong>In danger now?</strong> Call 911. This map does not contact emergency services.</li>
+        <li><strong>Warnings</strong> come from the National Weather Service. Keep Wireless Emergency Alerts on; this map can lag.</li>
+        <li><strong>Gray means no data</strong>, not "safe." A road with no reports can still be flooded or iced.</li>
+        <li><strong>Every reading shows its time.</strong> Old readings fade so you can tell what's current.</li>
+      </ul>
+      <p class="sheet-small">Data: NOAA National Weather Service, NOAA National Water Prediction Service, U.S. Geological Survey, NOAA Storm Prediction Center, FEMA, ERCOT. Not affiliated with any government agency.</p>
+    </div>
+  </section>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
