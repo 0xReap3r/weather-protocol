@@ -11,3 +11,4 @@ worker
 supabase
 .wrangler
 .env*
+PUSH-KEY*
