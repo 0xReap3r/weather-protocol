@@ -127,7 +127,7 @@ map.on("load", () => {
   // Rain totals (NOAA MRMS) and flood from space (NASA), under the radar drops.
   rainTotals = initRainTotals({ map, metro, beforeId: firstLabel });
   MAP_LAYERS.raintotal = rainTotals.layerIds;
-  satellite = initSatellite({ map, metro, beforeId: firstLabel });
+  satellite = initSatellite({ map, metro, beforeId: firstLabel, getAlertsFC: () => alertsFC });
   MAP_LAYERS.satflood = satellite.layerIds;
   window.stormlineSatellite = satellite; // debugging aid
 

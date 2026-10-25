@@ -6,6 +6,7 @@
 // and total the flooded acres per county for labels shown when zoomed out.
 import { loadCounties } from "./data/counties.js";
 import { contains } from "./near.js";
+import { countyRain } from "./raintotals.js";
 
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -123,7 +124,17 @@ async function countyTotals(counties, date) {
   });
 }
 
-export function initSatellite({ map, metro, beforeId }) {
+// Satellite flood flags are trusted only where there's a reason for water: at least an inch of
+// rain somewhere in the county in the last 3 days, or an NWS flood product touching it.
+// Elsewhere they're almost always reservoir edges or cloud shadows.
+const FLOOD_ALERT = /Flood/;
+function plausible(c, rain72, alerts) {
+  const r = rain72?.find((x) => x.geoid === c.geoid);
+  if (r?.max >= 1) return true;
+  return alerts.some((f) => f.geometry && FLOOD_ALERT.test(f.properties.event || "") && contains(f.geometry, c.center));
+}
+
+export function initSatellite({ map, metro, beforeId, getAlertsFC }) {
   addProtocol();
   let on = false, date = satDate(1), totals = null, loading = null;
 
@@ -162,7 +173,7 @@ export function initSatellite({ map, metro, beforeId }) {
         <li class="on"><span class="sl-sw" style="--c:${SAT_COLORS.recurring}"></span>Floods often</li>
         <li class="on"><span class="sl-sw" style="--c:${SAT_COLORS.nodata}"></span>Clouds, no view</li>
       </ul>
-      <p class="rl-note">${err ? "Satellite data isn't loading right now. " : total == null ? "Adding up flooded acres… " : total >= MIN_ACRES ? `The satellite flags about ${total.toLocaleString()} acres of possible flood water across the metro. ` : "Little or no flood water seen across the metro. "}Some can be false alarms near lakes. Satellites miss small streets and anything under cloud, so this never means a road is dry.</p>`;
+      <p class="rl-note">${err ? "Satellite data isn't loading right now. " : total == null ? "Adding up flooded acres… " : total >= MIN_ACRES ? `The satellite flags about ${total.toLocaleString()} acres of possible flood water across the metro. ` : "Little or no flood water seen across the metro. "}Totals count only counties with an inch of rain in 3 days or an NWS flood alert; blue specks elsewhere are usually lake edges or cloud shadows. Satellites miss small streets and anything under cloud, so this never means a road is dry.</p>`;
   }
 
   async function loadTotals() {
@@ -171,7 +182,9 @@ export function initSatellite({ map, metro, beforeId }) {
       try {
         const counties = await loadCounties(metro);
         map.getSource("satflood-counties")?.setData({ type: "FeatureCollection", features: counties.map((c) => ({ type: "Feature", geometry: c.geometry, properties: { name: c.name } })) });
-        totals = await countyTotals(counties, date);
+        const [raw, rain72] = await Promise.all([countyTotals(counties, date), countyRain(metro, "72h").catch(() => null)]);
+        const alerts = getAlertsFC?.().features || [];
+        totals = raw.map((c) => ({ ...c, rawAcres: c.acres, acres: plausible(c, rain72, alerts) ? c.acres : 0 }));
         if (!map.getSource("satflood-labels")) return;
         map.getSource("satflood-labels").setData({
           type: "FeatureCollection",

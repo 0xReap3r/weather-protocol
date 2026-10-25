@@ -43,8 +43,30 @@ export async function rainTotalsAt([lng, lat]) {
   return p;
 }
 
+// County average and most rain for one period: [{ ...county, mean, max }], cached per hour.
+const statsCache = {};
+export async function countyRain(metro, periodId) {
+  const p = PERIODS.find((x) => x.id === periodId);
+  const key = `${p.id}|${hourStamp()}`;
+  if (!statsCache[key]) {
+    statsCache[key] = (async () => {
+      const counties = await loadCounties(metro);
+      const mr = enc({ mosaicMethod: "esriMosaicAttribute", where: `name='${p.item}'` });
+      return Promise.all(counties.map(async (c) => {
+        try {
+          const rings = c.geometry.type === "Polygon" ? c.geometry.coordinates : c.geometry.coordinates.flat();
+          const j = await fetchJSON(`${B}/computeStatisticsHistograms?geometry=${enc({ rings, spatialReference: { wkid: 4326 } })}&geometryType=esriGeometryPolygon&mosaicRule=${mr}&f=json`, { timeout: 15000 });
+          const st = j.statistics?.[0];
+          return { ...c, mean: st ? st.mean : null, max: st ? st.max : null };
+        } catch (_) { return { ...c, mean: null, max: null }; }
+      }));
+    })().catch((e) => { delete statsCache[key]; throw e; });
+  }
+  return statsCache[key];
+}
+
 export function initRainTotals({ map, metro, beforeId }) {
-  let on = false, period = PERIODS[1], legend = {}, stats = {};
+  let on = false, period = PERIODS[1], legend = {};
   let stamp = hourStamp();
 
   map.addSource("raintotal", { type: "raster", tiles: tiles(period), tileSize: 256,
@@ -76,20 +98,7 @@ export function initRainTotals({ map, metro, beforeId }) {
     return legend[p.id];
   }
 
-  async function loadStats(p) {
-    const key = `${p.id}|${stamp}`;
-    if (stats[key]) return stats[key];
-    const counties = await loadCounties(metro);
-    const mr = enc({ mosaicMethod: "esriMosaicAttribute", where: `name='${p.item}'` });
-    stats[key] = await Promise.all(counties.map(async (c) => {
-      try {
-        const j = await fetchJSON(`${B}/computeStatisticsHistograms?geometry=${enc({ rings: c.geometry.type === "Polygon" ? c.geometry.coordinates : c.geometry.coordinates.flat(), spatialReference: { wkid: 4326 } })}&geometryType=esriGeometryPolygon&mosaicRule=${mr}&f=json`, { timeout: 15000 });
-        const st = j.statistics?.[0];
-        return { ...c, mean: st ? st.mean : null, max: st ? st.max : null };
-      } catch (_) { return { ...c, mean: null, max: null }; }
-    }));
-    return stats[key];
-  }
+  const loadStats = (p) => countyRain(metro, p.id);
 
   async function render() {
     if (!on) return;
