@@ -12,7 +12,7 @@
   },
   // Push alerts (Phase 7): subscriptions in D1, checked every minute.
   "d1_databases": [
-    { "binding": "DB", "database_name": "stormline", "database_id": "PASTE_D1_DATABASE_ID" }
+    { "binding": "DB", "database_name": "stormline", "database_id": "346040de-8a28-44b0-9083-916306990648" }
   ],
   "triggers": { "crons": ["* * * * *"] },
   "vars": {
