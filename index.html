@@ -39,9 +39,12 @@
       </button>
     </div>
     <nav id="chips" class="chips" aria-label="Map layers"></nav>
-    <button id="alert-banner" class="alert-banner" type="button" hidden></button>
+    <div class="status-row">
+      <button id="alert-banner" class="alert-banner" type="button" hidden></button>
+      <button id="grid-pill" class="grid-pill" type="button" hidden></button>
+    </div>
     <div id="danger-bar" class="danger-bar" role="alert" hidden></div>
-    <button id="grid-pill" class="grid-pill" type="button" hidden></button>
+    <div id="legend-dock" class="legend-dock">
     <div id="radar-legend" class="radar-legend" hidden>
       <div class="rl-head">
         <span class="rl-title">Rain radar</span>
@@ -56,6 +59,7 @@
         <li><span class="rl-drop" style="--c:#d94cff;--s:1.2"></span>Hail</li>
       </ul>
       <p class="rl-note">Drops show rain falling from live radar, not flood water on the ground.</p>
+    </div>
     </div>
   </header>
 
@@ -88,6 +92,7 @@
 
   <footer class="footbar">
     <p id="disclaimer" class="disclaimer"></p>
+    <p class="disclaimer disclaimer-short">Not an official warning service. In danger? Call <strong>911</strong>.</p>
     <div class="foot-actions">
       <button id="btn-install" class="link-btn" type="button" hidden>Install app</button>
       <button id="btn-key" class="link-btn" type="button">Map key</button>

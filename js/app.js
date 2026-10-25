@@ -15,6 +15,7 @@ import { initFeed } from "./feed.js";
 import { initPlaces } from "./places.js";
 import { initRoute } from "./route.js";
 import { initGrid } from "./grid.js";
+import { initLegends } from "./legends.js";
 import { initRainTotals, rainTotalsAt, formatInches } from "./raintotals.js";
 import { contains, milesBetween } from "./near.js";
 import { fimLayers, exportTiles, NFHL, NFHL_ZONES_LAYER } from "./data/floodmaps.js";
@@ -422,7 +423,7 @@ function renderBanner() {
   if (!alertList.length) {
     b.dataset.level = "none";
     b.style.removeProperty("--alert");
-    b.innerHTML = `<span class="ab-dot" aria-hidden="true"></span><span class="ab-text">No active NWS alerts for ${esc(metro.name)}</span><span class="ab-next">What's coming ›</span>`;
+    b.innerHTML = `<span class="ab-dot" aria-hidden="true"></span><span class="ab-text"><span class="txt-long">No active NWS alerts for ${esc(metro.name)}</span><span class="txt-short">No NWS alerts now</span></span><span class="ab-next">What's coming ›</span>`;
     return;
   }
   const top = alertList[0];
@@ -898,6 +899,8 @@ function openOutlook() {
   outlook.render();
 }
 window.stormlineOutlook = outlook; // debugging aid
+
+initLegends(); // fold legend cards (folded by default on phones)
 
 /* ---------- Texas grid (ERCOT) ---------- */
 const grid = initGrid({ isOn: () => !!layerState.grid, openSheet });

@@ -44,7 +44,7 @@ export function initGrid({ isOn, openSheet }) {
     if (!status) {
       pill.dataset.level = "0";
       pill.style.setProperty("--gc", "var(--text-dim)");
-      pill.innerHTML = `<span class="gp-dot"></span><span>Texas grid: <strong>unavailable</strong></span>`;
+      pill.innerHTML = `<span class="gp-dot"></span><span><span class="gp-l">Texas grid:</span><span class="gp-s">Grid:</span> <strong>unavailable</strong></span>`;
       return;
     }
     const n = levelOf(status.state), L = GRID_LEVELS[n];
@@ -52,7 +52,7 @@ export function initGrid({ isOn, openSheet }) {
     pill.dataset.level = String(n);
     pill.classList.toggle("stale", !!old || !!failedAt);
     pill.style.setProperty("--gc", L.color);
-    pill.innerHTML = `<span class="gp-dot"></span><span>Texas grid: <strong>${esc(status.title || L.short)}</strong></span><span class="gp-src">ERCOT${status.at ? ` · ${esc(new Date(status.at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }))}` : ""}</span>`;
+    pill.innerHTML = `<span class="gp-dot"></span><span><span class="gp-l">Texas grid:</span><span class="gp-s">Grid:</span> <strong><span class="gp-l">${esc(status.title || L.short)}</span><span class="gp-s">${esc(L.short)}</span></strong></span><span class="gp-src">ERCOT${status.at ? ` · ${esc(new Date(status.at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }))}` : ""}</span>`;
   }
 
   function sheetHTML() {

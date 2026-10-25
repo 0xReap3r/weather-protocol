@@ -84,6 +84,7 @@ export function initRainTotals({ map, metro, beforeId }) {
   });
 
   const card = document.createElement("div");
+  card.id = "rt-legend";
   card.className = "radar-legend storms-legend rt-legend";
   card.hidden = true;
   document.getElementById("storms-legend").after(card);

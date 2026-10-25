@@ -159,6 +159,7 @@ export function initSatellite({ map, metro, beforeId, getAlertsFC }) {
   });
 
   const card = document.createElement("div");
+  card.id = "sat-legend";
   card.className = "radar-legend storms-legend sat-legend";
   card.hidden = true;
   document.getElementById("storms-legend").after(card);

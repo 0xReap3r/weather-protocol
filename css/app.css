@@ -879,3 +879,57 @@ button.feed-item:hover { border-color: var(--signal); border-left-color: var(--f
 .grid-meter span.on { background: var(--gc); }
 .grid-steps { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 4px; font-size: 13px; color: var(--text-dim); }
 .grid-steps li.cur { color: var(--text); font-weight: 600; }
+
+/* ---------- Mobile clean-up (Oct 25) ---------- */
+/* Warnings banner and grid pill share one row */
+.status-row { display: flex; gap: 8px; align-items: center; min-width: 0; }
+.status-row:not(:has(> :not([hidden]))) { display: none; }
+.status-row .alert-banner { flex: 0 1 auto; min-width: 0; }
+.status-row .alert-banner .ab-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.status-row .grid-pill { flex: none; }
+.gp-s, .txt-short { display: none; }
+
+/* Legend cards: a dock that wraps; folded cards shrink to one line */
+.legend-dock { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-start; min-width: 0; }
+.legend-dock:not(:has(> :not([hidden]))) { display: none; }
+.legend-dock > .radar-legend { margin: 0; }
+.radar-legend .rl-head { cursor: pointer; user-select: none; }
+.radar-legend .rl-title::after { content: "▴"; margin-left: 6px; font-size: 10px; color: var(--text-dim); }
+.radar-legend.lg-collapsed .rl-title::after { content: "▾"; }
+.radar-legend.lg-collapsed { width: auto; padding: 6px 10px; border-radius: 999px; }
+.radar-legend.lg-collapsed > :not(.rl-head) { display: none; }
+.radar-legend.lg-collapsed .rl-play { display: none; }
+.radar-legend.lg-collapsed .rl-time { flex: none; max-width: 16ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.radar-legend.lg-collapsed .rl-title { font-size: 11px; }
+
+/* Chips row: fade the right edge so it's clear the row scrolls */
+.chips { -webkit-mask-image: linear-gradient(to right, #000 85%, transparent); mask-image: linear-gradient(to right, #000 85%, transparent); }
+
+.disclaimer-short { display: none; }
+
+@media (max-width: 719px) {
+  .topbar { gap: 8px; padding-bottom: 6px; }
+  .wordmark { font-size: 19px; }
+  .metro { display: none; }
+  .chip { min-height: 34px; padding: 0 11px; font-size: 13.5px; }
+  .alert-banner { min-height: 34px; font-size: 13px; padding: 0 10px; }
+  .alert-banner .ab-next { white-space: nowrap; }
+  .grid-pill { min-height: 34px; padding: 0 10px; font-size: 12.5px; }
+  .grid-pill .gp-src, .gp-l, .txt-long { display: none; }
+  .gp-s, .txt-short { display: inline; }
+  .legend-dock > .radar-legend:not(.lg-collapsed) { width: 100%; }
+  /* Near me and Layers become round icon buttons; Report keeps its label */
+  .fab:not(.fab-primary) { width: 46px; min-height: 46px; padding: 0; justify-content: center; }
+  .fab:not(.fab-primary) span { display: none; }
+  .fab-stack { gap: 8px; }
+  /* One-line disclaimer; the full text stays in About */
+  .disclaimer { display: none; }
+  .disclaimer-short { display: block; font-size: 12px; }
+  .foot-actions { gap: 12px; }
+  .sheet { max-height: 72vh; }
+  .near.expanded { max-height: 70vh; }
+  .danger-bar .db-act { font-size: 14px; }
+}
+@media (max-width: 380px) {
+  .alert-banner .ab-next { display: none; }
+}
