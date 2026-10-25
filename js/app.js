@@ -827,6 +827,7 @@ window.stormlineDemo = (kind = "flood") => {
     geometry: { type: "Polygon", coordinates: [[[lng - d, lat - d], [lng + d, lat - d], [lng + d, lat + d], [lng - d, lat + d], [lng - d, lat - d]]] },
     properties: { id: "demo", event: tornado ? "Tornado Warning (demo)" : "Flash Flood Warning (demo)", color: tornado ? "#ff00ff" : "#e0352b", rank: tornado ? 95 : 85, storm: true, headline: "Demo", areaDesc: "Demo area", expires: new Date(Date.now() + 3600e3).toISOString(), sent: new Date().toISOString(), description: "Demo only.", instruction: "" } }] };
   map.getSource("alerts")?.setData(alertsFC);
+  if (tornado && !meAt) { meAt = [lng, lat]; meAtTime = Date.now(); } // demo puts "you" at the map center
   startPulse(); near?.render(); transit?.refresh(); checkDanger();
   return "Demo on — reload the page to clear it";
 };
