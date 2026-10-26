@@ -138,7 +138,7 @@ map.on("load", () => {
   map.addLayer({ id: "fema-zones", type: "raster", source: "fema-zones", minzoom: 11, paint: { "raster-opacity": 0.6 } }, firstLabel);
 
   // SPC severe-storm outlook (Storms chip), under everything else.
-  storms = initStorms({ map, beforeId: firstLabel });
+  storms = initStorms({ map, beforeId: firstLabel, metro });
   MAP_LAYERS.storms = storms.layerIds;
   window.stormlineStorms = storms; // debugging aid
 
