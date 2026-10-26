@@ -70,9 +70,9 @@ export function initStorms({ map, beforeId, metro }) {
 
   map.addSource("storms", { type: "geojson", data: { type: "FeatureCollection", features: [] }, tolerance: 0.6 });
   const above = (n) => [">=", ["get", "lvl"], n];
-  // 1) Soft wash: stronger toward the center of the risk, because higher levels nest inside.
+  // 1) Faint wash: most of the color lives in the glowing edges, not a flat tint over the area.
   map.addLayer({ id: "storms-fill", type: "fill", source: "storms", filter: above(1),
-    paint: { "fill-color": ["get", "color"], "fill-opacity": ["interpolate", ["linear"], ["get", "lvl"], 1, 0.07, 3, 0.12, 5, 0.18], "fill-antialias": false } }, beforeId);
+    paint: { "fill-color": ["get", "color"], "fill-opacity": ["interpolate", ["linear"], ["get", "lvl"], 1, 0.025, 3, 0.055, 5, 0.1], "fill-antialias": false } }, beforeId);
   // 2) Hazard hatch on Enhanced and above.
   map.addLayer({ id: "storms-hatch", type: "fill", source: "storms", filter: ["all", above(3), ["has", "hatch"]],
     paint: { "fill-pattern": ["get", "hatch"], "fill-opacity": 0.9 } }, beforeId);
@@ -80,7 +80,7 @@ export function initStorms({ map, beforeId, metro }) {
   const glowWidth = ["interpolate", ["linear"], ["zoom"], 4, ["*", 6, ["get", "w"]], 8, ["*", 14, ["get", "w"]], 12, ["*", 22, ["get", "w"]]];
   map.addLayer({ id: "storms-glow", type: "line", source: "storms", filter: ["all", above(1), ["<", ["get", "lvl"], 4]],
     layout: { "line-join": "round" },
-    paint: { "line-color": ["get", "color"], "line-width": glowWidth, "line-blur": glowWidth, "line-opacity": 0.34 } }, beforeId);
+    paint: { "line-color": ["get", "color"], "line-width": glowWidth, "line-blur": glowWidth, "line-opacity": 0.42 } }, beforeId);
   map.addLayer({ id: "storms-glow-hot", type: "line", source: "storms", filter: above(4),
     layout: { "line-join": "round" },
     paint: { "line-color": ["get", "color"], "line-width": glowWidth, "line-blur": glowWidth, "line-opacity": 0.5 } }, beforeId);
