@@ -73,8 +73,9 @@ export function initRainTotals({ map, metro, beforeId }) {
     attribution: 'Rain totals: <a href="https://mrms.nssl.noaa.gov/" target="_blank" rel="noopener">NOAA MRMS</a>' });
   map.addLayer({ id: "raintotal", type: "raster", source: "raintotal", paint: { "raster-opacity": 0.6, "raster-fade-duration": 0 } }, beforeId);
   map.addSource("raintotal-labels", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
-  map.addLayer({
-    id: "raintotal-label", type: "symbol", source: "raintotal-labels", maxzoom: 11,
+  // County labels: counties with half an inch or more always show; dry ones only from zoom 8.
+  const rtLabel = (id, filter, minzoom) => map.addLayer({
+    id, type: "symbol", source: "raintotal-labels", maxzoom: 11, minzoom, filter,
     layout: {
       "text-field": ["format", ["get", "name"], {}, "\n", {}, ["get", "line"], { "font-scale": 0.85 }],
       "text-font": ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"],
@@ -82,6 +83,8 @@ export function initRainTotals({ map, metro, beforeId }) {
     },
     paint: { "text-color": ["case", [">=", ["get", "max"], 1], "#7fd4ff", "#9aa7b4"], "text-halo-color": "#0b0f14", "text-halo-width": 1.8 },
   });
+  rtLabel("raintotal-label", [">=", ["get", "max"], 0.5], 0);
+  rtLabel("raintotal-label-quiet", ["<", ["get", "max"], 0.5], 8);
 
   const card = document.createElement("div");
   card.id = "rt-legend";
@@ -157,7 +160,7 @@ export function initRainTotals({ map, metro, beforeId }) {
   }, 5 * 60 * 1000);
 
   return {
-    layerIds: ["raintotal", "raintotal-label"],
+    layerIds: ["raintotal", "raintotal-label", "raintotal-label-quiet"],
     onToggle(v) { on = v; card.hidden = !v; if (v) render(); },
   };
 }

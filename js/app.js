@@ -314,7 +314,7 @@ map.on("error", (e) => {
 window.stormlineMap = map; // handy for debugging in the browser console
 
 /* ---------- Current region follows the map center ---------- */
-map.on("moveend", () => metro.setCenter(map.getCenter().toArray()));
+map.on("moveend", () => metro.setCenter(map.getCenter().toArray(), map.getZoom()));
 metro.onChange(() => {
   $("#metro-name").textContent = metro.name;
   alertList = regionAlerts();

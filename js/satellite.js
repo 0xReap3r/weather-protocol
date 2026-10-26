@@ -153,11 +153,13 @@ export function initSatellite({ map, metro, beforeId, getAlertsFC }) {
   map.addSource("satflood-counties", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
   map.addSource("satflood-labels", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
   map.addLayer({
-    id: "satflood-county-line", type: "line", source: "satflood-counties", maxzoom: 11,
+    id: "satflood-county-line", type: "line", source: "satflood-counties", minzoom: 6.5, maxzoom: 11,
     paint: { "line-color": "#3aa3c9", "line-width": 1.1, "line-opacity": 0.55, "line-dasharray": [2, 2] },
   }, beforeId);
-  map.addLayer({
-    id: "satflood-label", type: "symbol", source: "satflood-labels", maxzoom: 11,
+  // County labels: counties with flood water always show; quiet ones only from zoom 8, so the
+  // statewide view isn't a wall of text.
+  const satLabel = (id, filter, minzoom) => map.addLayer({
+    id, type: "symbol", source: "satflood-labels", maxzoom: 11, minzoom, filter,
     layout: {
       "text-field": ["format", ["get", "name"], { "font-scale": 1, "text-color": "#e8edf2" }, "\n", {}, ["get", "line"], { "font-scale": 0.85 }],
       "text-font": ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"],
@@ -165,6 +167,8 @@ export function initSatellite({ map, metro, beforeId, getAlertsFC }) {
     },
     paint: { "text-color": ["case", [">=", ["get", "acres"], MIN_ACRES], SAT_COLORS.flood, "#9aa7b4"], "text-halo-color": "#0b0f14", "text-halo-width": 1.8 },
   });
+  satLabel("satflood-label", [">=", ["get", "acres"], MIN_ACRES], 0);
+  satLabel("satflood-label-quiet", ["<", ["get", "acres"], MIN_ACRES], 8);
 
   const card = document.createElement("div");
   card.id = "sat-legend";
@@ -231,7 +235,7 @@ export function initSatellite({ map, metro, beforeId, getAlertsFC }) {
   }, 3 * 3600e3);
 
   return {
-    layerIds: ["satflood", "satflood-county-line", "satflood-label"],
+    layerIds: ["satflood", "satflood-county-line", "satflood-label", "satflood-label-quiet"],
     onToggle(v) {
       on = v; card.hidden = !v;
       if (v) { renderCard(); if (!totals) loadTotals(); }

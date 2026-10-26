@@ -68,9 +68,10 @@ export function createRegion() {
     regions: REGIONS,
     state: STATE,
     // Called on map moves: switches the current region when the center moves into another.
-    setCenter(pt) {
+    // Zoomed out past a region (below zoom 7), the whole state is the "region".
+    setCenter(pt, zoom = 9) {
       center = pt;
-      const next = pick(pt);
+      const next = zoom < 7 ? null : pick(pt);
       if (next?.id === current?.id && (next || !current)) return;
       current = next;
       try { if (current) localStorage.setItem(KEY, current.id); } catch (_) {}

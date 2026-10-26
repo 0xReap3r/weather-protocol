@@ -1,11 +1,12 @@
 # Stormline (weather-protocol) — project notes
 
-Live severe-weather situational map for Dallas–Fort Worth, inspired by the Bangkok flood map
+Live severe-weather situational map for Texas (started as a Dallas–Fort Worth pilot), inspired by the Bangkok flood map
 (situational-bangkok-flood.web.app). Working name "Stormline"; the name lives in `js/config.js`,
 `manifest.webmanifest` and `<title>` in `index.html`.
 
-Long-term goal: DFW is the pilot, then all of Texas, then the rest of the US. Keep region
-settings in `METROS` (config.js) and prefer national feeds so expansion is config, not rewrites.
+Long-term goal: DFW pilot → all of Texas (Phase 9, done) → the rest of the US state by state
+(paused until Texas is solid). Statewide settings live in `STATE`, named areas in `REGIONS`
+(config.js); prefer national feeds so expansion is config, not rewrites.
 
 ## Ground rules
 - Free, public data only for v1. No secret keys in the repo. The Supabase publishable (anon) key is the one exception: it is public by design; row-level security in `supabase/schema.sql` controls access.
@@ -20,9 +21,10 @@ Plain HTML/CSS/JS ES modules, no build step. MapLibre GL 4.7.1 from unpkg, CARTO
 Run locally: `npx serve .` then open http://localhost:3000.
 
 ## Data sources (all verified Oct 24, 2026)
-- NWS alerts: `api.weather.gov/alerts/active?area=TX` (zone outlines from `affectedZones`)
+- NWS alerts: `api.weather.gov/alerts/active?area=TX`; zone-based alerts are drawn with county outlines matched by `geocode.SAME` FIPS (048xxx), falling back to `affectedZones` only when no county matches
 - NWS point + hourly forecast: `api.weather.gov/points/{lat},{lon}`
-- NOAA NWPS gauges: `api.water.noaa.gov/nwps/v1/gauges/{lid}` and `/stageflow`
+- NOAA NWPS gauges: statewide list `api.water.noaa.gov/nwps/v1/gauges?bbox.xmin=…&srid=EPSG_4326` (via Worker), per-gauge `/gauges/{lid}` for flood stages (loaded for gauges near flood stage and on open), `/stageflow`
+- Towns: TIGERweb `Places_CouSub_ConCity_SubMCD/MapServer/25` (Census 2020, POP100)
 - Rain now: Open-Meteo `minutely_15` (HRRR model nowcast, non-commercial use)
 - Radar: IEM NEXRAD tiles `mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913[-mNNm]/{z}/{x}/{y}.png`
 - Flood inundation maps: NWS FIM MapServer per gauge (url from NWPS gauge `inundation.url`); category layers Minor/Moderate/Major
@@ -40,7 +42,9 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - ERCOT grid: `ercot.com/api/1/services/read/dashboards/daily-prc.json` → `current_condition` {state normal|weather|vcn|conservation|eea1|eea2|eea3, title, condition_note, eea_level, prc_value}. CORS-blocked, so the Worker serves it trimmed at `/api/grid` (60 s edge cache). ERCOT sometimes 403s cloud requests for a few minutes: `worker/grid.js` keeps the last good reading in D1 `kv` and serves it (stale: true) for up to 30 min
 
 ## Layout
-- `js/config.js` — app name, disclaimer, basemap, metro config (DFW counties, gauges, cities, refresh rates)
+- `js/config.js` — app name, disclaimer, basemap, `STATE` (Texas bounds, FIPS, refresh), `REGIONS` (20 named areas with radius and ERCOT flag), `GAUGE_NAMES` (friendly names for DFW gauges), legacy `METROS.dfw`
+- `js/region.js` — `metro` facade used everywhere: current region by map center (name, center, radius, gridErcot), statewide bounds, `cities` (all towns 2,500+), `regionCities` (top 30 nearby), `counties` (names near the region)
+- `worker/geo.js` — `/api/gauges?state=TX` (all NOAA gauges, 5 min), `/api/geo/counties?state=48`, `/api/geo/cities?state=48` (7 days), edge-cached with D1 fallback
 - `js/layers.js` — layer chips and which phase connects each
 - `js/app.js` — map, layers, status badge, sheets, pulse animation, PWA
 - `js/near.js` — "Near you" area panel (verdict, rain now, 12-hr rain chance, nearest gauges)
