@@ -215,8 +215,8 @@ export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast,
     avoidRoot.innerHTML = `
       <p class="rp-911">Water over the road? <strong>Turn around, don't drown.</strong> A foot of moving water can float a car.</p>
       <p class="sheet-lead">${list.length
-        ? `${list.length} road${list.length > 1 ? "s" : ""} reported flooded, iced or blocked across ${esc(metro.name)}${confirmed ? `, ${confirmed} confirmed by more than one neighbor` : ""}. Tap one to see it on the map.`
-        : `No neighbor has reported a flooded, iced or blocked road in ${esc(metro.name)} right now.`}</p>
+        ? `${list.length} road${list.length > 1 ? "s" : ""} reported flooded, iced or blocked across ${esc(metro.stateName)}${confirmed ? `, ${confirmed} confirmed by more than one neighbor` : ""}. Tap one to see it on the map.`
+        : `No neighbor has reported a flooded, iced or blocked road in ${esc(metro.stateName)} right now.`}</p>
       ${list.length ? `<ul class="near-list">${list.map((r) => roadRow(r, null)).join("")}</ul>` : ""}
       <p class="near-note">From neighbor reports, not official closures. A road that isn't listed can still be flooded, iced or blocked.</p>
       <div class="near-actions">
@@ -283,7 +283,7 @@ export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast,
           .map((d) => `<button type="button" class="rp-depth" data-depth="${d.n}" aria-pressed="${draft.depth === d.n}" style="--dc:${d.n === 3 ? "#ff3b3b" : DAMAGE_COLOR}">
             <span class="rp-d-text"><span class="rp-d-l">${d.label}</span>${d.note ? `<span class="rp-d-r">${d.note}</span>` : ""}</span></button>`)
           .join("")}</div>
-        ${draft.depth === 3 ? `<p class="rp-911">Downed lines: stay 35 ft away and call <strong>911</strong>, then Oncor at 1-888-313-6862.</p>` : ""}` : ""}
+        ${draft.depth === 3 ? `<p class="rp-911">Downed lines: stay 35 ft away and call <strong>911</strong>, then your electric utility (Oncor in most of DFW: 1-888-313-6862).</p>` : ""}` : ""}
       <h3 class="rp-h">Where</h3>
       <p class="rp-where">${esc(where)}</p>
       <p class="rp-note">Tap the map first to report a different spot. We store only a ${KINDS[draft.kind]?.res === 8 ? "neighborhood-sized area (about a third of a mile)" : "block-sized area"}, never your exact location.</p>
@@ -308,7 +308,7 @@ export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast,
         await refresh();
         toast(
           kind === "power_out"
-            ? "Report sent. Also tell your electric utility: Oncor serves most of DFW at 1-888-313-6862."
+            ? "Report sent. Also tell your electric utility (Oncor in most of DFW: 1-888-313-6862)."
             : kind === "power_back"
               ? "Thanks. Your power-out report was cleared."
               : kind === "damage" && sentDepth === 3

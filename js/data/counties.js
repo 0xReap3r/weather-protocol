@@ -1,27 +1,38 @@
-// County outlines for the metro, from the Census Bureau's TIGERweb service (keyless, CORS OK).
-// Simplified to ~300 m, which is plenty for totals and labels. Cached for the visit.
+// County outlines for the whole state, served by our Worker from the Census Bureau's TIGERweb
+// (simplified to ~500 m, cached a week at the edge). Used for zone-based alerts (matched by
+// county FIPS code), county totals, push alert matching and region lists.
+import { APP } from "../config.js";
 import { fetchJSON } from "./fetch.js";
 
-const URL = "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/1/query";
-const STATE_FIPS = { TX: "48" };
+const API = /workers\.dev$|^stormline/.test(location.hostname) ? "/api" : `${APP.apiBase}/api`;
 let cache = null;
 
 export function loadCounties(metro) {
   if (!cache) {
-    const st = STATE_FIPS[metro.nwsAlertArea] || "48";
-    const where = `STATE='${st}' AND BASENAME IN (${metro.counties.map((n) => `'${n.replace(/'/g, "''")}'`).join(",")})`;
-    const q = `${URL}?where=${encodeURIComponent(where)}&outFields=BASENAME,GEOID,CENTLAT,CENTLON&outSR=4326&geometryPrecision=4&maxAllowableOffset=0.003&f=geojson`;
-    cache = fetchJSON(q, { timeout: 15000 })
-      .then((fc) => (fc.features || []).map((f) => ({
-        name: f.properties.BASENAME,
-        geoid: f.properties.GEOID,
-        center: [Number(f.properties.CENTLON), Number(f.properties.CENTLAT)],
-        geometry: f.geometry,
-        bbox: bboxOf(f.geometry),
-      })))
+    cache = fetchJSON(`${API}/geo/counties?state=${metro.stateFips || "48"}`, { timeout: 20000 })
+      .then((fc) => {
+        const rows = (fc.features || []).map((f) => ({
+          name: f.properties.name,
+          geoid: f.properties.geoid,
+          center: [f.properties.lng, f.properties.lat],
+          geometry: f.geometry,
+          bbox: bboxOf(f.geometry),
+        }));
+        metro.setCounties?.(rows);
+        return rows;
+      })
       .catch((e) => { cache = null; throw e; });
   }
   return cache;
+}
+
+// Counties touching a [w, s, e, n] box, nearest the box center first, at most `max`.
+export function countiesIn(rows, [w, s, e, n], max = 40) {
+  const cx = (w + e) / 2, cy = (s + n) / 2;
+  return rows
+    .filter((c) => c.bbox[0] <= e && c.bbox[2] >= w && c.bbox[1] <= n && c.bbox[3] >= s)
+    .sort((a, b) => Math.hypot(a.center[0] - cx, a.center[1] - cy) - Math.hypot(b.center[0] - cx, b.center[1] - cy))
+    .slice(0, max);
 }
 
 function bboxOf(g) {

@@ -944,3 +944,4 @@ button.feed-item:hover { border-color: var(--signal); border-left-color: var(--f
 .push-kinds { display: grid; gap: 6px; margin: 4px 0 4px; }
 .push-kind { display: flex; align-items: center; gap: 10px; min-height: 36px; font-size: 14px; cursor: pointer; }
 .push-kind input { width: 18px; height: 18px; accent-color: var(--signal); }
+.mn-regions { display: flex; flex-wrap: wrap; gap: 6px; }

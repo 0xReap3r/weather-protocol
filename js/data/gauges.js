@@ -3,6 +3,8 @@
 
 import { fetchJSON } from "./fetch.js";
 
+import { APP, GAUGE_NAMES } from "../config.js";
+
 const NWPS = "https://api.water.noaa.gov/nwps/v1/gauges";
 
 // NWS flood-category colors. "No flooding" is a neutral blue on purpose:
@@ -62,37 +64,72 @@ function parseGauge(g, cfg) {
   };
 }
 
-export async function loadGauges(metro) {
-  const results = await Promise.allSettled(
-    metro.gauges.map((cfg) => fetchJSON(`${NWPS}/${cfg.lid}`, { timeout: 12000 }).then((g) => parseGauge(g, cfg)))
-  );
-  const gauges = results.filter((r) => r.status === "fulfilled").map((r) => r.value);
-  const failed = results.length - gauges.length;
-  if (!gauges.length) throw new Error("No gauges responded");
+// Every NOAA gauge in the state (Phase 9), from our Worker: one cached request instead of one per
+// gauge. Flood stages aren't in the statewide list, so they're filled in from each gauge's own
+// record for gauges near flood stage, and when someone opens a gauge.
+const API = /workers\.dev$|^stormline/.test(location.hostname) ? "/api" : `${APP.apiBase}/api`;
+const detailCache = new Map(); // lid -> parsed gauge with stages
 
-  const fc = {
-    type: "FeatureCollection",
-    features: gauges.map((g) => ({
-      type: "Feature",
-      geometry: { type: "Point", coordinates: [g.lng, g.lat] },
-      properties: {
-        lid: g.lid,
-        color: CATEGORY[g.category].color,
-        rank: CATEGORY[g.category].rank,
-        stale: g.stale,
-        short: g.short,
-        // A raw stage means little on its own (each gauge has its own datum; lakes read in
-        // elevation), so pair it with that gauge's flood stage when it has one.
-        label:
-          g.stage == null
-            ? "No recent reading"
-            : g.stages.minor != null
-              ? `${g.stage.toFixed(1)} ft · flood ${g.stages.minor.toFixed(0)}`
-              : `${g.stage.toFixed(1)} ft${g.kind === "lake" ? " elev." : ""}`,
-      },
-    })),
+function fromRow([lid, name, lng, lat, stage, unit, cat, observedAt]) {
+  const cfg = GAUGE_NAMES[lid] || {};
+  const stale = !observedAt || Date.now() - Date.parse(observedAt) > STALE_MS;
+  let category = cat;
+  if (!CATEGORY[category]) category = category === "low_threshold" ? "no_flooding" : "unknown";
+  if (stale) category = "unknown";
+  const kind = cfg.kind || (cat === "not_defined" ? "lake" : "river");
+  const base = {
+    lid, name: cfg.name || name, short: cfg.short || name, officialName: name, kind, lng, lat,
+    stage, stageUnit: unit || "ft", flow: null, flowUnit: "", category, observedAt, stale,
+    forecastCategory: null, forecastStage: null, forecastAt: null,
+    stages: { action: null, minor: null, moderate: null, major: null },
+    pageUrl: `https://water.noaa.gov/gauges/${lid.toLowerCase()}`, fimUrl: null, zeroDatum: null, partial: true,
   };
-  return { gauges, fc, failed };
+  const d = detailCache.get(lid);
+  // Keep the fresh reading from the statewide list, take stages and links from the detail record.
+  return d ? { ...d, stage: base.stage ?? d.stage, category: base.category, observedAt: base.observedAt || d.observedAt, stale: base.stale, partial: false } : base;
+}
+
+// Full record for one gauge (stages, forecast, flood map link); cached for the visit.
+export async function loadGaugeDetail(lid) {
+  if (detailCache.has(lid)) return detailCache.get(lid);
+  const g = parseGauge(await fetchJSON(`${NWPS}/${lid}`, { timeout: 12000 }), GAUGE_NAMES[lid] || {});
+  detailCache.set(lid, g);
+  return g;
+}
+
+function feature(g) {
+  return {
+    type: "Feature",
+    geometry: { type: "Point", coordinates: [g.lng, g.lat] },
+    properties: {
+      lid: g.lid,
+      color: CATEGORY[g.category].color,
+      rank: CATEGORY[g.category].rank,
+      stale: g.stale,
+      short: g.short,
+      // A raw stage means little on its own (each gauge has its own datum; lakes read in
+      // elevation), so pair it with that gauge's flood stage when it's known.
+      label:
+        g.stage == null
+          ? "No recent reading"
+          : g.stages.minor != null
+            ? `${g.stage.toFixed(1)} ft · flood ${g.stages.minor.toFixed(0)}`
+            : `${g.stage.toFixed(1)} ft${g.kind === "lake" ? " elev." : ""}`,
+    },
+  };
+}
+export const gaugeFeatures = (gauges) => ({ type: "FeatureCollection", features: gauges.map(feature) });
+
+export async function loadGauges(metro) {
+  const j = await fetchJSON(`${API}/gauges?state=${metro.stateAbbr || "TX"}`, { timeout: 20000 });
+  const rows = (j.gauges || []).filter((r) => r[6] !== "out_of_service");
+  if (!rows.length) throw new Error("No gauges in the statewide list");
+  let gauges = rows.map(fromRow);
+  // Fill in flood stages for gauges at or near flood stage (few), plus our named DFW gauges.
+  const want = gauges.filter((g) => (CATEGORY[g.category]?.rank ?? -1) >= 2 || GAUGE_NAMES[g.lid]).filter((g) => !detailCache.has(g.lid)).slice(0, 25);
+  await Promise.allSettled(want.map((g) => loadGaugeDetail(g.lid)));
+  gauges = rows.map(fromRow);
+  return { gauges, fc: gaugeFeatures(gauges), failed: 0 };
 }
 
 // Last 48h of observations (+ forecast, when NWS has issued one) for the detail chart.

@@ -1,7 +1,7 @@
 {
   "name": "Stormline",
   "short_name": "Stormline",
-  "description": "Live severe-weather map for Dallas–Fort Worth. Official data first.",
+  "description": "Live severe-weather map for Texas. Official data first.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

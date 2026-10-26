@@ -99,6 +99,6 @@ export function renderKey() {
       ${row('<span class="key-sw key-pin"></span>', "Dropped pin", "The spot the side panel is describing. Tap the map anywhere to move it.")}
       ${row('<span class="key-sw key-me"></span>', "Your location", "From Near me.")}
       ${row('<span class="key-sw key-cross"></span>', "Map center", "The panel follows this when no pin is dropped.")}
-      ${row('<span class="key-sw key-pilot"></span>', "Pilot area edge", "Coverage is best inside this line.")}
+      ${row('<span class="key-sw key-pilot"></span>', "Texas state line", "Coverage stops at the state line for now.")}
     </ul>`;
 }

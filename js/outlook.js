@@ -160,8 +160,8 @@ function hourlyChart(data) {
     })
     .join("");
   return `<h3 class="ok-h">Rain, next 12 hours <span class="ok-h-note">${peak.pop ? `peak ${peak.pop}% around ${hourWord(peak.t)}` : "none expected"}</span></h3>
-    <div class="ok-chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Highest hourly rain chance anywhere in the metro, next 12 hours">${bars}</svg></div>
-    <p class="ok-note">Highest chance anywhere in the metro each hour.</p>`;
+    <div class="ok-chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Highest hourly rain chance anywhere in the area, next 12 hours">${bars}</svg></div>
+    <p class="ok-note">Highest chance anywhere in the area each hour.</p>`;
 }
 
 function renderToday(ctx, cities) {
@@ -191,7 +191,7 @@ function renderToday(ctx, cities) {
         ? `<ul class="ok-reasons">${reasons
             .map((r) => `<li>${pill(r.level, "")}<span>${esc(r.text)}<span class="ok-src"> · ${esc(r.source)}${r.n > 1 ? ` · ${r.n} cities` : ""}</span></span></li>`)
             .join("")}</ul>`
-        : `<p class="ok-note">No official warnings, outlooks or heavy rain forecast for the metro right now. Conditions can change; this view refreshes every 15 minutes.</p>`
+        : `<p class="ok-note">No official warnings, outlooks or heavy rain forecast for this area right now. Conditions can change; this view refreshes every 15 minutes.</p>`
     }
     ${ctx.alertCount ? `<button type="button" class="ok-link" data-open="alerts">${ctx.alertCount} active NWS alert${ctx.alertCount > 1 ? "s" : ""} for ${esc(ctx.metro.name)} · read them</button>` : ""}
     ${hourlyChart(ctx.data)}
@@ -215,7 +215,7 @@ function renderToday(ctx, cities) {
 
 function renderThreeDays(ctx) {
   const days = byDay(ctx.data.forecast).slice(0, 3);
-  const cityPts = ctx.metro.cities.map((c) => [c[2], c[1]]);
+  const cityPts = (ctx.data.cities || []).map((c) => [c[2], c[1]]);
   return `<ul class="ok-days">${[0, 1, 2]
     .map((d) => {
       let spc = null, ero = null;
@@ -236,7 +236,7 @@ function renderThreeDays(ctx) {
       </li>`;
     })
     .join("")}</ul>
-    <p class="ok-note">Severe-storm risk from the NOAA Storm Prediction Center; flash-flood rain risk from the NOAA Weather Prediction Center; forecast from the National Weather Service for Dallas.</p>`;
+    <p class="ok-note">Severe-storm risk from the NOAA Storm Prediction Center; flash-flood rain risk from the NOAA Weather Prediction Center; forecast from the National Weather Service for ${esc(ctx.metro.name)}.</p>`;
 }
 
 function renderWeek(ctx) {
@@ -253,7 +253,7 @@ function renderWeek(ctx) {
       </li>`
     )
     .join("")}</ul>
-    <p class="ok-note">National Weather Service forecast for Dallas. High and low in °F; bar shows the chance of rain.</p>`;
+    <p class="ok-note">National Weather Service forecast for ${esc(ctx.metro.name)}. High and low in °F; bar shows the chance of rain.</p>`;
 }
 
 /* ---------- Controller ---------- */
@@ -282,7 +282,7 @@ export function initOutlook({ metro, getAlertsFC, getGauges, getAlertCount, onPi
     }
     if (my !== token) return;
     const ctx = { metro, data, alertsFC: getAlertsFC(), gauges: getGauges(), alertCount: getAlertCount() };
-    const cities = metro.cities.map((c, i) => scoreCity(c, i, ctx));
+    const cities = (data.cities || []).map((c, i) => scoreCity(c, i, ctx));
     const body = tab === "today" ? renderToday(ctx, cities) : tab === "3day" ? renderThreeDays(ctx) : renderWeek(ctx);
     const time = data.at.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
     root.dataset.ready = "1";
@@ -303,7 +303,7 @@ export function initOutlook({ metro, getAlertsFC, getGauges, getAlertCount, onPi
   async function scored() {
     const data = await loadOutlook(metro);
     const ctx = { metro, data, alertsFC: getAlertsFC(), gauges: getGauges(), alertCount: getAlertCount() };
-    return metro.cities.map((c, i) => scoreCity(c, i, ctx)).sort((a, b) => b.score - a.score);
+    return (data.cities || []).map((c, i) => scoreCity(c, i, ctx)).sort((a, b) => b.score - a.score);
   }
 
   return { render, scored, setTab: (t) => { tab = t; render(); } };

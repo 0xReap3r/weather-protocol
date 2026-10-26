@@ -4,7 +4,7 @@
 //   Normal water    → hidden (lakes and rivers that are always there)
 //   Insufficient data (clouds, no pass) → faint gray, because gray means "no data", never "dry"
 // and total the flooded acres per county for labels shown when zoomed out.
-import { loadCounties } from "./data/counties.js";
+import { loadCounties, countiesIn } from "./data/counties.js";
 import { contains } from "./near.js";
 import { countyRain } from "./raintotals.js";
 
@@ -81,48 +81,56 @@ function wetNeighbors(d, size, px, py) {
 }
 
 // Flooded acres per county from the z9 tiles covering the counties.
+// Flooded acres per county from the z9 tiles under each county. Tiles and per-county results are
+// cached, so panning around the state only fetches what's new.
+const tileCache = new Map();   // url -> Promise<ImageData>
+const countyCache = new Map(); // "date|geoid" -> result
+const getTile = (url) => {
+  if (!tileCache.has(url)) tileCache.set(url, tileImageData(url).then((t) => t.img).catch((e) => { tileCache.delete(url); throw e; }));
+  return tileCache.get(url);
+};
 async function countyTotals(counties, date) {
-  let w = Infinity, s = Infinity, e = -Infinity, n = -Infinity;
-  for (const c of counties) { w = Math.min(w, c.bbox[0]); s = Math.min(s, c.bbox[1]); e = Math.max(e, c.bbox[2]); n = Math.max(n, c.bbox[3]); }
   const N = 2 ** Z;
-  const tx = (lng) => ((lng + 180) / 360) * N;
-  const ty = (lat) => { const r = (lat * Math.PI) / 180; return ((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2) * N; };
+  const fx = (lng) => ((lng + 180) / 360) * N;
+  const fy = (lat) => { const r = (lat * Math.PI) / 180; return ((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2) * N; };
   const lngOf = (x) => (x / N) * 360 - 180;
   const latOf = (y) => (Math.atan(Math.sinh(Math.PI * (1 - (2 * y) / N))) * 180) / Math.PI;
-  const totals = new Map(counties.map((c) => [c.geoid, { flood: 0, recurring: 0, nodata: 0, all: 0 }]));
-  const jobs = [];
-  for (let x = Math.floor(tx(w)); x <= Math.floor(tx(e)); x++) {
-    for (let y = Math.floor(ty(n)); y <= Math.floor(ty(s)); y++) jobs.push([x, y]);
-  }
-  await Promise.all(jobs.map(async ([x, y]) => {
-    const { img } = await tileImageData(tileUrl(date, Z, x, y));
-    const d = img.data, size = img.width;
-    for (let py = 0; py < size; py += 1) {
-      const lat = latOf(y + (py + 0.5) / size);
-      for (let px = 0; px < size; px += 1) {
-        const lng = lngOf(x + (px + 0.5) / size);
-        const cty = counties.find((c) => lng >= c.bbox[0] && lng <= c.bbox[2] && lat >= c.bbox[1] && lat <= c.bbox[3] && contains(c.geometry, [lng, lat]));
-        if (!cty) continue;
-        const t = totals.get(cty.geoid);
+  return Promise.all(counties.map(async (c) => {
+    const key = `${date}|${c.geoid}`;
+    if (countyCache.has(key)) return { ...c, ...countyCache.get(key) };
+    const t = { flood: 0, recurring: 0, nodata: 0, all: 0 };
+    const [w, s, e, n] = c.bbox;
+    // Global pixel range covering the county's box.
+    const x0 = Math.floor(fx(w) * 256), x1 = Math.ceil(fx(e) * 256), y0 = Math.floor(fy(n) * 256), y1 = Math.ceil(fy(s) * 256);
+    const tiles = new Map();
+    for (let tx = Math.floor(x0 / 256); tx <= Math.floor(x1 / 256); tx++)
+      for (let ty = Math.floor(y0 / 256); ty <= Math.floor(y1 / 256); ty++) tiles.set(`${tx},${ty}`, getTile(tileUrl(date, Z, tx, ty)));
+    const imgs = new Map();
+    for (const [k, p] of tiles) imgs.set(k, await p);
+    for (let gy = y0; gy < y1; gy++) {
+      const lat = latOf((gy + 0.5) / 256);
+      for (let gx = x0; gx < x1; gx++) {
+        const lng = lngOf((gx + 0.5) / 256);
+        if (!contains(c.geometry, [lng, lat])) continue;
+        const img = imgs.get(`${Math.floor(gx / 256)},${Math.floor(gy / 256)}`);
+        const px = gx % 256, py = gy % 256, d = img.data;
         t.all++;
-        let k = classify(d, (py * size + px) * 4);
+        let k = classify(d, (py * 256 + px) * 4);
         // Lone flood pixels are usually cloud shadows or noise: count flood water only where
         // at least 2 of the 8 neighboring pixels are water too.
-        if ((k === "flood" || k === "recurring") && wetNeighbors(d, size, px, py) < 2) k = null;
+        if ((k === "flood" || k === "recurring") && wetNeighbors(d, 256, px, py) < 2) k = null;
         if (k && k !== "water") t[k]++;
       }
     }
-  }));
-  // Ground area of one z9 pixel at the metro's latitude, in acres.
-  const lat0 = (s + n) / 2;
-  const m = (40075016.7 * Math.cos((lat0 * Math.PI) / 180)) / (256 * N);
-  const acresPerPx = (m * m) / 4046.86;
-  return counties.map((c) => {
-    const t = totals.get(c.geoid);
+    // Ground area of one z9 pixel at the county's latitude, in acres.
+    const m = (40075016.7 * Math.cos((c.center[1] * Math.PI) / 180)) / (256 * N);
+    const acresPerPx = (m * m) / 4046.86;
     // "Recurring flood" is water where it shows up often (reservoir edges, river bottoms), so it
     // isn't counted as new flooding; it still shows on the map in a lighter blue.
-    return { ...c, acres: Math.round(t.flood * acresPerPx), oftenAcres: Math.round(t.recurring * acresPerPx), cloudPct: t.all ? Math.round((t.nodata / t.all) * 100) : null };
-  });
+    const out = { acres: Math.round(t.flood * acresPerPx), oftenAcres: Math.round(t.recurring * acresPerPx), cloudPct: t.all ? Math.round((t.nodata / t.all) * 100) : null };
+    countyCache.set(key, out);
+    return { ...c, ...out };
+  }));
 }
 
 // Satellite flood flags are trusted only where there's a reason for water: at least an inch of
@@ -176,16 +184,18 @@ export function initSatellite({ map, metro, beforeId, getAlertsFC }) {
         <li class="on"><span class="sl-sw" style="--c:${SAT_COLORS.water}"></span>Normal water</li>
         <li class="on"><span class="sl-sw" style="--c:${SAT_COLORS.nodata}"></span>Clouds, no view</li>
       </ul>
-      <p class="rl-note">${err ? "Satellite data isn't loading right now. " : total == null ? "Adding up flooded acres… " : total >= MIN_ACRES ? `The satellite flags about ${total.toLocaleString()} acres of possible flood water across the metro. ` : "Little or no flood water seen across the metro. "}Totals count only counties with an inch of rain in 3 days or an NWS flood alert; blue specks elsewhere are usually lake edges or cloud shadows. Satellites miss small streets and anything under cloud, so this never means a road is dry.</p>`;
+      <p class="rl-note">${err ? "Satellite data isn't loading right now. " : total == null ? "Adding up flooded acres… " : total >= MIN_ACRES ? `The satellite flags about ${total.toLocaleString()} acres of possible flood water in the counties shown. ` : "Little or no flood water seen in the counties shown. "}Totals count only counties with an inch of rain in 3 days or an NWS flood alert; blue specks elsewhere are usually lake edges or cloud shadows. Satellites miss small streets and anything under cloud, so this never means a road is dry.</p>`;
   }
 
   async function loadTotals() {
     if (loading) return loading;
     loading = (async () => {
       try {
-        const counties = await loadCounties(metro);
+        // Counties in view only (statewide there are 254); zoomed far out, the nearest 20.
+        const b = map.getBounds();
+        const counties = countiesIn(await loadCounties(metro), [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()], 20);
         map.getSource("satflood-counties")?.setData({ type: "FeatureCollection", features: counties.map((c) => ({ type: "Feature", geometry: c.geometry, properties: { name: c.name } })) });
-        const [raw, rain72] = await Promise.all([countyTotals(counties, date), countyRain(metro, "72h").catch(() => null)]);
+        const [raw, rain72] = await Promise.all([countyTotals(counties, date), countyRain(metro, "72h", counties).catch(() => null)]);
         const alerts = getAlertsFC?.().features || [];
         totals = raw.map((c) => ({ ...c, rawAcres: c.acres, acres: plausible(c, rain72, alerts) ? c.acres : 0 }));
         if (!map.getSource("satflood-labels")) return;
@@ -206,6 +216,10 @@ export function initSatellite({ map, metro, beforeId, getAlertsFC }) {
     })();
     return loading;
   }
+
+  // Re-total for the counties in view after the map stops moving.
+  let moveTimer = null;
+  map.on("moveend", () => { if (!on) return; clearTimeout(moveTimer); moveTimer = setTimeout(() => { totals = null; loadTotals(); }, 600); });
 
   // A new composite appears once a day; check every 3 hours.
   setInterval(() => {

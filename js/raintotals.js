@@ -3,7 +3,7 @@
 // mapservices ImageServer. Map colors and legend come from NOAA's own rendering, so they match.
 // County labels show the average and the most rain anywhere in the county.
 import { fetchJSON } from "./data/fetch.js";
-import { loadCounties } from "./data/counties.js";
+import { loadCounties, countiesIn } from "./data/counties.js";
 
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -43,26 +43,26 @@ export async function rainTotalsAt([lng, lat]) {
   return p;
 }
 
-// County average and most rain for one period: [{ ...county, mean, max }], cached per hour.
-const statsCache = {};
-export async function countyRain(metro, periodId) {
+// County average and most rain for one period: [{ ...county, mean, max }], cached per county per hour.
+// Statewide there are 254 counties, so callers pass only the counties in view (see countiesIn).
+const statsCache = new Map(); // "period|hour|geoid" -> Promise<{ mean, max }>
+export async function countyRain(metro, periodId, counties) {
   const p = PERIODS.find((x) => x.id === periodId);
-  const key = `${p.id}|${hourStamp()}`;
-  if (!statsCache[key]) {
-    statsCache[key] = (async () => {
-      const counties = await loadCounties(metro);
-      const mr = enc({ mosaicMethod: "esriMosaicAttribute", where: `name='${p.item}'` });
-      return Promise.all(counties.map(async (c) => {
-        try {
-          const rings = c.geometry.type === "Polygon" ? c.geometry.coordinates : c.geometry.coordinates.flat();
-          const j = await fetchJSON(`${B}/computeStatisticsHistograms?geometry=${enc({ rings, spatialReference: { wkid: 4326 } })}&geometryType=esriGeometryPolygon&mosaicRule=${mr}&f=json`, { timeout: 15000 });
-          const st = j.statistics?.[0];
-          return { ...c, mean: st ? st.mean : null, max: st ? st.max : null };
-        } catch (_) { return { ...c, mean: null, max: null }; }
-      }));
-    })().catch((e) => { delete statsCache[key]; throw e; });
-  }
-  return statsCache[key];
+  const list = counties || (await loadCounties(metro));
+  const mr = enc({ mosaicMethod: "esriMosaicAttribute", where: `name='${p.item}'` });
+  const hour = hourStamp();
+  return Promise.all(list.map(async (c) => {
+    const key = `${p.id}|${hour}|${c.geoid}`;
+    if (!statsCache.has(key)) {
+      statsCache.set(key, (async () => {
+        const rings = c.geometry.type === "Polygon" ? c.geometry.coordinates : c.geometry.coordinates.flat();
+        const j = await fetchJSON(`${B}/computeStatisticsHistograms?geometry=${enc({ rings, spatialReference: { wkid: 4326 } })}&geometryType=esriGeometryPolygon&mosaicRule=${mr}&f=json`, { timeout: 15000 });
+        const st = j.statistics?.[0];
+        return { mean: st ? st.mean : null, max: st ? st.max : null };
+      })().catch(() => { statsCache.delete(key); return { mean: null, max: null }; }));
+    }
+    return { ...c, ...(await statsCache.get(key)) };
+  }));
 }
 
 export function initRainTotals({ map, metro, beforeId }) {
@@ -99,7 +99,13 @@ export function initRainTotals({ map, metro, beforeId }) {
     return legend[p.id];
   }
 
-  const loadStats = (p) => countyRain(metro, p.id);
+  // Only the counties in view get labels (statewide is 254 counties).
+  const loadStats = async (p) => {
+    const b = map.getBounds();
+    return countyRain(metro, p.id, countiesIn(await loadCounties(metro), [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()], 30));
+  };
+  let moveTimer = null;
+  map.on("moveend", () => { if (!on) return; clearTimeout(moveTimer); moveTimer = setTimeout(labels, 500); });
 
   async function render() {
     if (!on) return;
@@ -116,6 +122,11 @@ export function initRainTotals({ map, metro, beforeId }) {
     } catch (_) {
       card.querySelector(".rt-steps").innerHTML = `<li class="on">Legend unavailable</li>`;
     }
+    labels();
+  }
+
+  async function labels() {
+    const p = period;
     try {
       const rows = await loadStats(p);
       if (p !== period || !on) return;

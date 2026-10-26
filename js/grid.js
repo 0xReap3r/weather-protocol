@@ -21,7 +21,7 @@ const levelOf = (state) => Math.max(0, GRID_LEVELS.findIndex((l) => l.state === 
 // On the live site the Worker is same-origin; anywhere else (localhost) use the live site's API.
 const API = /workers\.dev$|^stormline/.test(location.hostname) ? "/api/grid" : `${APP.apiBase}/api/grid`;
 
-export function initGrid({ isOn, openSheet }) {
+export function initGrid({ isOn, isMixed = () => false, openSheet }) {
   const pill = document.getElementById("grid-pill");
   let status = null, failedAt = null, timer = null;
 
@@ -70,7 +70,8 @@ export function initGrid({ isOn, openSheet }) {
         <ul class="grid-steps">${GRID_LEVELS.map((l, i) => `<li class="${i === n ? "cur" : ""}">${i === n ? "● " : ""}${esc(l.short)}</li>`).join("")}</ul>
         ${status.reservesMW != null ? `<p class="near-note" style="margin-top:12px">Operating reserves: ${status.reservesMW.toLocaleString()} MW · updated ${esc(new Date(status.at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }))}</p>` : ""}
         ${tips}
-        <p class="near-note">Grid emergencies cause rotating outages across Texas; they're different from storm damage. Report a local outage with Report → Power out, and call Oncor at 1-888-313-6862.</p>
+        ${isMixed() ? `<p class="near-note">Part of this area is on a different power grid than ERCOT (SPP or MISO), so ERCOT's status may not apply to you. Check your electric utility.</p>` : ""}
+        <p class="near-note">ERCOT runs the grid for most of Texas. El Paso, most of the Panhandle and parts of East Texas are on other grids. Grid emergencies cause rotating outages; they're different from storm damage. Report a local outage with Report → Power out, and call your electric utility.</p>
         <p class="sheet-small">From <a href="https://www.ercot.com/gridmktinfo/dashboards/gridconditions" target="_blank" rel="noopener">ERCOT grid conditions</a>. Not an official alert.</p>
       </div>`;
   }

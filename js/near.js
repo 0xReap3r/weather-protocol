@@ -298,7 +298,7 @@ export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, o
       `<span class="np-dot"></span><span class="np-text"><strong>${esc(verdict)}</strong><span class="np-place">${esc(place)}</span></span>`;
 
     body.innerHTML = `
-      <p class="near-place">${esc(place)}${inPilot ? "" : ' <span class="near-out">outside pilot area</span>'}</p>
+      <p class="near-place">${esc(place)}${inPilot ? "" : ' <span class="near-out">outside Texas</span>'}</p>
       <h2 class="near-verdict">${esc(verdict)}</h2>
       ${tone === "none" ? `<p class="near-note">From National Weather Service alerts. Conditions can change fast. Keep Wireless Emergency Alerts on.</p>` : ""}
       ${alertItems ? `<ul class="near-list">${alertItems}</ul>` : ""}

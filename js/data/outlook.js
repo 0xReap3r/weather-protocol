@@ -47,7 +47,8 @@ async function cityRain(cities) {
 }
 
 export async function loadOutlook(metro, { force = false } = {}) {
-  if (!force && cache && cache.metroId === metro.id && Date.now() - cache.at < TTL) return cache.data;
+  const cities = metro.regionCities; // snapshot: the region can change while this loads
+  if (!force && cache && cache.metroId === metro.id && cache.n === cities.length && Date.now() - cache.at < TTL) return cache.data;
   const [spc1, spc2, spc3, ero1, ero2, ero3, forecast, rain] = await Promise.all([
     soft(fetchJSON(SPC(1), { timeout: 15000 })),
     soft(fetchJSON(SPC(2), { timeout: 15000 })),
@@ -56,14 +57,15 @@ export async function loadOutlook(metro, { force = false } = {}) {
     soft(fetchJSON(ERO(1), { timeout: 15000 })),
     soft(fetchJSON(ERO(2), { timeout: 15000 })),
     soft(nwsForecast(metro.center)),
-    soft(cityRain(metro.cities)),
+    soft(cities.length ? cityRain(cities) : Promise.resolve([])),
   ]);
   const data = {
     at: new Date(),
     spc: [spc1 || empty, spc2 || empty, spc3 || empty],
     ero: [ero1 || empty, ero2 || empty, ero3 || empty],
     forecast: forecast || [],
-    rain: rain || [], // same order as metro.cities
+    rain: rain || [], // same order as cities
+    cities,
     failed: [
       !spc1 && "SPC outlook",
       !ero1 && "rainfall outlook",
@@ -71,6 +73,6 @@ export async function loadOutlook(metro, { force = false } = {}) {
       !rain && "rain forecast",
     ].filter(Boolean),
   };
-  cache = { at: Date.now(), metroId: metro.id, data };
+  cache = { at: Date.now(), metroId: metro.id, n: cities.length, data };
   return data;
 }

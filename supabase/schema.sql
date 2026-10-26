@@ -15,8 +15,8 @@ create table if not exists public.reports (
   kind        text not null check (kind in ('flood', 'ice', 'power_out', 'power_back', 'hail', 'damage')),
   depth       smallint check (depth between 1 and 5),   -- flood depth, hail size or damage type (see migrations/002)
   cell        text not null check (cell ~ '^[0-9a-f]{15}$'),
-  cell_lat    double precision not null check (cell_lat between 31.0 and 35.0),   -- DFW region
-  cell_lng    double precision not null check (cell_lng between -99.5 and -94.5),
+  cell_lat    double precision not null check (cell_lat between 25.5 and 36.8),   -- Texas (migration 003)
+  cell_lng    double precision not null check (cell_lng between -107.0 and -93.3),
   created_at  timestamptz not null default now(),
   expires_at  timestamptz not null,
   -- One active report per person, per kind, per hexagon. Re-reporting refreshes it.

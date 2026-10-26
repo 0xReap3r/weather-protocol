@@ -1,7 +1,9 @@
-import { APP, METROS, DEFAULT_METRO } from "./config.js";
+import { APP } from "./config.js";
+import { createRegion } from "./region.js";
 import { LAYERS, loadLayerState, saveLayerState } from "./layers.js";
 import { loadAlerts, uniqueAlerts } from "./data/alerts.js";
-import { loadGauges, loadStageflow, CATEGORY } from "./data/gauges.js";
+import { loadGauges, loadStageflow, loadGaugeDetail, gaugeFeatures, CATEGORY } from "./data/gauges.js";
+import { loadCounties } from "./data/counties.js";
 import { initNearPanel } from "./near.js";
 import { initRadar } from "./radar.js";
 import { renderKey } from "./key.js";
@@ -21,7 +23,8 @@ import { initRainTotals, rainTotalsAt, formatInches } from "./raintotals.js";
 import { contains, milesBetween } from "./near.js";
 import { fimLayers, exportTiles, NFHL, NFHL_ZONES_LAYER } from "./data/floodmaps.js";
 
-const metro = METROS[DEFAULT_METRO];
+// Phase 9: one Texas map; `metro` describes the region nearest the map center (see region.js).
+const metro = createRegion();
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -43,6 +46,7 @@ document.title = APP.name;
 $("#app-name").textContent = APP.name;
 $(".mn-brand").textContent = APP.name;
 $("#metro-name").textContent = metro.name;
+loadCounties(metro).catch(() => {}); // statewide county outlines (zone alerts, region lists, push matching)
 $("#disclaimer").textContent = APP.disclaimer;
 
 /* ---------- Map ---------- */
@@ -51,6 +55,7 @@ const map = new maplibregl.Map({
   style: APP.basemapStyle,
   center: metro.center,
   zoom: metro.zoom,
+  minZoom: 4.5,
   maxBounds: metro.maxBounds,
   attributionControl: { compact: true },
   pitchWithRotate: false,
@@ -101,14 +106,10 @@ map.on("load", () => {
   // On phones, start with the map credits folded into the (i) button so they don't cover the map.
   if (window.matchMedia("(max-width: 719px)").matches) map.getContainer().querySelector(".maplibregl-ctrl-attrib")?.classList.remove("maplibregl-compact-show");
   applyPadding();
-  map.fitBounds(metro.bounds, { padding: 24, duration: 0 });
-
-  // Pilot-area outline so people know where coverage starts and stops.
-  const [w, s, e, n] = metro.bounds;
-  map.addSource("pilot-area", {
-    type: "geojson",
-    data: { type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [[[w, s], [e, s], [e, n], [w, n], [w, s]]] } },
-  });
+  // Coverage edge: the Texas state line (Census TIGERweb), so people know where coverage stops.
+  map.addSource("pilot-area", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+  fetch(`https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/0/query?where=${encodeURIComponent(`STATE='${metro.stateFips}'`)}&outFields=NAME&outSR=4326&geometryPrecision=3&maxAllowableOffset=0.01&f=geojson`)
+    .then((r) => r.json()).then((fc) => map.getSource("pilot-area")?.setData(fc)).catch(() => {});
   map.addLayer({
     id: "pilot-area-line",
     type: "line",
@@ -207,7 +208,7 @@ map.on("load", () => {
     type: "circle",
     source: "gauges",
     paint: {
-      "circle-radius": ["interpolate", ["linear"], ["zoom"], 8, 6, 13, 10],
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, ["case", [">=", ["get", "rank"], 2], 5, 2], 8, ["case", [">=", ["get", "rank"], 2], 7, 4.5], 13, 10],
       "circle-color": ["get", "color"],
       "circle-opacity": ["case", ["get", "stale"], 0.45, 1],
       "circle-stroke-color": "#0b0f14",
@@ -218,7 +219,7 @@ map.on("load", () => {
     id: "gauges-label",
     type: "symbol",
     source: "gauges",
-    minzoom: 8,
+    minzoom: 9,
     layout: {
       "text-field": [
         "step", ["zoom"],
@@ -312,6 +313,23 @@ map.on("error", (e) => {
 });
 window.stormlineMap = map; // handy for debugging in the browser console
 
+/* ---------- Current region follows the map center ---------- */
+map.on("moveend", () => metro.setCenter(map.getCenter().toArray()));
+metro.onChange(() => {
+  $("#metro-name").textContent = metro.name;
+  alertList = regionAlerts();
+  renderBanner();
+  if (currentView === "alerts") renderAlertList();
+  if (currentView === "outlook") outlook.render();
+  grid?.render();
+  scheduleAlerts();
+});
+function flyToRegion(id) {
+  const r = metro.regions.find((x) => x.id === id);
+  const v = r ? { center: r.center, zoom: r.zoom } : metro.state.view;
+  map.flyTo({ ...v, speed: 1.6 });
+}
+
 /* ---------- Pulse animation for active events ---------- */
 // Runs only while something qualifies, and never when the reader prefers reduced motion.
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -339,7 +357,9 @@ function startPulse() {
 /* ---------- Data refresh ---------- */
 const feeds = {}; // name -> { ok, at (Date of last success), err }
 let alertsFC = { type: "FeatureCollection", features: [] };
-let alertList = [];
+let alertList = [];    // alerts touching the current region (banner, alert list, fast polling)
+let allAlerts = [];    // every active alert in the state
+let alertBoxes = [];   // [alert id, bbox] for each drawn shape
 let gauges = [];
 let near = null; // "Near you" panel, created once everything below is defined
 let gaugesFC = { type: "FeatureCollection", features: [] };
@@ -347,7 +367,9 @@ let gaugesFC = { type: "FeatureCollection", features: [] };
 async function refreshAlerts() {
   try {
     alertsFC = await loadAlerts(metro);
-    alertList = uniqueAlerts(alertsFC);
+    allAlerts = uniqueAlerts(alertsFC);
+    alertBoxes = alertsFC.features.map((f) => [f.properties.id, geomBox(f.geometry)]);
+    alertList = regionAlerts();
     map.getSource("alerts")?.setData(alertsFC);
     feeds.alerts = { ok: true, at: new Date() };
   } catch (err) {
@@ -362,6 +384,23 @@ async function refreshAlerts() {
   startPulse();
   updateStatus();
   scheduleAlerts();
+}
+
+function geomBox(g) {
+  let w = 180, s = 90, e = -180, n = -90;
+  const walk = (c) => (typeof c[0] === "number" ? ((w = Math.min(w, c[0])), (e = Math.max(e, c[0])), (s = Math.min(s, c[1])), (n = Math.max(n, c[1]))) : c.forEach(walk));
+  if (g.type === "GeometryCollection") g.geometries.forEach((x) => walk(x.coordinates)); else walk(g.coordinates);
+  return [w, s, e, n];
+}
+function regionBox() {
+  const [lng, lat] = metro.center, r = metro.radius;
+  const dLat = r / 111, dLng = r / (111 * Math.cos((lat * Math.PI) / 180));
+  return [lng - dLng, lat - dLat, lng + dLng, lat + dLat];
+}
+function regionAlerts() {
+  const [w, s, e, n] = regionBox();
+  const ids = new Set(alertBoxes.filter(([, b]) => b[0] <= e && b[2] >= w && b[1] <= n && b[3] >= s).map(([id]) => id));
+  return allAlerts.filter((a) => ids.has(a.id));
 }
 
 async function refreshGauges() {
@@ -559,8 +598,20 @@ function renderAlertList(focusId) {
 
 /* ---------- Gauge sheet ---------- */
 async function openGauge(lid) {
-  const g = gauges.find((x) => x.lid === lid);
+  let g = gauges.find((x) => x.lid === lid);
   if (!g) return;
+  if (g.partial) {
+    // Statewide list has the reading; flood stages, forecast and flood map come from the gauge record.
+    $("#gauge-body").innerHTML = `<p class="near-note">Loading ${esc(g.name)}…</p>`;
+    openSheet("gauge", g.name);
+    try {
+      const d = await loadGaugeDetail(lid);
+      g = { ...d, stage: g.stage ?? d.stage, category: g.category, observedAt: g.observedAt || d.observedAt, stale: g.stale, partial: false };
+      gauges = gauges.map((x) => (x.lid === lid ? g : x));
+      gaugesFC = gaugeFeatures(gauges);
+      map.getSource("gauges")?.setData(gaugesFC);
+    } catch (_) { /* show what the statewide list has */ }
+  }
   const cat = CATEGORY[g.category];
   const ladder = ["major", "moderate", "minor", "action"]
     .filter((k) => g.stages[k] != null)
@@ -693,7 +744,7 @@ function locateMe() {
       }
       meMarker.setLngLat(here).addTo(map);
       map.flyTo({ center: here, zoom: 13, speed: 1.6 });
-      if (!inBounds(here, metro.bounds)) toast(`You're outside the ${metro.name} pilot area. Coverage there may be limited.`);
+      if (!inBounds(here, metro.bounds)) toast(`You're outside ${metro.stateName}. Coverage there is limited for now.`);
       near?.setMe(here);
       meAt = here;
       meAtTime = Date.now();
@@ -718,7 +769,7 @@ let alertTimer = null;
 let alertDelayMs = metro.refresh.alertsMs;
 async function scheduleAlerts() {
   const active = alertList.some((a) => ACTIVE.test(a.event));
-  const spc = storms ? await storms.levelToday([metro.center, ...metro.cities.map(([, lat, lng]) => [lng, lat])]) : 0;
+  const spc = storms ? await storms.levelToday([metro.center, ...metro.regionCities.map(([, lat, lng]) => [lng, lat])]) : 0;
   alertDelayMs = active || spc >= 2 ? 60 * 1000 : metro.refresh.alertsMs;
   clearTimeout(alertTimer);
   alertTimer = setTimeout(refreshAlerts, alertDelayMs);
@@ -910,7 +961,7 @@ window.stormlineOutlook = outlook; // debugging aid
 initLegends(); // fold legend cards (folded by default on phones)
 
 /* ---------- Texas grid (ERCOT) ---------- */
-const grid = initGrid({ isOn: () => !!layerState.grid, openSheet });
+const grid = initGrid({ isOn: () => !!layerState.grid && metro.gridErcot, isMixed: () => metro.gridMixed, openSheet });
 window.stormlineGrid = grid; // debugging aid
 
 /* ---------- Side menu ---------- */
@@ -935,6 +986,8 @@ const expandNear = (scrollTo) => {
 };
 const feedText = (f) => (!f ? "waiting" : f.ok === false ? `problem · last good ${f.at ? ago(f.at.toISOString()) : "never"}` : `updated ${ago(f.at.toISOString())}`);
 const menu = initMenu({
+  getRegions: () => ({ list: metro.regions, current: metro.id }),
+  onRegion: flyToRegion,
   getLayerState: () => layerState,
   applyPreset,
   canInstall: () => !!deferredInstall,

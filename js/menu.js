@@ -24,6 +24,7 @@ const MODES = [
 
 // Newest first. Keep entries short and in plain words.
 const CHANGES = [
+  ["Oct 25, 2026", "All of Texas: the map now covers the whole state, with 20 regions to jump to, every NOAA river gauge, and county-level warnings statewide."],
   ["Oct 25, 2026", "Data status page, plus draft privacy policy and terms."],
   ["Oct 25, 2026", "Push alerts: get notified when an NWS warning covers one of My places."],
   ["Oct 25, 2026", "Texas power grid status from ERCOT, and a freeze card in the panel when temperatures will drop below freezing."],
@@ -59,7 +60,7 @@ const ICON = {
 };
 const icon = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg>`;
 
-export function initMenu({ appName, getLayerState, applyPreset, actions, getFeeds, canInstall }) {
+export function initMenu({ appName, getLayerState, applyPreset, actions, getFeeds, canInstall, getRegions, onRegion }) {
   const drawer = document.getElementById("menu");
   const scrim = document.getElementById("menu-scrim");
   const body = document.getElementById("menu-body");
@@ -85,6 +86,10 @@ export function initMenu({ appName, getLayerState, applyPreset, actions, getFeed
         <ul class="mn-presets">${PRESETS.map((p) => `<li><button type="button" class="mn-preset" data-preset="${p.id}" aria-pressed="${active === p.id}">
           <span class="mn-p-l">${esc(p.label)}</span><span class="mn-p-n">${esc(p.note)}</span></button></li>`).join("")}</ul>
       </section>
+      ${getRegions ? (() => { const { list, current } = getRegions(); return `<section class="mn-sec">
+        <h3 class="mn-h">Go to</h3>
+        <div class="mn-regions">${[...list.map((r) => [r.id, r.name]), ["tx", "All of Texas"]].map(([id, name]) => `<button type="button" class="sl-day" data-region="${id}" aria-pressed="${id === current}">${esc(name)}</button>`).join("")}</div>
+      </section>`; })() : ""}
       <div class="mn-cols">
         <section class="mn-sec">
           <h3 class="mn-h">Right now</h3>
@@ -175,6 +180,8 @@ export function initMenu({ appName, getLayerState, applyPreset, actions, getFeed
       actions.toast?.(`Showing: ${preset.label.toLowerCase()}.`);
       return;
     }
+    const rg = e.target.closest("[data-region]");
+    if (rg) { close(); onRegion?.(rg.dataset.region); return; }
     const m = e.target.closest("[data-mode]");
     if (m) { setMode(m.dataset.mode); return; }
     const a = e.target.closest("[data-act]");

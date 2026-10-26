@@ -4,6 +4,7 @@
 // fetch the county/zone outline from the NWS zones API and cache it for the session.
 
 import { fetchJSON } from "./fetch.js";
+import { loadCounties } from "./counties.js";
 
 const NWS = "https://api.weather.gov";
 
@@ -56,8 +57,13 @@ function bboxOfGeometry(g) {
 const overlaps = (a, b) => a[0] <= b[2] && a[2] >= b[0] && a[1] <= b[3] && a[3] >= b[1];
 
 export async function loadAlerts(metro) {
-  const data = await fetchJSON(`${NWS}/alerts/active?area=${metro.nwsAlertArea}`, { timeout: 15000 });
-  const countyRe = new RegExp(`\\b(${metro.counties.join("|")})\\b`, "i");
+  const [data, counties] = await Promise.all([
+    fetchJSON(`${NWS}/alerts/active?area=${metro.nwsAlertArea}`, { timeout: 15000 }),
+    loadCounties(metro).catch(() => []),
+  ]);
+  // Zone-based alerts (watches, winter, heat, flood watches) carry county FIPS codes ("SAME"
+  // codes like 048113); we draw them with the county outline instead of fetching each zone.
+  const byFips = new Map(counties.map((c) => [`0${c.geoid}`, c.geometry]));
   const out = [];
 
   for (const f of data.features || []) {
@@ -70,11 +76,15 @@ export async function loadAlerts(metro) {
       if (!overlaps(bboxOfGeometry(f.geometry), metro.maxBounds)) continue;
       geometries = [f.geometry];
     } else {
-      // Zone-based alert: only consider it if it names one of our counties.
-      if (!countyRe.test(p.areaDesc || "")) continue;
-      const zones = (p.affectedZones || []).slice(0, 40);
-      const geoms = await Promise.all(zones.map(zoneGeometry));
-      geometries = geoms.filter((g) => g && overlaps(bboxOfGeometry(g), metro.maxBounds));
+      const same = p.geocode?.SAME || [];
+      geometries = same.map((code) => byFips.get(code)).filter(Boolean);
+      if (!geometries.length) {
+        // No county codes we know (marine zones, or the county list didn't load): fall back to
+        // the NWS zone outlines, a few at most.
+        const zones = (p.affectedZones || []).slice(0, 12);
+        const geoms = await Promise.all(zones.map(zoneGeometry));
+        geometries = geoms.filter((g) => g && overlaps(bboxOfGeometry(g), metro.maxBounds));
+      }
       if (!geometries.length) continue;
     }
 
@@ -116,7 +126,8 @@ export function uniqueAlerts(fc) {
 export async function loadRecentAlerts(metro, hours = 24) {
   const start = new Date(Date.now() - hours * 3600e3).toISOString().replace(/\.\d+Z$/, "Z");
   const data = await fetchJSON(`${NWS}/alerts?area=${metro.nwsAlertArea}&start=${start}&limit=500`, { timeout: 15000 });
-  const countyRe = new RegExp(`\\b(${metro.counties.join("|")})\\b`, "i");
+  const names = metro.counties;
+  const countyRe = names.length ? new RegExp(`\\b(${names.join("|")})\\b`, "i") : /$^/;
   const out = [];
   for (const f of data.features || []) {
     const p = f.properties || {};

@@ -78,3 +78,46 @@ export const METROS = {
 };
 
 export const DEFAULT_METRO = "dfw";
+
+// Phase 9: the map covers all of Texas. The state block holds what's statewide; REGIONS are
+// named areas for the region picker, the "What's coming" city list and the top-bar name.
+// `grid`: "ercot" where ERCOT runs the grid, "mixed" where part of the area is on another
+// grid, null where none of it is (El Paso is on WECC, the Panhandle and Texarkana on SPP,
+// Beaumont on MISO). Region centers are approximate; radius is in km.
+export const STATE = {
+  id: "tx",
+  name: "Texas",
+  abbr: "TX",
+  fips: "48",
+  nwsAlertArea: "TX",
+  bounds: [-106.7, 25.8, -93.5, 36.6],
+  maxBounds: [-110.5, 23.5, -89.5, 38.5],
+  view: { center: [-99.3, 31.3], zoom: 5.4 },
+  refresh: { alertsMs: 2 * 60 * 1000, gaugesMs: 5 * 60 * 1000 },
+};
+
+export const REGIONS = [
+  { id: "dfw", name: "Dallas–Fort Worth", center: [-96.95, 32.85], zoom: 9, radius: 110, grid: "ercot" },
+  { id: "houston", name: "Houston", center: [-95.37, 29.76], zoom: 9, radius: 110, grid: "ercot" },
+  { id: "san-antonio", name: "San Antonio", center: [-98.49, 29.42], zoom: 9.3, radius: 90, grid: "ercot" },
+  { id: "austin", name: "Austin", center: [-97.74, 30.27], zoom: 9.3, radius: 80, grid: "ercot" },
+  { id: "el-paso", name: "El Paso", center: [-106.44, 31.76], zoom: 9.5, radius: 100, grid: null },
+  { id: "rgv", name: "Rio Grande Valley", center: [-97.9, 26.2], zoom: 9, radius: 100, grid: "ercot" },
+  { id: "corpus", name: "Corpus Christi", center: [-97.4, 27.8], zoom: 9.3, radius: 90, grid: "ercot" },
+  { id: "laredo", name: "Laredo", center: [-99.5, 27.53], zoom: 9.5, radius: 80, grid: "ercot" },
+  { id: "victoria", name: "Victoria", center: [-97.0, 28.8], zoom: 9.5, radius: 80, grid: "ercot" },
+  { id: "bcs", name: "Bryan–College Station", center: [-96.33, 30.63], zoom: 9.5, radius: 70, grid: "ercot" },
+  { id: "waco", name: "Waco–Killeen", center: [-97.4, 31.3], zoom: 9.2, radius: 90, grid: "ercot" },
+  { id: "tyler", name: "Tyler–Longview", center: [-95.0, 32.4], zoom: 9, radius: 100, grid: "mixed" },
+  { id: "beaumont", name: "Beaumont–Port Arthur", center: [-94.1, 30.0], zoom: 9.3, radius: 80, grid: null },
+  { id: "texarkana", name: "Texarkana", center: [-94.05, 33.43], zoom: 9.5, radius: 70, grid: null },
+  { id: "wichita-falls", name: "Wichita Falls", center: [-98.49, 33.91], zoom: 9.5, radius: 80, grid: "ercot" },
+  { id: "abilene", name: "Abilene", center: [-99.73, 32.45], zoom: 9.5, radius: 90, grid: "ercot" },
+  { id: "san-angelo", name: "San Angelo", center: [-100.44, 31.46], zoom: 9.5, radius: 90, grid: "ercot" },
+  { id: "midland", name: "Midland–Odessa", center: [-102.2, 31.9], zoom: 9.3, radius: 110, grid: "ercot" },
+  { id: "lubbock", name: "Lubbock", center: [-101.85, 33.58], zoom: 9.5, radius: 100, grid: "mixed" },
+  { id: "amarillo", name: "Amarillo and the Panhandle", center: [-101.83, 35.22], zoom: 8.6, radius: 150, grid: null },
+];
+
+// Friendlier names for some gauges; any NOAA gauge in the state shows without one.
+export const GAUGE_NAMES = Object.fromEntries(METROS.dfw.gauges.map((g) => [g.lid, g]));
