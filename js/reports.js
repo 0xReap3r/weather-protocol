@@ -105,7 +105,7 @@ export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast,
   });
 
   // The whole pilot area in one request (reports outside it are refused by the database),
-  // so the "Roads to avoid" list covers DFW whatever the map is showing.
+  // so the "Roads to avoid" list covers the whole state whatever the map is showing.
   async function refresh() {
     const [w, s, e, n] = metro.maxBounds ? metro.maxBounds.flat() : metro.bounds;
     try {
@@ -236,9 +236,9 @@ export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast,
     return `
       <div class="avoid-card" data-level="${close.some((r) => r.confirmed) ? "on" : n ? "some" : "none"}">
         <p class="rc-head"><span>Roads to avoid</span><span>${store.mode === "demo" ? "demo · " : ""}neighbor reports</span></p>
-        <p class="avoid-title">${close.length ? `${close.length} road${close.length > 1 ? "s" : ""} within 3 mi` : n ? "None reported within 3 mi" : "None reported in DFW"}</p>
+        <p class="avoid-title">${close.length ? `${close.length} road${close.length > 1 ? "s" : ""} within 3 mi` : n ? "None reported within 3 mi" : `None reported in ${esc(metro.stateName)}`}</p>
         ${close.length ? `<ul class="near-list">${close.slice(0, 3).map((r) => roadRow(r, pt)).join("")}</ul>` : `<p class="near-note">That doesn't mean roads are clear. Never drive into water you can't see the bottom of.</p>`}
-        ${n ? `<button type="button" class="avoid-all" data-avoid-open>See all ${n} across DFW ›</button>` : ""}
+        ${n ? `<button type="button" class="avoid-all" data-avoid-open>See all ${n} across ${esc(metro.stateName)} ›</button>` : ""}
       </div>`;
   }
 

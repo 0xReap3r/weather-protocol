@@ -209,7 +209,7 @@ function renderToday(ctx, cities) {
             )
             .join("")}</ul>
           ${quiet ? `<p class="ok-note">${quiet} other cities: nothing flagged.</p>` : ""}`
-        : `<p class="ok-note">Nothing flagged for any of ${cities.length} DFW cities.</p>`
+        : `<p class="ok-note">Nothing flagged for any of ${cities.length} cities in ${esc(ctx.metro.name === ctx.metro.stateName ? "Texas" : "the " + ctx.metro.name + " area")}.</p>`
     }`;
 }
 
