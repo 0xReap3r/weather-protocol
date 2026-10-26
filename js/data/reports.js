@@ -164,6 +164,7 @@ function liveStore(url, key) {
         const j = await res.json();
         if (j.message) msg = j.message;
         if (/reports_kind_check/.test(j.message || "")) msg = "Hail and damage reports aren't switched on yet. The database needs a one-time update.";
+        if (/reports_cell_(lat|lng)_check/.test(j.message || "")) msg = "Reports can only be sent for places in Texas right now.";
       } catch (_) {}
       throw new Error(msg);
     }
