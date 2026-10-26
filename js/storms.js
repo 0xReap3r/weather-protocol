@@ -65,6 +65,7 @@ export function initStorms({ map, beforeId, metro }) {
   const cache = {}; // `${day}:${product}` -> { at, fc }
   let day = 1, view = "cat", on = false, pulseRaf = null;
   let summary = null; // { here, state, threats, issued, empty }
+  let demo = false;   // stormlineStorms.demo(): a made-up outlook to preview the look
 
   for (const l of SPC_LEVELS.filter((x) => x.n >= 3)) map.addImage(`spc-hatch-${l.code}`, hatch(l.fill, 0.32), { pixelRatio: 2 });
 
@@ -160,7 +161,7 @@ export function initStorms({ map, beforeId, metro }) {
     const d = day, v = VIEWS[d].some(([id]) => id === view) ? view : "cat";
     let fc = null, err = null;
     try { fc = await load(d, v); } catch (e) { err = e; }
-    if (!on || d !== day) return;
+    if (!on || d !== day || demo) return;
     map.getSource("storms")?.setData({ type: "FeatureCollection", features: featuresFor(fc, v) });
     // Summary for the card: category here and statewide, plus hazard chances here.
     const pts = herePoints();
@@ -241,7 +242,31 @@ export function initStorms({ map, beforeId, metro }) {
   metro.onChange(() => on && show());
   setInterval(() => on && !document.hidden && show(), TTL);
 
+  // Debug/preview: nested made-up risk areas around a point, levels 0–5. Reload to clear.
+  function demoOutlook(center = metro.center) {
+    const [cx, cy] = center;
+    const blob = (rx, ry, seed) => {
+      const pts = [];
+      for (let i = 0; i <= 120; i++) {
+        const t = (i / 120) * Math.PI * 2, r = 1 + 0.1 * Math.sin(3 * t + seed) + 0.06 * Math.cos(5 * t + seed * 2);
+        const x = rx * r * Math.cos(t), y = ry * r * Math.sin(t), a = 0.55;
+        pts.push([cx + 0.15 * seed + x * Math.cos(a) - y * Math.sin(a), cy + 0.05 * seed + x * Math.sin(a) + y * Math.cos(a)]);
+      }
+      pts[120] = pts[0];
+      return { type: "Polygon", coordinates: [pts] };
+    };
+    const sizes = [[4.2, 2.6], [3.3, 2.0], [2.5, 1.5], [1.7, 1.0], [1.0, 0.6], [0.45, 0.28]];
+    const fc = { type: "FeatureCollection", features: SPC_LEVELS.map((l, i) => ({ type: "Feature", geometry: blob(...sizes[i], i), properties: { LABEL: l.code } })) };
+    demo = true;
+    map.getSource("storms")?.setData({ type: "FeatureCollection", features: featuresFor(fc, "cat") });
+    summary = { ...(summary || {}), here: 5, state: 5, anyStorms: true, threats: { torn: 30, hail: 45, wind: 60 }, issued: new Date().toISOString() };
+    render();
+    startPulse();
+    return "Demo outlook on: reload to clear";
+  }
+
   return {
+    demo: demoOutlook,
     layerIds: ["storms-fill", "storms-hatch", "storms-glow", "storms-glow-hot", "storms-edge", "storms-tstm", "storms-label"],
     onToggle(v) { on = v; card.hidden = !v; if (v) { render(); show(); } },
     // Highest SPC category today over any of these points (used for fast polling): 0 none … 5 high.
