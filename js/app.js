@@ -393,6 +393,7 @@ function geomBox(g) {
   return [w, s, e, n];
 }
 function regionBox() {
+  if (metro.id === metro.state.id) return metro.bounds; // zoomed out: the whole state
   const [lng, lat] = metro.center, r = metro.radius;
   const dLat = r / 111, dLng = r / (111 * Math.cos((lat * Math.PI) / 180));
   return [lng - dLng, lat - dLat, lng + dLng, lat + dLat];
