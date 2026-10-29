@@ -16,6 +16,12 @@ Long-term goal: DFW pilot → all of Texas (Phase 9, done) → the rest of the U
 - SOS is a 911 link only — no in-app rescue requests.
 - Respect `prefers-reduced-motion` for all animation.
 
+## Design (v2, Oct 28)
+- Storm-slate night palette (tokens in `css/app.css` `:root`), Archivo variable font (condensed for headlines/numbers, expanded for the wordmark), tabular figures for readings.
+- Chrome is monochrome: selected = frost (`--text`). Hazard hues are for data only.
+- The "storm line" rail carries state: before the wordmark (`--threat`, set from the top alert in `renderBanner`), down the area panel (`--verdict`), on banners and list rows.
+- Lists are rows on hairlines; cards only for callouts. Section labels sentence case. The "Site design v2" block at the end of app.css overrides older rules.
+
 ## Stack
 Plain HTML/CSS/JS ES modules, no build step. MapLibre GL 4.7.1 from unpkg, CARTO Dark Matter basemap.
 Run locally: `npx serve .` then open http://localhost:3000.
