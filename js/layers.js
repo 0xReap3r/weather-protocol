@@ -46,7 +46,7 @@ export const LAYERS = [
   {
     id: "fires",
     label: "Fires",
-    hint: "Active wildfires in Texas, sized by acres, with containment and mapped fire edges, plus counties under a burn ban. Planned (prescribed) burns are shown faint.",
+    hint: "Active wildfires in Texas, sized by acres, with containment and mapped fire edges, plus counties under a burn ban. Planned (prescribed) burns get their own gold symbol.",
     source: "National Interagency Fire Center (WFIGS) · Texas A&M Forest Service",
     phase: 14,
     defaultOn: false,

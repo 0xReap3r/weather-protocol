@@ -5,7 +5,7 @@ import { alertStyle } from "./data/alerts.js";
 import { RAIN_BANDS } from "./radar.js";
 import { SPC_LEVELS } from "./storms.js";
 import { STRENGTH, COAST, OUTLOOK, EVAC_COLOR } from "./tropical.js";
-import { FIRE_COLORS } from "./fires.js";
+import { FIRE_COLORS, fireIconSVG } from "./fires.js";
 import { LAKE_COLORS } from "./lakes.js";
 
 const esc = (s) =>
@@ -73,8 +73,8 @@ export function renderKey() {
 
     <h3 class="key-h">Wildfires</h3>
     <ul class="key-list">
-      ${row(dot(FIRE_COLORS.wild), "Wildfire", "Bigger dot, bigger fire. Tap for acres and containment.")}
-      ${row(dot(FIRE_COLORS.planned, true), "Planned burn", "Prescribed fire set on purpose by land managers")}
+      ${row(`<span class="key-sw key-ico">${fireIconSVG("wild", 18)}</span>`, "Wildfire", "Bigger flame, bigger fire. Tap for acres and containment.")}
+      ${row(`<span class="key-sw key-ico">${fireIconSVG("planned", 18)}</span>`, "Planned burn", "Prescribed fire set on purpose by land managers. Expect smoke nearby.")}
       ${row(area(FIRE_COLORS.perimeter), "Mapped fire edge", "Where crews last mapped the fire; it can move")}
       ${row(`<span class="key-sw key-area" style="--c:${FIRE_COLORS.ban};border-style:dashed"></span>`, "Burn ban", "County where outdoor burning is banned (Texas A&M Forest Service)")}
     </ul>
