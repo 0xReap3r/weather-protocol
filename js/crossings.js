@@ -40,10 +40,13 @@ export function initCrossings({ map, beforeId, openSheet, getAlertsFC, isOn }) {
   badge(map, "lwx-warn", { glyph: "crossing", ring: CROSSING_COLORS.warn, fill: "#4a1010" });
   map.addLayer({ id: "crossings-glow", type: "circle", source: "crossings", minzoom: MIN_ZOOM, filter: ["get", "warn"],
     paint: { "circle-color": CROSSING_COLORS.warn, "circle-radius": 13, "circle-blur": 1, "circle-opacity": 0.35 } }, beforeId);
+  // Storm pulse: a white ring beating around a crossing inside an active flood warning.
+  map.addLayer({ id: "crossings-stormpulse", type: "circle", source: "crossings", minzoom: MIN_ZOOM, filter: ["get", "warn"],
+    paint: { "circle-radius": 10, "circle-color": "#ffffff", "circle-opacity": 0, "circle-stroke-width": 0 } }, beforeId);
   map.addLayer({ id: "crossings", type: "symbol", source: "crossings", minzoom: MIN_ZOOM,
     layout: {
       "icon-image": ["case", ["get", "warn"], "mk-lwx-warn", "mk-lwx"],
-      "icon-size": ["interpolate", ["linear"], ["zoom"], MIN_ZOOM, 0.62, 14, 0.95],
+      "icon-size": ["interpolate", ["linear"], ["zoom"], MIN_ZOOM, 0.75, 14, 1.1, 18, 1.3],
       "icon-allow-overlap": true, "symbol-sort-key": ["case", ["get", "warn"], 0, 1],
       "text-field": ["step", ["zoom"], "", 12.5, ["get", "road"]],
       "text-font": ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"], "text-size": 11,
@@ -148,7 +151,7 @@ export function initCrossings({ map, beforeId, openSheet, getAlertsFC, isOn }) {
   });
 
   return {
-    layerIds: ["crossings-glow", "crossings"],
+    layerIds: ["crossings-glow", "crossings-stormpulse", "crossings"],
     refresh,
     prepNear,
     nearHTML,

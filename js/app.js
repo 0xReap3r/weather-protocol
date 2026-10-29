@@ -235,6 +235,14 @@ map.on("load", () => {
     filter: [">=", ["get", "rank"], 2],
     paint: { "circle-radius": 8, "circle-color": ["get", "color"], "circle-opacity": 0, "circle-stroke-width": 0 },
   });
+  // Storm pulse: a white ring that beats around a gauge sitting inside an active NWS warning.
+  map.addLayer({
+    id: "gauges-stormpulse",
+    type: "circle",
+    source: "gauges",
+    filter: ["get", "warn"],
+    paint: { "circle-radius": 10, "circle-color": "#ffffff", "circle-opacity": 0, "circle-stroke-width": 0 },
+  });
   // Gauges as badges: a river-gauge pictogram (a lake for lake levels) ringed in its flood-stage
   // color. Zoomed out, only gauges at action stage or higher get a badge; the rest are quiet dots.
   for (const [cat, c] of Object.entries(CATEGORY)) {
@@ -252,7 +260,7 @@ map.on("load", () => {
   map.addLayer({ id: "gauges-quiet", type: "symbol", source: "gauges", minzoom: 9, filter: ["<", ["get", "rank"], 2],
     layout: gaugeIcon, paint: { "icon-opacity": ["case", ["get", "stale"], 0.45, 1] } });
   map.addLayer({ id: "gauges-circle", type: "symbol", source: "gauges", filter: [">=", ["get", "rank"], 2],
-    layout: { ...gaugeIcon, "icon-size": ["interpolate", ["linear"], ["zoom"], 5, 0.72, 9, 0.88, 13, 1.05] },
+    layout: { ...gaugeIcon, "icon-size": ["interpolate", ["linear"], ["zoom"], 5, 0.82, 9, 1.02, 13, 1.22, 17, 1.4] },
     paint: { "icon-opacity": ["case", ["get", "stale"], 0.45, 1] } });
   map.addLayer({
     id: "gauges-label",
@@ -384,10 +392,14 @@ function flyToRegion(id) {
 // Runs only while something qualifies, and never when the reader prefers reduced motion.
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 let pulseRaf = null;
+// White storm-pulse rings: one per marker layer that can sit inside an active warning.
+const STORM_PULSE_LAYERS = ["gauges-stormpulse", "crossings-stormpulse", "transit-stormpulse"];
 function pulseNeeded() {
-  const g = gaugesFC.features.some((f) => f.properties.rank >= 2);
+  const g = gaugesFC.features.some((f) => f.properties.rank >= 2 || f.properties.warn);
   const a = alertsFC.features.some((f) => f.properties.rank >= 45);
-  return g || a;
+  const x = (crossings?.warned?.().length || 0) > 0;
+  const s = !!transit?.anyFlagged?.();
+  return g || a || x || s;
 }
 function startPulse() {
   if (!map.getLayer("gauges-pulse") || pulseRaf || reduceMotion.matches || !pulseNeeded()) return;
@@ -399,6 +411,11 @@ function startPulse() {
     map.setPaintProperty("gauges-pulse", "circle-opacity", 0.55 * (1 - t));
     map.setPaintProperty("alerts-pulse", "line-width", 2 + 10 * t);
     map.setPaintProperty("alerts-pulse", "line-opacity", 0.6 * (1 - t));
+    for (const id of STORM_PULSE_LAYERS) {
+      if (!map.getLayer(id)) continue;
+      map.setPaintProperty(id, "circle-radius", 11 + 16 * t);
+      map.setPaintProperty(id, "circle-opacity", 0.9 * (1 - t));
+    }
     pulseRaf = requestAnimationFrame(frame);
   };
   pulseRaf = requestAnimationFrame(frame);
@@ -414,6 +431,13 @@ let gauges = [];
 let near = null; // "Near you" panel, created once everything below is defined
 let gaugesFC = { type: "FeatureCollection", features: [] };
 
+// A gauge "warn"s (white storm pulse) when a serious active alert covers its spot.
+const STORM_RANK = 45; // matches the alerts-pulse threshold: warnings/emergencies plus tornado, severe t-storm and flood watches — not a plain advisory
+function tagGaugeWarn() {
+  const storms = alertsFC.features.filter((f) => f.properties.rank >= STORM_RANK);
+  for (const f of gaugesFC.features) f.properties.warn = storms.some((a) => contains(a.geometry, f.geometry.coordinates));
+}
+
 async function refreshAlerts() {
   try {
     alertsFC = await loadAlerts(metro);
@@ -422,6 +446,8 @@ async function refreshAlerts() {
     alertBoxes = alertsFC.features.map((f) => [f.properties.id, geomBox(f.geometry)]);
     alertList = regionAlerts();
     map.getSource("alerts")?.setData(alertsFC);
+    tagGaugeWarn();
+    map.getSource("gauges")?.setData(gaugesFC);
     crossings?.refresh(); // recolor crossings inside flood warnings
     feeds.alerts = { ok: true, at: new Date() };
   } catch (err) {
@@ -461,6 +487,7 @@ async function refreshGauges() {
     const res = await loadGauges(metro);
     gauges = res.gauges;
     gaugesFC = res.fc;
+    tagGaugeWarn();
     map.getSource("gauges")?.setData(gaugesFC);
     feeds.gauges = { ok: res.failed === 0, at: new Date(), err: res.failed ? `${res.failed} gauge(s) didn't respond` : null };
     near?.render();
@@ -1141,12 +1168,15 @@ window.stormlineNear = near; // debugging aid
 // Debug: stormlineDemo() paints a fake flood-stage gauge + warning so you can see pulsing. Reload to clear.
 window.stormlineDemo = (kind = "flood") => {
   const tornado = kind === "tornado";
-  const g = gaugesFC.features[0];
-  if (g) { g.properties = { ...g.properties, rank: 3, color: CATEGORY.minor.color, label: "31.2 ft · flood 30" }; map.getSource("gauges")?.setData(gaugesFC); }
   const [lng, lat] = map.getCenter().toArray(), d = 0.08;
+  const g = gaugesFC.features[0];
+  // Move the gauge into the fake warning so you can see the white storm pulse right away.
+  if (g) { g.geometry.coordinates = [lng, lat]; g.properties = { ...g.properties, rank: 3, color: CATEGORY.minor.color, label: "31.2 ft · flood 30" }; }
   alertsFC = { type: "FeatureCollection", features: [...alertsFC.features, { type: "Feature",
     geometry: { type: "Polygon", coordinates: [[[lng - d, lat - d], [lng + d, lat - d], [lng + d, lat + d], [lng - d, lat + d], [lng - d, lat - d]]] },
     properties: { id: "demo", event: tornado ? "Tornado Warning (demo)" : "Flash Flood Warning (demo)", color: tornado ? "#ff00ff" : "#e0352b", rank: tornado ? 95 : 85, storm: true, headline: "Demo", areaDesc: "Demo area", expires: new Date(Date.now() + 3600e3).toISOString(), sent: new Date().toISOString(), description: "Demo only.", instruction: "" } }] };
+  tagGaugeWarn();
+  map.getSource("gauges")?.setData(gaugesFC);
   map.getSource("alerts")?.setData(alertsFC);
   if (tornado && !meAt) { meAt = [lng, lat]; meAtTime = Date.now(); } // demo puts "you" at the map center
   startPulse(); near?.render(); transit?.refresh(); crossings?.refresh(); checkDanger();

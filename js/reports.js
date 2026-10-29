@@ -98,7 +98,7 @@ export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast,
     id: "reports-road", type: "symbol", source: "reports-points",
     layout: {
       "icon-image": ["concat", "mk-rp-", ["get", "badge"], ["case", ["get", "confirmed"], "", "-1"]],
-      "icon-size": ["interpolate", ["linear"], ["zoom"], 8, 0.62, 12, 0.85, 15, 1], "icon-allow-overlap": true,
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 8, 0.72, 12, 0.98, 15, 1.18], "icon-allow-overlap": true,
       "symbol-sort-key": ["case", ["get", "confirmed"], 0, 1],
     },
     paint: { "icon-opacity": ["case", ["get", "confirmed"], 1, 0.7] },
