@@ -54,9 +54,11 @@ export function initFires({ map, metro, beforeId, openSheet, onChange }) {
   map.addSource("fire-perims", { type: "geojson", data: perims });
   map.addLayer({ id: "fires-perim-fill", type: "fill", source: "fire-perims",
     paint: { "fill-color": FIRE_COLORS.perimeter, "fill-opacity": ["case", ["get", "planned"], 0.06, 0.16] } }, beforeId);
-  map.addLayer({ id: "fires-perim-line", type: "line", source: "fire-perims",
-    paint: { "line-color": FIRE_COLORS.perimeter, "line-width": 1.4, "line-opacity": ["case", ["get", "planned"], 0.4, 0.9],
-      "line-dasharray": ["case", ["get", "planned"], ["literal", [2, 2]], ["literal", [1, 0]]] } }, beforeId);
+  // (MapLibre 4 can't vary dashes per feature, so planned-burn edges get their own dashed layer.)
+  map.addLayer({ id: "fires-perim-line", type: "line", source: "fire-perims", filter: ["!", ["get", "planned"]],
+    paint: { "line-color": FIRE_COLORS.perimeter, "line-width": 1.4, "line-opacity": 0.9 } }, beforeId);
+  map.addLayer({ id: "fires-perim-planned", type: "line", source: "fire-perims", filter: ["get", "planned"],
+    paint: { "line-color": FIRE_COLORS.perimeter, "line-width": 1.2, "line-opacity": 0.4, "line-dasharray": [2, 2] } }, beforeId);
   // Ember glow under each wildfire point, bigger for bigger fires.
   const r = ["interpolate", ["linear"], ["coalesce", ["get", "acres"], 0], 0, 4, 100, 6, 1000, 9, 10000, 13, 100000, 18];
   map.addLayer({ id: "fires-glow", type: "circle", source: "fires", filter: ["!", ["get", "planned"]],
@@ -201,7 +203,7 @@ export function initFires({ map, metro, beforeId, openSheet, onChange }) {
   setInterval(() => !document.hidden && loadBans(), 60 * 60 * 1000);
 
   return {
-    layerIds: ["burnban-fill", "burnban-line", "fires-perim-fill", "fires-perim-line", "fires-glow", "fires-point", "fires-label"],
+    layerIds: ["burnban-fill", "burnban-line", "fires-perim-fill", "fires-perim-line", "fires-perim-planned", "fires-glow", "fires-point", "fires-label"],
     onToggle(v) { on = v; card.hidden = !v; if (v) render(); },
     openFire: (id) => openFire(id, false),
     nearHTML,
