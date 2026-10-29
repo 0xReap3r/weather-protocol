@@ -83,7 +83,7 @@ export function initSearch({ map, metro, onPick }) {
   }
   async function address(q) {
     const j = await fetchJSON(`${API}/geocode?q=${encodeURIComponent(q)}`, { timeout: 10000 });
-    return (j.matches || []).map(([label, lng, lat]) => ({ kind: "address", label: label.replace(/, TX, (\d{5})$/, ", TX $1"), sub: t("Address"), at: [lng, lat], zoom: 16 }));
+    return (j.matches || []).map(([label, lng, lat]) => ({ kind: "address", label: label.toLowerCase().replace(/\b([a-z])/g, (c) => c.toUpperCase()).replace(/\b(Tx)\b/, "TX").replace(/\b(Ne|Nw|Se|Sw|Fm|Rm|Cr|Us|Sh|Ih)\b/g, (m) => m.toUpperCase()).replace(/, TX, (\d{5})$/, ", TX $1"), sub: t("Address"), at: [lng, lat], zoom: 16 }));
   }
 
   function render(state) {
