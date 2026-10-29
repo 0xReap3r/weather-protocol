@@ -4,9 +4,10 @@ Live severe-weather situational map for Texas (started as a Dallas–Fort Worth 
 (situational-bangkok-flood.web.app). Working name "Stormline"; the name lives in `js/config.js`,
 `manifest.webmanifest` and `<title>` in `index.html`.
 
-Long-term goal: DFW pilot → all of Texas (Phase 9, done) → the rest of the US state by state
-(paused until Texas is solid). Statewide settings live in `STATE`, named areas in `REGIONS`
-(config.js); prefer national feeds so expansion is config, not rewrites.
+Decision Oct 28: Texas only. DFW pilot → all of Texas (Phase 9, done) → go deeper in Texas
+(Texas-only data, Spanish, hurricane and wildfire seasons, Texas partners). No state-by-state
+expansion planned, but keep the code national-ready: statewide settings live in `STATE`, named
+areas in `REGIONS` (config.js); prefer national feeds so a neighbor state would be config, not rewrites.
 
 ## Ground rules
 - Free, public data only for v1. No secret keys in the repo. The Supabase publishable (anon) key is the one exception: it is public by design; row-level security in `supabase/schema.sql` controls access.
@@ -46,6 +47,12 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - County outlines: Census TIGERweb `State_County/MapServer/1` (BASENAME + STATE FIPS), `js/data/counties.js`
 - Routing: OSRM public demo `router.project-osrm.org` (fair-use only; self-host or pay before launch)
 - ERCOT grid: `ercot.com/api/1/services/read/dashboards/daily-prc.json` → `current_condition` {state normal|weather|vcn|conservation|eea1|eea2|eea3, title, condition_note, eea_level, prc_value}. CORS-blocked, so the Worker serves it trimmed at `/api/grid` (60 s edge cache). ERCOT sometimes 403s cloud requests for a few minutes: `worker/grid.js` keeps the last good reading in D1 `kv` and serves it (stale: true) for up to 30 min
+
+## Texas depth candidates (checked Oct 28; Phase 14 in the plan doc)
+- Browser-OK (CORS): NIFC WFIGS `services3.arcgis.com/T4QMspbfLg3qTGWY/arcgis/rest/services/WFIGS_Incident_Locations_Current/FeatureServer/0` (`POOState='US-TX'`; names starting "Rx" are prescribed burns); NHC `mapservices.weather.noaa.gov/tropical/rest/services/tropical/NHC_tropical_weather/MapServer`; TxDOT evacuation routes `services.arcgis.com/KTcxiTD9dsQw4r7Z/arcgis/rest/services/TxDOT_Evacuation_Routes/FeatureServer/0`; Austin low-water crossing gates `data.austintexas.gov/resource/q6kt-v2zm.json` and San Antonio `services.arcgis.com/g1fRTDLeMgspWrYp/arcgis/rest/services/LowWaterCrossings/FeatureServer` (locations only).
+- Worker needed (no CORS): TWDB reservoirs `waterdatafortexas.org/reservoirs/statewide/recent-conditions.geojson`; TexMesonet `www.texmesonet.org/api/CurrentData` (XML; rain 24/48/72 hr, soil moisture).
+- Unverified: TFS burn bans `gis.tfs.tamu.edu/arcgis/rest/services/EOC/BurnBan/FeatureServer/0` (unreachable from the dev box; try from the Worker). Ignore the stale third-party "Texas_Count_Burn_Bans" copy.
+- No public feed (outreach, don't scrape): LCRA Hydromet, Harris County FWS, ATXfloods live status.
 
 ## Layout
 - `js/config.js` — app name, disclaimer, basemap, `STATE` (Texas bounds, FIPS, refresh), `REGIONS` (20 named areas with radius and ERCOT flag), `GAUGE_NAMES` (friendly names for DFW gauges), legacy `METROS.dfw`
