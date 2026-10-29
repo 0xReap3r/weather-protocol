@@ -431,8 +431,8 @@ let gauges = [];
 let near = null; // "Near you" panel, created once everything below is defined
 let gaugesFC = { type: "FeatureCollection", features: [] };
 
-// A gauge "warn"s (white storm pulse) when an active warning or emergency covers its spot.
-const STORM_RANK = 45; // matches the alerts-pulse threshold: warnings and emergencies, not watches/advisories
+// A gauge "warn"s (white storm pulse) when a serious active alert covers its spot.
+const STORM_RANK = 45; // matches the alerts-pulse threshold: warnings/emergencies plus tornado, severe t-storm and flood watches — not a plain advisory
 function tagGaugeWarn() {
   const storms = alertsFC.features.filter((f) => f.properties.rank >= STORM_RANK);
   for (const f of gaugesFC.features) f.properties.warn = storms.some((a) => contains(a.geometry, f.geometry.coordinates));
