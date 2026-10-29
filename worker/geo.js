@@ -17,7 +17,7 @@ async function schema(db) {
   ready = true;
 }
 
-async function cached(env, ctx, req, key, maxAge, build) {
+export async function cached(env, ctx, req, key, maxAge, build) {
   const cache = caches.default;
   const ck = new Request(new URL(`/__cache/${key}`, req.url).toString());
   const hit = await cache.match(ck);
