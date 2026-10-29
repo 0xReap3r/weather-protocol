@@ -124,6 +124,7 @@ export function initRainTotals({ map, metro, beforeId, openSheet }) {
       stations = rows.map((st) => ({ ...st, stale: !st.time || now - Date.parse(st.time) > 2 * 3600000 }));
       stationsAt = now;
       setStations();
+      if (on) card.querySelector(".rl-note") && render();
     } catch (_) { /* gauges are a bonus on top of the radar estimate */ }
   }
   function openStation(st) {
