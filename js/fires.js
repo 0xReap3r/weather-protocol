@@ -5,7 +5,9 @@
 // The data loads even with the chip off: the area panel mentions a wildfire within 25 miles.
 // Fire locations can lag what crews on the ground know; local evacuation orders always win.
 import { fetchJSON } from "./data/fetch.js";
-import { milesBetween } from "./near.js";
+import { milesBetween, contains } from "./near.js";
+import { loadBurnBans } from "./data/texas.js";
+import { loadCounties } from "./data/counties.js";
 
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -17,7 +19,7 @@ const FIELDS = "IncidentName,IncidentSize,PercentContained,POOCounty,IncidentTyp
 const TTL = 10 * 60 * 1000;
 const NEAR_MI = 25;
 
-export const FIRE_COLORS = { wild: "#ff6a2b", planned: "#b89a7a", perimeter: "#ff4d1f" };
+export const FIRE_COLORS = { wild: "#ff6a2b", planned: "#b89a7a", perimeter: "#ff4d1f", ban: "#d9822b" };
 
 const acresText = (a) => (a == null ? "size not reported" : a < 1 ? "under 1 acre" : `${Math.round(a).toLocaleString()} acre${Math.round(a) === 1 ? "" : "s"}`);
 const ago = (t) => {
@@ -27,9 +29,26 @@ const ago = (t) => {
 };
 const when = (t) => (t ? new Date(t).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—");
 
-export function initFires({ map, beforeId, openSheet, onChange }) {
+export function initFires({ map, metro, beforeId, openSheet, onChange }) {
+  let bans = null, banCounties = []; // Texas A&M Forest Service county burn bans
   let on = false, fc = { type: "FeatureCollection", features: [] }, perims = { type: "FeatureCollection", features: [] };
   let loadedAt = null, err = null;
+
+  // Burn bans: counties where outdoor burning is banned, a faint amber wash with a dashed edge.
+  map.addSource("burnbans", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+  map.addLayer({ id: "burnban-fill", type: "fill", source: "burnbans", paint: { "fill-color": FIRE_COLORS.ban, "fill-opacity": 0.09 } }, beforeId);
+  map.addLayer({ id: "burnban-line", type: "line", source: "burnbans",
+    paint: { "line-color": FIRE_COLORS.ban, "line-width": 0.8, "line-opacity": 0.45, "line-dasharray": [3, 2] } }, beforeId);
+  async function loadBans() {
+    try {
+      const [b, counties] = await Promise.all([loadBurnBans(), loadCounties(metro)]);
+      bans = b;
+      banCounties = counties.filter((c) => b.banned.has(String(c.geoid).slice(-3)));
+      map.getSource("burnbans")?.setData({ type: "FeatureCollection", features: banCounties.map((c) => ({ type: "Feature", geometry: c.geometry, properties: { name: c.name } })) });
+      render();
+      onChange?.();
+    } catch (_) { /* bans are a bonus */ }
+  }
 
   map.addSource("fires", { type: "geojson", data: fc });
   map.addSource("fire-perims", { type: "geojson", data: perims });
@@ -119,11 +138,12 @@ export function initFires({ map, beforeId, openSheet, onChange }) {
       <div class="rl-head"><span class="rl-title">Wildfires</span><span class="rl-time">${loadedAt ? `NIFC · ${esc(ago(loadedAt))}` : err ? "unavailable" : "loading…"}</span></div>
       <p class="fc-head">${err && !loadedAt ? "Fire data isn't loading right now." : !loadedAt ? "Loading fires…" :
         w.length ? `${w.length} active wildfire${w.length === 1 ? "" : "s"} in Texas` : "No active wildfires reported in Texas"}</p>
+      ${bans ? `<p class="so-note"><span class="ban-sw" aria-hidden="true"></span>${bans.banned.size} of ${bans.total} counties under a burn ban</p>` : ""}
       ${planned ? `<p class="so-note">${planned} planned burn${planned === 1 ? "" : "s"} (prescribed fire) shown faint.</p>` : ""}
       ${big.length ? `<ul class="fc-list">${big.map((f) => `<li><button type="button" class="fc-row" data-fire="${esc(f.properties.id)}">
         <span class="fc-dot" aria-hidden="true"></span><span class="fc-name">${esc(f.properties.name)}</span><span class="fc-meta">${esc(f.properties.line)}</span></button></li>`).join("")}</ul>` : ""}
-      <ul class="rl-drops"><li><span class="sl-sw" style="--c:${FIRE_COLORS.wild};border-radius:50%"></span>Wildfire, sized by acres</li><li><span class="sl-sw" style="--c:${FIRE_COLORS.planned};border-radius:50%;opacity:.6"></span>Planned burn</li><li><span class="sl-sw" style="--c:${FIRE_COLORS.perimeter};opacity:.6"></span>Mapped fire edge</li></ul>
-      <p class="rl-note">From the national interagency fire feed; it can lag reports from crews. Follow evacuation orders from local officials.</p>`;
+      <ul class="rl-drops"><li><span class="sl-sw" style="--c:${FIRE_COLORS.wild};border-radius:50%"></span>Wildfire, sized by acres</li><li><span class="sl-sw" style="--c:${FIRE_COLORS.planned};border-radius:50%;opacity:.6"></span>Planned burn</li><li><span class="sl-sw" style="--c:${FIRE_COLORS.perimeter};opacity:.6"></span>Mapped fire edge</li><li><span class="sl-sw" style="--c:${FIRE_COLORS.ban};opacity:.45;border:1px dashed ${FIRE_COLORS.ban}"></span>Burn ban (county)</li></ul>
+      <p class="rl-note">Fires from the national interagency fire feed; it can lag reports from crews. Burn bans from Texas A&amp;M Forest Service, as counties report them. Follow evacuation orders from local officials.</p>`;
   }
 
   card.addEventListener("click", (e) => {
@@ -154,8 +174,16 @@ export function initFires({ map, beforeId, openSheet, onChange }) {
     openSheet("fire", p.name);
   }
 
-  // Area panel: wildfires (not planned burns) within 25 miles of the spot.
+  // Area panel: a burn ban in this county, and wildfires (not planned burns) within 25 miles.
   function nearHTML(pt) {
+    const ban = banCounties.find((c) => contains(c.geometry, pt));
+    const banHTML = ban ? `<p class="near-ban"><span class="ban-sw" aria-hidden="true"></span>Burn ban in ${esc(ban.name)} County${(() => {
+      const since = bans.banned.get(String(ban.geoid).slice(-3))?.since;
+      return since ? ` since ${esc(new Date(since).toLocaleDateString([], { month: "short", day: "numeric" }))}` : "";
+    })()}. No outdoor burning.</p>` : "";
+    return banHTML + firesHTML(pt);
+  }
+  function firesHTML(pt) {
     if (!loadedAt) return "";
     const rows = wild().map((f) => ({ f, mi: milesBetween(pt, f.geometry.coordinates) })).filter((x) => x.mi <= NEAR_MI).sort((a, b) => a.mi - b.mi).slice(0, 3);
     if (!rows.length) return "";
@@ -168,10 +196,12 @@ export function initFires({ map, beforeId, openSheet, onChange }) {
   });
 
   load();
+  loadBans();
   setInterval(() => !document.hidden && load(), TTL);
+  setInterval(() => !document.hidden && loadBans(), 60 * 60 * 1000);
 
   return {
-    layerIds: ["fires-perim-fill", "fires-perim-line", "fires-glow", "fires-point", "fires-label"],
+    layerIds: ["burnban-fill", "burnban-line", "fires-perim-fill", "fires-perim-line", "fires-glow", "fires-point", "fires-label"],
     onToggle(v) { on = v; card.hidden = !v; if (v) render(); },
     openFire: (id) => openFire(id, false),
     nearHTML,

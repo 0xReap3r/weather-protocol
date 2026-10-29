@@ -13,6 +13,7 @@ import { initTransit } from "./transit.js";
 import { initStorms } from "./storms.js";
 import { initFires } from "./fires.js";
 import { initTropical } from "./tropical.js";
+import { initLakes } from "./lakes.js";
 import { initMenu } from "./menu.js";
 import { initSatellite } from "./satellite.js";
 import { initFeed } from "./feed.js";
@@ -86,6 +87,7 @@ const MAP_LAYERS = {
   storms: [], // filled in once the map is ready
   tropical: [], // filled in once the map is ready
   fires: [], // filled in once the map is ready
+  lakes: [], // filled in once the map is ready
   satflood: [], // filled in once the map is ready
   raintotal: [], // filled in once the map is ready
   grid: [], // not a map layer: the chip shows or hides the Texas grid pill
@@ -95,7 +97,7 @@ let radar = null;
 let reports = null; // neighbor reports, created once the map is ready
 let transit = null; // DART rail, created once the map is ready
 let storms = null; // SPC outlook, created once the map is ready
-let fires = null, tropical = null; // NIFC wildfires and NHC tropical storms
+let fires = null, tropical = null, lakes = null; // NIFC wildfires and NHC tropical storms
 let satellite = null, rainTotals = null; // NASA flood map and NOAA rain totals
 let feed = null, places = null, route = null, push = null; // What's happened, My places, Check a route, alerts
 const LABEL_FONT = ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"]; // must exist in the basemap's glyphs
@@ -150,12 +152,14 @@ map.on("load", () => {
   // Hurricanes (NHC + TxDOT evacuation routes) and wildfires (NIFC), Texas-season layers.
   tropical = initTropical({ map, beforeId: firstLabel, openSheet, onChange: () => near?.render() });
   MAP_LAYERS.tropical = tropical.layerIds;
-  fires = initFires({ map, beforeId: firstLabel, openSheet, onChange: () => near?.render() });
+  fires = initFires({ map, metro, beforeId: firstLabel, openSheet, onChange: () => near?.render() });
   MAP_LAYERS.fires = fires.layerIds;
-  window.stormlineTropical = tropical; window.stormlineFires = fires; // debugging aids
+  lakes = initLakes({ map, beforeId: firstLabel, openSheet });
+  MAP_LAYERS.lakes = lakes.layerIds;
+  window.stormlineTropical = tropical; window.stormlineFires = fires; window.stormlineLakes = lakes; // debugging aids
 
   // Rain totals (NOAA MRMS) and flood from space (NASA), under the radar drops.
-  rainTotals = initRainTotals({ map, metro, beforeId: firstLabel });
+  rainTotals = initRainTotals({ map, metro, beforeId: firstLabel, openSheet });
   MAP_LAYERS.raintotal = rainTotals.layerIds;
   satellite = initSatellite({ map, metro, beforeId: firstLabel, getAlertsFC: () => alertsFC });
   MAP_LAYERS.satflood = satellite.layerIds;
@@ -323,6 +327,9 @@ map.on("load", () => {
     const hit = map.queryRenderedFeatures(e.point, { layers: ["gauges-circle", "transit-station", "alerts-fill"].filter((l) => map.getLayer(l)) });
     const gauge = hit.find((f) => f.layer.id === "gauges-circle");
     if (gauge) return openGauge(gauge.properties.lid);
+    const lake = layerState.lakes && map.getLayer("lakes-dot") && map.queryRenderedFeatures(e.point, { layers: ["lakes-dot"] })[0];
+    if (lake) return lakes.openLake(lake.properties.i);
+    if (layerState.raintotal && map.getLayer("mesonet-dot") && map.queryRenderedFeatures(e.point, { layers: ["mesonet-dot"] }).length) return; // raintotals.js opens the station
     const fire = map.getLayer("fires-point") && layerState.fires && map.queryRenderedFeatures(e.point, { layers: ["fires-point"] })[0];
     if (fire) return fires.openFire(fire.properties.id);
     if (layerState.tropical && map.getLayer("trop-points") && map.queryRenderedFeatures(e.point, { layers: ["trop-points"] }).length) return; // tropical.js opens the storm
@@ -534,6 +541,7 @@ function applyLayerVisibility() {
   storms?.onToggle(!!layerState.storms);
   tropical?.onToggle(!!layerState.tropical);
   fires?.onToggle(!!layerState.fires);
+  lakes?.onToggle(!!layerState.lakes);
   grid?.render();
   satellite?.onToggle(!!layerState.satflood);
   rainTotals?.onToggle(!!layerState.raintotal);

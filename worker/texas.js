@@ -53,13 +53,17 @@ async function burnbans() {
   if (!r.ok) throw new Error(`TFS ${r.status}`);
   const j = await r.json();
   if (j.error || !j.features) throw new Error("TFS burn ban service error");
-  return { at: new Date().toISOString(), fields: (j.fields || []).map((f) => f.name), rows: j.features.map((f) => f.attributes) };
+  // Rows: [county, countyFips (3 digits), banned 0/1, startedMs]
+  return {
+    at: new Date().toISOString(),
+    counties: j.features.map(({ attributes: a }) => [a.County, String(a.FIPS || "").trim().padStart(3, "0"), /^y/i.test(a.BurnBan || "") ? 1 : 0, a.StartDate || null]),
+  };
 }
 
 export async function handleTexas(req, env, ctx, url, json) {
   const p = url.pathname;
   if (p === "/api/tx/lakes") return (await cached(env, ctx, req, "tx-lakes", 3600, lakes)) || json({ error: "Lake levels are unavailable right now." }, 502);
   if (p === "/api/tx/mesonet") return (await cached(env, ctx, req, "tx-mesonet", 300, mesonet)) || json({ error: "TexMesonet is unavailable right now." }, 502);
-  if (p === "/api/tx/burnbans") return (await cached(env, ctx, req, "tx-burnbans", 3600, burnbans)) || json({ error: "Burn bans are unavailable right now." }, 502);
+  if (p === "/api/tx/burnbans") return (await cached(env, ctx, req, "tx-burnbans-v2", 3600, burnbans)) || json({ error: "Burn bans are unavailable right now." }, 502);
   return json({ error: "Not found" }, 404);
 }

@@ -9,9 +9,9 @@ const MODE_KEY = "stormline.viewMode.v1";
 // Layer sets for "Show me". Grid isn't live yet, so presets leave it alone.
 export const PRESETS = [
   { id: "all", label: "Everything", note: "All official layers and neighbor reports", layers: ["alerts", "rivers", "rain", "storms", "reports"] },
-  { id: "flood", label: "Flooding", note: "Warnings, rivers, radar, flood zones, reports", layers: ["alerts", "rivers", "rain", "zones", "reports", "satflood", "raintotal"] },
+  { id: "flood", label: "Flooding", note: "Warnings, rivers, radar, flood zones, reports", layers: ["alerts", "rivers", "rain", "zones", "reports", "satflood", "raintotal", "lakes"] },
   { id: "storms", label: "Tornadoes and storms", note: "Warnings, storm outlook, radar, hail and damage reports", layers: ["alerts", "storms", "rain", "reports"] },
-  { id: "hurricane", label: "Hurricanes", note: "Storm cone, coastal warnings, evacuation routes, rivers, radar", layers: ["alerts", "tropical", "rivers", "rain", "reports"] },
+  { id: "hurricane", label: "Hurricanes", note: "Storm cone, coastal warnings, evacuation routes, rivers, radar", layers: ["alerts", "tropical", "rivers", "rain", "reports", "lakes"] },
   { id: "fire", label: "Wildfires", note: "Active fires, red flag warnings, neighbor reports", layers: ["alerts", "fires", "reports"] },
   { id: "winter", label: "Winter and ice", note: "Warnings, iced-road and power reports, rail", layers: ["alerts", "rain", "reports", "transit"] },
   { id: "power", label: "Power outages", note: "Warnings and neighbor power reports", layers: ["alerts", "reports"] },
@@ -76,7 +76,7 @@ export function initMenu({ appName, getLayerState, applyPreset, actions, getFeed
 
   function activePreset() {
     const st = getLayerState();
-    return PRESETS.find((p) => ["alerts", "rivers", "rain", "storms", "zones", "transit", "reports", "satflood", "raintotal", "tropical", "fires"].every((id) => !!st[id] === p.layers.includes(id)))?.id || null;
+    return PRESETS.find((p) => ["alerts", "rivers", "rain", "storms", "zones", "transit", "reports", "satflood", "raintotal", "tropical", "fires", "lakes"].every((id) => !!st[id] === p.layers.includes(id)))?.id || null;
   }
 
   function render() {

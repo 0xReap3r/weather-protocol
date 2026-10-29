@@ -6,6 +6,7 @@ import { RAIN_BANDS } from "./radar.js";
 import { SPC_LEVELS } from "./storms.js";
 import { STRENGTH, COAST, OUTLOOK, EVAC_COLOR } from "./tropical.js";
 import { FIRE_COLORS } from "./fires.js";
+import { LAKE_COLORS } from "./lakes.js";
 
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -75,6 +76,18 @@ export function renderKey() {
       ${row(dot(FIRE_COLORS.wild), "Wildfire", "Bigger dot, bigger fire. Tap for acres and containment.")}
       ${row(dot(FIRE_COLORS.planned, true), "Planned burn", "Prescribed fire set on purpose by land managers")}
       ${row(area(FIRE_COLORS.perimeter), "Mapped fire edge", "Where crews last mapped the fire; it can move")}
+      ${row(`<span class="key-sw key-area" style="--c:${FIRE_COLORS.ban};border-style:dashed"></span>`, "Burn ban", "County where outdoor burning is banned (Texas A&M Forest Service)")}
+    </ul>
+
+    <h3 class="key-h">Lakes</h3>
+    <ul class="key-list">
+      ${row(dot(LAKE_COLORS.low), "Low", "Under about 40% full")}
+      ${row(dot(LAKE_COLORS.full), "Near full", "Water-supply lake close to its normal full level")}
+      ${row(`<span class="key-sw key-dot" style="--c:${LAKE_COLORS.full};box-shadow:0 0 0 2px ${LAKE_COLORS.over},0 0 8px ${LAKE_COLORS.over}"></span>`, "Above full", "Holding flood water; dams may release it downstream")}
+      ${row(dot(LAKE_COLORS.flood), "Flood-control reservoir", "Kept mostly empty; fills only in floods")}
+    </ul>
+    <ul class="key-list">
+      ${row(`<span class="key-sw key-dot" style="--c:#0a1119;box-shadow:0 0 0 2px #7fd4ff"></span>`, "Rain gauge (Rain totals layer)", "TexMesonet station with the rain it measured")}
     </ul>
 
     <h3 class="key-h">Rivers and lakes</h3>

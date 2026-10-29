@@ -1252,3 +1252,8 @@ body { font: 15px/1.45 var(--font-body); font-stretch: 100%; letter-spacing: .00
 .fire-facts th { color: var(--text-dim); width: 40%; }
 .fire-facts td { color: var(--text); font-family: var(--font-body); }
 .fire-stale { color: var(--warn); }
+.lake-card { width: min(330px, 100%); }
+.lake-bar { height: 8px; margin-top: 10px; border-radius: 4px; background: linear-gradient(90deg, #c08a3e 0%, #c08a3e 30%, #4f8fbf 60%, #4fb3ff 86%, #7df9ff 100%); }
+.lake-over { color: #7df9ff; }
+.ban-sw { display: inline-block; width: 12px; height: 9px; margin-right: 7px; vertical-align: -1px; border-radius: 2px; border: 1px dashed #d9822b; background: rgba(217,130,43,.3); }
+.near-ban { margin: 10px 0 0; padding: 10px 12px; border-radius: 12px; font-size: 13.5px; border: 1px solid rgba(217,130,43,.4); background: rgba(217,130,43,.07); box-shadow: inset 3px 0 0 #d9822b; }

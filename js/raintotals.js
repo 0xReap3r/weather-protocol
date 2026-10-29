@@ -4,6 +4,7 @@
 // County labels show the average and the most rain anywhere in the county.
 import { fetchJSON } from "./data/fetch.js";
 import { loadCounties, countiesIn } from "./data/counties.js";
+import { loadMesonet } from "./data/texas.js";
 
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -65,8 +66,9 @@ export async function countyRain(metro, periodId, counties) {
   }));
 }
 
-export function initRainTotals({ map, metro, beforeId }) {
+export function initRainTotals({ map, metro, beforeId, openSheet }) {
   let on = false, period = PERIODS[1], legend = {};
+  let stations = [], stationsAt = null; // TexMesonet ground gauges (measured rain), Texas only
   let stamp = hourStamp();
 
   map.addSource("raintotal", { type: "raster", tiles: tiles(period), tileSize: 256,
@@ -85,6 +87,64 @@ export function initRainTotals({ map, metro, beforeId }) {
   });
   rtLabel("raintotal-label", [">=", ["get", "max"], 0.5], 0);
   rtLabel("raintotal-label-quiet", ["<", ["get", "max"], 0.5], 8);
+
+  // TexMesonet weather stations: rain actually measured in a gauge, to check the radar estimate.
+  map.addSource("mesonet", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+  const addStationLayers = () => {
+    map.addLayer({ id: "mesonet-dot", type: "circle", source: "mesonet", filter: ["!=", ["get", "show"], false],
+      paint: {
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 3.5, 10, 6],
+        "circle-color": "#0a1119", "circle-stroke-width": 2,
+        "circle-stroke-color": ["case", [">=", ["coalesce", ["get", "r"], 0], 1], "#7fd4ff", [">", ["coalesce", ["get", "r"], 0], 0], "#4f8fbf", "#5d7690"],
+        "circle-opacity": ["case", ["get", "stale"], 0.4, 1], "circle-stroke-opacity": ["case", ["get", "stale"], 0.4, 1],
+      } });
+    map.addLayer({ id: "mesonet-label", type: "symbol", source: "mesonet", minzoom: 7,
+      filter: ["all", ["!=", ["get", "show"], false], [">", ["coalesce", ["get", "r"], 0], 0]],
+      layout: { "text-field": ["concat", ["get", "rt"], "\""], "text-font": ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"], "text-size": 11.5, "text-offset": [0, 1], "text-anchor": "top" },
+      paint: { "text-color": "#bfe6ff", "text-halo-color": "#0a1119", "text-halo-width": 1.6 } });
+  };
+  addStationLayers();
+  map.on("mouseenter", "mesonet-dot", () => (map.getCanvas().style.cursor = "pointer"));
+  map.on("mouseleave", "mesonet-dot", () => (map.getCanvas().style.cursor = ""));
+  map.on("click", "mesonet-dot", (e) => {
+    const st = stations.find((x) => x.id === e.features?.[0]?.properties?.id);
+    if (st && openSheet) openStation(st);
+  });
+  function setStations() {
+    const key = period.id === "72h" ? "r72" : "r24";
+    map.getSource("mesonet")?.setData({ type: "FeatureCollection", features: stations.map((st) => ({
+      type: "Feature", geometry: { type: "Point", coordinates: st.at },
+      properties: { id: st.id, r: st[key], rt: st[key] == null ? "" : inches(st[key]), stale: st.stale, show: period.id !== "1h" },
+    })) });
+  }
+  async function loadStations() {
+    try {
+      const rows = await loadMesonet();
+      const now = Date.now();
+      stations = rows.map((st) => ({ ...st, stale: !st.time || now - Date.parse(st.time) > 2 * 3600000 }));
+      stationsAt = now;
+      setStations();
+    } catch (_) { /* gauges are a bonus on top of the radar estimate */ }
+  }
+  function openStation(st) {
+    const v = (x, u) => (x == null ? "—" : `${x}<small>${u}</small>`);
+    document.getElementById("wxstation-body").innerHTML = `
+      <p class="fire-kind" style="--c:#7fd4ff">TexMesonet weather station · ${esc(st.id)}</p>
+      <div class="near-stats">
+        <div><span class="st-l">Rain, 24 hr</span><span class="st-v">${v(st.r24 == null ? null : inches(st.r24), "in")}</span></div>
+        <div><span class="st-l">48 hr</span><span class="st-v">${v(st.r48 == null ? null : inches(st.r48), "in")}</span></div>
+        <div><span class="st-l">3 days</span><span class="st-v">${v(st.r72 == null ? null : inches(st.r72), "in")}</span></div>
+      </div>
+      <table class="ladder fire-facts"><tbody>
+        <tr><th>Temperature</th><td>${st.tempF == null ? "—" : `${st.tempF}°F`}</td></tr>
+        <tr><th>Wind</th><td>${st.wind == null ? "—" : `${st.wind} mph`}${st.gust ? `, gusts ${st.gust} mph` : ""}</td></tr>
+        ${st.soil != null ? `<tr><th>Soil water</th><td>${st.soil}% of the soil by volume</td></tr>` : ""}
+        <tr><th>Reading</th><td>${st.time ? esc(new Date(st.time).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })) : "—"}${st.stale ? " (over 2 hours old)" : ""}</td></tr>
+      </tbody></table>
+      ${st.soil != null ? `<p class="near-note" style="margin-top:10px">Wetter soil soaks up less rain, so more runs off into streets and creeks. What counts as wet depends on the soil type at this station.</p>` : ""}
+      <p class="sheet-small">Measured by a rain gauge at this station, run by the Texas Water Development Board. <a href="https://www.texmesonet.org/" target="_blank" rel="noopener">TexMesonet</a></p>`;
+    openSheet("wxstation", st.name);
+  }
 
   const card = document.createElement("div");
   card.id = "rt-legend";
@@ -116,7 +176,7 @@ export function initRainTotals({ map, metro, beforeId }) {
       <div class="rl-head"><span class="rl-title">Rain totals</span><span class="rl-time">NOAA radar · last ${esc(period.label)}</span></div>
       <div class="sl-days" role="group" aria-label="Time period">${PERIODS.map((p) => `<button type="button" class="sl-day" data-rt="${p.id}" aria-pressed="${p.id === period.id}">${p.label}</button>`).join("")}</div>
       <ul class="rl-drops sl-levels rt-steps"><li class="on">loading…</li></ul>
-      <p class="rl-note">Inches of rain estimated from radar, updated hourly. Radar can miss or overcount; local gauges are the final word.</p>`;
+      <p class="rl-note">Inches of rain estimated from radar, updated hourly. Radar can miss or overcount; local gauges are the final word.${stationsAt ? period.id === "1h" ? " Rain gauges (circles) report 24 hours and longer." : ` Circles are TexMesonet rain gauges with the inches they measured.` : ""}</p>`;
     const p = period;
     try {
       const lg = await loadLegend(p);
@@ -148,6 +208,7 @@ export function initRainTotals({ map, metro, beforeId }) {
     if (!b) return;
     period = PERIODS.find((p) => p.id === b.dataset.rt);
     map.getSource("raintotal")?.setTiles(tiles(period));
+    setStations();
     render();
   });
 
@@ -160,8 +221,11 @@ export function initRainTotals({ map, metro, beforeId }) {
   }, 5 * 60 * 1000);
 
   return {
-    layerIds: ["raintotal", "raintotal-label", "raintotal-label-quiet"],
-    onToggle(v) { on = v; card.hidden = !v; if (v) render(); },
+    layerIds: ["raintotal", "raintotal-label", "raintotal-label-quiet", "mesonet-dot", "mesonet-label"],
+    onToggle(v) {
+      on = v; card.hidden = !v;
+      if (v) { render(); if (!stationsAt || Date.now() - stationsAt > 5 * 60 * 1000) loadStations(); }
+    },
   };
 }
 
