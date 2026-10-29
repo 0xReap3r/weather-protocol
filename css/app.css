@@ -1341,3 +1341,8 @@ body { font: 15px/1.45 var(--font-body); font-stretch: 100%; letter-spacing: .00
 .near-quiet { display: flex; align-items: center; gap: 8px; margin: 10px 0 0; font-size: 13px; color: var(--text-dim); line-height: 1.4; }
 .near-quiet svg, .near-quiet .ban-sw { flex: none; margin: 0; }
 .sat-total { font-size: 14.5px; }
+/* Folded legend cards are just their name; the dock stays clear of the area panel */
+.radar-legend.lg-collapsed .rl-time { display: none; }
+.radar-legend.lg-collapsed { padding: 6px 11px; }
+.radar-legend.lg-collapsed .rl-title { font-size: 12px; font-weight: 600; }
+@media (min-width: 960px) { .legend-dock { max-width: calc(100vw - 470px); } }
