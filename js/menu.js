@@ -1,6 +1,8 @@
 // Side menu: every view in one place, "Show me" presets that switch the map to one kind of
 // weather, and the Simple / Normal / Advanced view modes. Our own layout and wording.
 
+import { LANG, setLang, t } from "./i18n.js";
+
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -90,7 +92,7 @@ export function initMenu({ appName, getLayerState, applyPreset, actions, getFeed
       </section>
       ${getRegions ? (() => { const { list, current } = getRegions(); return `<section class="mn-sec">
         <h3 class="mn-h">Go to</h3>
-        <div class="mn-regions">${[...list.map((r) => [r.id, r.name]), ["tx", "All of Texas"]].map(([id, name]) => `<button type="button" class="sl-day" data-region="${id}" aria-pressed="${id === current}">${esc(name)}</button>`).join("")}</div>
+        <div class="mn-regions">${[...list.map((r) => [r.id, r.name]), ["tx", "All of Texas"]].map(([id, name]) => `<button type="button" class="sl-day" data-region="${id}" aria-pressed="${id === current}"${id === "tx" ? "" : ' translate="no"'}>${esc(name)}</button>`).join("")}</div>
       </section>`; })() : ""}
       <div class="mn-cols">
         <section class="mn-sec">
@@ -143,6 +145,11 @@ export function initMenu({ appName, getLayerState, applyPreset, actions, getFeed
         <h3 class="mn-h">View</h3>
         <div class="mn-modes" role="group" aria-label="View mode">${MODES.map((m) => `<button type="button" data-mode="${m.id}" aria-pressed="${mode === m.id}">${m.label}</button>`).join("")}</div>
         <p class="mn-mode-note">${esc(MODES.find((m) => m.id === mode).note)}</p>
+      </section>
+      <section class="mn-sec mn-modes-sec">
+        <h3 class="mn-h">Language</h3>
+        <div class="mn-modes mn-lang" role="group" aria-label="Language" translate="no">${[["en", "English"], ["es", "Español"]].map(([id, label]) =>
+          `<button type="button" data-lang="${id}" lang="${id}" aria-pressed="${LANG === id}">${label}</button>`).join("")}</div>
       </section>`;
   }
 
@@ -179,13 +186,15 @@ export function initMenu({ appName, getLayerState, applyPreset, actions, getFeed
       const preset = PRESETS.find((x) => x.id === p.dataset.preset);
       applyPreset(preset.layers);
       render();
-      actions.toast?.(`Showing: ${preset.label.toLowerCase()}.`);
+      actions.toast?.(`Showing: ${t(preset.label).toLowerCase()}.`);
       return;
     }
     const rg = e.target.closest("[data-region]");
     if (rg) { close(); onRegion?.(rg.dataset.region); return; }
     const m = e.target.closest("[data-mode]");
     if (m) { setMode(m.dataset.mode); return; }
+    const lg = e.target.closest("[data-lang]");
+    if (lg) { if (lg.dataset.lang !== LANG) setLang(lg.dataset.lang); return; }
     const a = e.target.closest("[data-act]");
     if (a && actions[a.dataset.act]) { close(); actions[a.dataset.act](); }
   });

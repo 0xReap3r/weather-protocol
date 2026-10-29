@@ -1,3 +1,4 @@
+import { isEs, setLang, t, eventName } from "./i18n.js"; // first: Spanish mode translates everything rendered after this
 import { APP } from "./config.js";
 import { createRegion } from "./region.js";
 import { LAYERS, loadLayerState, saveLayerState } from "./layers.js";
@@ -586,6 +587,10 @@ function closeSheet() {
 $("#btn-layers").addEventListener("click", () => { renderLayerList(); openSheet("layers", "Layers"); });
 const openAbout = () => openSheet("about", "About");
 $("#btn-about").addEventListener("click", openAbout);
+// One-tap language switch in the footer, labeled in the other language.
+$("#btn-lang").textContent = isEs ? "English" : "Español";
+$("#btn-lang").lang = isEs ? "en" : "es";
+$("#btn-lang").addEventListener("click", () => setLang(isEs ? "en" : "es"));
 $("#btn-key").addEventListener("click", () => { $("#key-body").innerHTML = renderKey(); openSheet("key", "Map key"); });
 sheet.querySelector(".sheet-close").addEventListener("click", closeSheet);
 document.addEventListener("keydown", (e) => e.key === "Escape" && !sheet.hidden && closeSheet());
