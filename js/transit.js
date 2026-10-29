@@ -35,11 +35,16 @@ export function initTransit({ map, beforeId, getAlertsFC, getRoadCells, openShee
   // Station badges: a train pictogram; the ring turns the flag's color when a station is flagged.
   badge(map, "station", { glyph: "train", ring: "#c9d3dc" });
   for (const [k, c] of Object.entries(FLAG_COLOR)) badge(map, `station-${k}`, { glyph: "train", ring: c, fill: k === "warning" ? "#4a1010" : undefined });
+  // Storm pulse: a white ring beating around a station an active warning covers.
+  map.addLayer({
+    id: "transit-stormpulse", type: "circle", source: "transit-stations", minzoom: 10, filter: ["get", "flagged"],
+    paint: { "circle-radius": 10, "circle-color": "#ffffff", "circle-opacity": 0, "circle-stroke-width": 0 },
+  });
   map.addLayer({
     id: "transit-station", type: "symbol", source: "transit-stations", minzoom: 10,
     layout: {
       "icon-image": ["case", ["get", "flagged"], ["concat", "mk-station-", ["get", "flagType"]], "mk-station"],
-      "icon-size": ["interpolate", ["linear"], ["zoom"], 10, ["case", ["get", "flagged"], 0.75, 0.55], 14, ["case", ["get", "flagged"], 1, 0.85]],
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 10, ["case", ["get", "flagged"], 0.88, 0.66], 14, ["case", ["get", "flagged"], 1.18, 1]],
       "icon-allow-overlap": true, "symbol-sort-key": ["case", ["get", "flagged"], 0, 1],
     },
   });
@@ -130,10 +135,11 @@ export function initTransit({ map, beforeId, getAlertsFC, getRoadCells, openShee
   ensureLoaded(); // stations feed the side panel's flags even while the Rail layer is off
 
   return {
-    layerIds: ["transit-line-case", "transit-line", "transit-station", "transit-station-label"],
+    layerIds: ["transit-line-case", "transit-line", "transit-stormpulse", "transit-station", "transit-station-label"],
     onToggle(on) { if (on) ensureLoaded(); },
     refresh: draw,
     openStation,
+    anyFlagged: () => flags.size > 0,
     flaggedNear(pt, miles = 1) {
       if (!data) return [];
       return data.stations

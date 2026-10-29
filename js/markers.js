@@ -58,8 +58,9 @@ export function badge(map, id, opts) {
   return key;
 }
 
-// Standard size ramp: small when zoomed out, comfortable to tap when zoomed in.
-export const ICON_SIZE = ["interpolate", ["linear"], ["zoom"], 5, 0.62, 9, 0.8, 13, 1];
+// Standard size ramp: small when zoomed out, comfortable to tap when zoomed in — and still
+// growing a little past 13 so a badge never shrinks relative to the rest of the map as you zoom.
+export const ICON_SIZE = ["interpolate", ["linear"], ["zoom"], 5, 0.72, 9, 0.95, 13, 1.15, 17, 1.32];
 
 // Same badge as inline SVG for legends and panels.
 export function badgeSVG({ glyph, ring, fill = CORE, ink = "#f2f6fa", dashed = false, filledGlyph = false }, size = 18) {

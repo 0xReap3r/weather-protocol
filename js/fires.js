@@ -77,7 +77,7 @@ export function initFires({ map, metro, beforeId, openSheet, onChange }) {
   map.addLayer({ id: "fires-point", type: "symbol", source: "fires",
     layout: {
       "icon-image": ["case", ["get", "planned"], "mk-fire-planned", "mk-fire-wild"],
-      "icon-size": ["interpolate", ["linear"], ["zoom"], 5, ["interpolate", ["linear"], acres, 0, 0.66, 1000, 0.8, 10000, 1, 100000, 1.25], 9, ["interpolate", ["linear"], acres, 0, 0.85, 1000, 1, 10000, 1.2, 100000, 1.45]],
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 5, ["interpolate", ["linear"], acres, 0, 0.78, 1000, 0.95, 10000, 1.15, 100000, 1.4], 9, ["interpolate", ["linear"], acres, 0, 1, 1000, 1.18, 10000, 1.4, 100000, 1.65]],
       "icon-allow-overlap": true, "icon-ignore-placement": true,
       "symbol-sort-key": ["case", ["get", "planned"], 1, 0],
     },

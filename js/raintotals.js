@@ -100,7 +100,7 @@ export function initRainTotals({ map, metro, beforeId, openSheet }) {
     map.addLayer({ id: "mesonet-dot", type: "symbol", source: "mesonet", filter: ["!=", ["get", "show"], false],
       layout: {
         "icon-image": ["case", [">=", ["coalesce", ["get", "r"], 0], 1], "mk-rain-heavy", [">", ["coalesce", ["get", "r"], 0], 0], "mk-rain-wet", "mk-rain-dry"],
-        "icon-size": ["interpolate", ["linear"], ["zoom"], 5, 0.5, 9, 0.7, 13, 0.9], "icon-allow-overlap": true,
+        "icon-size": ["interpolate", ["linear"], ["zoom"], 5, 0.6, 9, 0.85, 13, 1.05, 17, 1.2], "icon-allow-overlap": true,
       },
       paint: { "icon-opacity": ["case", ["get", "stale"], 0.4, 1] } });
     map.addLayer({ id: "mesonet-label", type: "symbol", source: "mesonet", minzoom: 7,
