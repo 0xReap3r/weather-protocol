@@ -97,14 +97,14 @@ export function initFires({ map, metro, beforeId, openSheet, onChange }) {
   map.addLayer({ id: "fires-glow", type: "circle", source: "fires",
     paint: {
       "circle-color": ["case", ["get", "planned"], FIRE_COLORS.planned, FIRE_COLORS.wild],
-      "circle-radius": ["interpolate", ["linear"], acres, 0, 14, 1000, 22, 10000, 32, 100000, 44],
+      "circle-radius": ["interpolate", ["linear"], acres, 0, 18, 1000, 26, 10000, 36, 100000, 48],
       "circle-blur": 1,
-      "circle-opacity": ["case", ["get", "stale"], 0.12, ["get", "planned"], 0.32, 0.5],
+      "circle-opacity": ["case", ["get", "stale"], 0.12, ["get", "planned"], 0.4, 0.55],
     } });
   map.addLayer({ id: "fires-point", type: "symbol", source: "fires",
     layout: {
       "icon-image": ["case", ["get", "planned"], "fire-planned", "fire-wild"],
-      "icon-size": ["interpolate", ["linear"], acres, 0, 0.75, 1000, 0.95, 10000, 1.2, 100000, 1.5],
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 5, ["interpolate", ["linear"], acres, 0, 0.8, 1000, 0.95, 10000, 1.2, 100000, 1.5], 9, ["interpolate", ["linear"], acres, 0, 1.05, 1000, 1.2, 10000, 1.45, 100000, 1.75]],
       "icon-allow-overlap": true, "icon-ignore-placement": true,
       "symbol-sort-key": ["case", ["get", "planned"], 1, 0],
     },
@@ -113,7 +113,7 @@ export function initFires({ map, metro, beforeId, openSheet, onChange }) {
     layout: {
       "text-field": ["format", ["get", "name"], {}, "\n", {}, ["get", "line"], { "font-scale": 0.85 }],
       "text-font": ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"],
-      "text-size": 12, "text-line-height": 1.2, "text-offset": [0, 1.6], "text-anchor": "top", "text-max-width": 12,
+      "text-size": 12, "text-line-height": 1.2, "text-offset": [0, 1.9], "text-anchor": "top", "text-max-width": 12,
     },
     paint: { "text-color": ["case", ["get", "planned"], "#ffd98a", "#ffb08a"], "text-halo-color": "#0a1119", "text-halo-width": 1.6 } });
 
