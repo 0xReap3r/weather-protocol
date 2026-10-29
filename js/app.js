@@ -11,6 +11,8 @@ import { initOutlook } from "./outlook.js";
 import { initReports } from "./reports.js";
 import { initTransit } from "./transit.js";
 import { initStorms } from "./storms.js";
+import { initFires } from "./fires.js";
+import { initTropical } from "./tropical.js";
 import { initMenu } from "./menu.js";
 import { initSatellite } from "./satellite.js";
 import { initFeed } from "./feed.js";
@@ -82,6 +84,8 @@ const MAP_LAYERS = {
   zones: ["fema-zones"],
   transit: [], // filled in once the map is ready
   storms: [], // filled in once the map is ready
+  tropical: [], // filled in once the map is ready
+  fires: [], // filled in once the map is ready
   satflood: [], // filled in once the map is ready
   raintotal: [], // filled in once the map is ready
   grid: [], // not a map layer: the chip shows or hides the Texas grid pill
@@ -91,6 +95,7 @@ let radar = null;
 let reports = null; // neighbor reports, created once the map is ready
 let transit = null; // DART rail, created once the map is ready
 let storms = null; // SPC outlook, created once the map is ready
+let fires = null, tropical = null; // NIFC wildfires and NHC tropical storms
 let satellite = null, rainTotals = null; // NASA flood map and NOAA rain totals
 let feed = null, places = null, route = null, push = null; // What's happened, My places, Check a route, alerts
 const LABEL_FONT = ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"]; // must exist in the basemap's glyphs
@@ -141,6 +146,13 @@ map.on("load", () => {
   storms = initStorms({ map, beforeId: firstLabel, metro });
   MAP_LAYERS.storms = storms.layerIds;
   window.stormlineStorms = storms; // debugging aid
+
+  // Hurricanes (NHC + TxDOT evacuation routes) and wildfires (NIFC), Texas-season layers.
+  tropical = initTropical({ map, beforeId: firstLabel, openSheet, onChange: () => near?.render() });
+  MAP_LAYERS.tropical = tropical.layerIds;
+  fires = initFires({ map, beforeId: firstLabel, openSheet, onChange: () => near?.render() });
+  MAP_LAYERS.fires = fires.layerIds;
+  window.stormlineTropical = tropical; window.stormlineFires = fires; // debugging aids
 
   // Rain totals (NOAA MRMS) and flood from space (NASA), under the radar drops.
   rainTotals = initRainTotals({ map, metro, beforeId: firstLabel });
@@ -311,6 +323,9 @@ map.on("load", () => {
     const hit = map.queryRenderedFeatures(e.point, { layers: ["gauges-circle", "transit-station", "alerts-fill"].filter((l) => map.getLayer(l)) });
     const gauge = hit.find((f) => f.layer.id === "gauges-circle");
     if (gauge) return openGauge(gauge.properties.lid);
+    const fire = map.getLayer("fires-point") && layerState.fires && map.queryRenderedFeatures(e.point, { layers: ["fires-point"] })[0];
+    if (fire) return fires.openFire(fire.properties.id);
+    if (layerState.tropical && map.getLayer("trop-points") && map.queryRenderedFeatures(e.point, { layers: ["trop-points"] }).length) return; // tropical.js opens the storm
     const station = hit.find((f) => f.layer.id === "transit-station");
     if (station) return transit.openStation(station.properties.id);
     // Anywhere else (including inside a warning area): show that spot in the Near-you panel.
@@ -517,6 +532,8 @@ function applyLayerVisibility() {
   radar?.onToggle(!!layerState.rain);
   transit?.onToggle(!!layerState.transit);
   storms?.onToggle(!!layerState.storms);
+  tropical?.onToggle(!!layerState.tropical);
+  fires?.onToggle(!!layerState.fires);
   grid?.render();
   satellite?.onToggle(!!layerState.satflood);
   rainTotals?.onToggle(!!layerState.raintotal);
@@ -906,7 +923,7 @@ near = initNearPanel({
   openAlerts,
   locate: locateMe,
   openAbout,
-  getReportsHTML: (pt) => rainSoFarHTML(pt) + (reports?.summaryHTML(pt) || "") + stationsHTML(pt),
+  getReportsHTML: (pt) => (tropical?.nearHTML(pt) || "") + (fires?.nearHTML(pt) || "") + rainSoFarHTML(pt) + (reports?.summaryHTML(pt) || "") + stationsHTML(pt),
 });
 
 // Rain that has already fallen at the spot (NOAA MRMS radar estimates), loaded in the background.

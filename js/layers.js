@@ -36,6 +36,22 @@ export const LAYERS = [
     defaultOn: false,
   },
   {
+    id: "tropical",
+    label: "Hurricanes",
+    hint: "Tropical storms and hurricanes from the National Hurricane Center: forecast cone, track, coastal watches and warnings, areas to watch over 7 days, and TxDOT hurricane evacuation routes.",
+    source: "NOAA National Hurricane Center · TxDOT",
+    phase: 14,
+    defaultOn: false,
+  },
+  {
+    id: "fires",
+    label: "Fires",
+    hint: "Active wildfires in Texas, sized by acres, with containment and mapped fire edges. Planned (prescribed) burns are shown faint.",
+    source: "National Interagency Fire Center (WFIGS)",
+    phase: 14,
+    defaultOn: false,
+  },
+  {
     id: "satflood",
     label: "Flood from space",
     hint: "Flood water seen by NASA satellites over the last 2 days, with flooded acres per county when zoomed out. Misses small streets and anything under cloud.",

@@ -4,6 +4,8 @@ import { CATEGORY } from "./data/gauges.js";
 import { alertStyle } from "./data/alerts.js";
 import { RAIN_BANDS } from "./radar.js";
 import { SPC_LEVELS } from "./storms.js";
+import { STRENGTH, COAST, OUTLOOK, EVAC_COLOR } from "./tropical.js";
+import { FIRE_COLORS } from "./fires.js";
 
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -57,6 +59,23 @@ export function renderKey() {
     <h3 class="key-h">Storm outlook (Storms layer)</h3>
     <p class="key-lead">NOAA's Storm Prediction Center forecast for severe storms, in its own colors. A wide-area chance, not a warning.</p>
     <ul class="key-list">${SPC_LEVELS.map((l) => row(area(l.fill), l.n ? `${l.n} · ${l.name}` : l.name, l.note)).join("")}</ul>
+
+    <h3 class="key-h">Hurricanes</h3>
+    <p class="key-lead">From the National Hurricane Center. The cone is where the center may go; wind, surge and flooding reach far outside it.</p>
+    <ul class="key-list">
+      ${row(`<span class="key-sw key-area" style="--c:#e9f0f6"></span>`, "Forecast cone", "Possible path of the storm's center over 5 days")}
+      ${Object.values(COAST).map((c) => row(`<span class="key-sw key-rail" style="--c:${c.color};height:6px"></span>`, c.name, "Drawn along the coast")).join("")}
+      ${row(`<span class="key-sw key-area" style="--c:${OUTLOOK.Medium};border-style:dashed"></span>`, "Area to watch", "Chance a storm forms in 7 days: yellow low, orange medium, red high")}
+      ${row(`<span class="key-sw key-rail" style="--c:${EVAC_COLOR}"></span>`, "Evacuation route", "TxDOT hurricane evacuation route. Leave when your county says to.")}
+    </ul>
+    <ul class="key-list key-cols">${STRENGTH.map((x) => row(dot(x.color), x.name)).join("")}</ul>
+
+    <h3 class="key-h">Wildfires</h3>
+    <ul class="key-list">
+      ${row(dot(FIRE_COLORS.wild), "Wildfire", "Bigger dot, bigger fire. Tap for acres and containment.")}
+      ${row(dot(FIRE_COLORS.planned, true), "Planned burn", "Prescribed fire set on purpose by land managers")}
+      ${row(area(FIRE_COLORS.perimeter), "Mapped fire edge", "Where crews last mapped the fire; it can move")}
+    </ul>
 
     <h3 class="key-h">Rivers and lakes</h3>
     <p class="key-lead">Each dot is an official gauge, colored by NWS flood stage. A pulsing ring means it's at or near flood stage.</p>

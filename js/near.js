@@ -339,7 +339,7 @@ export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, o
       })
     );
     body.querySelectorAll(".near-gauge").forEach((b) => b.addEventListener("click", () => openGauge(b.dataset.lid)));
-    body.querySelectorAll(".near-alert").forEach((b) => b.addEventListener("click", () => openAlerts(b.dataset.id)));
+    body.querySelectorAll(".near-alert[data-id]").forEach((b) => b.addEventListener("click", () => openAlerts(b.dataset.id)));
   }
 
   const api = {
