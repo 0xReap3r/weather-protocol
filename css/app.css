@@ -1346,3 +1346,10 @@ body { font: 15px/1.45 var(--font-body); font-stretch: 100%; letter-spacing: .00
 .radar-legend.lg-collapsed { padding: 6px 11px; }
 .radar-legend.lg-collapsed .rl-title { font-size: 12px; font-weight: 600; }
 @media (min-width: 960px) { .legend-dock { max-width: calc(100vw - 470px); } }
+@media (max-width: 719px) {
+  /* One row of legend pills that scrolls sideways, instead of a wall of them */
+  .legend-dock { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: calc(var(--gutter-l) * -1) calc(var(--gutter-r) * -1); padding-inline: var(--gutter-l) var(--gutter-r); }
+  .legend-dock::-webkit-scrollbar { display: none; }
+  .legend-dock > .radar-legend { flex: none; }
+  .legend-dock:has(> .radar-legend:not(.lg-collapsed):not([hidden])) { flex-wrap: wrap; }
+}
