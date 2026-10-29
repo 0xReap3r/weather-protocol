@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacidad de Stormline</title>
+  <meta name="description" content="Qué recopila Stormline, para qué y por cuánto tiempo.">
+  <meta name="theme-color" content="#0a1119">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap">
+  <link rel="stylesheet" href="css/legal.css">
+</head>
+<body>
+<main>
+  <div class="top"><a class="wordmark" href="./">Stormline</a><span class="top-links"><a href="privacy.html" lang="en">English</a><a href="terms-es.html">Términos</a></span></div>
+  <h1>Privacidad</h1>
+  <p class="meta">Última actualización: 28 de octubre de 2026</p>
+  <p class="draft"><strong>Borrador.</strong> Este aviso en lenguaje sencillo describe cómo funciona la app hoy. Todavía no lo ha revisado un abogado y puede cambiar antes del lanzamiento público.</p>
+  <p class="courtesy">Traducción de cortesía. Si hay alguna diferencia, la <a href="privacy.html" lang="en">versión en inglés</a> es la que vale.</p>
+
+  <p>Stormline es un mapa gratuito de tiempo severo para Texas. No tiene cuentas, anuncios, cookies de rastreo ni analíticas. Casi todo lo que usted hace se queda en su dispositivo.</p>
+
+  <h2>Lo que se queda en su dispositivo</h2>
+  <ul>
+    <li><strong>Su ubicación.</strong> Cuando toca Cerca de mí, su navegador comparte su ubicación con la app en su dispositivo. No se guarda en nuestros servidores. (Vea "Lugares que consulta" más abajo para las consultas que esto genera.)</li>
+    <li><strong>Mis lugares, ajustes y preferencias de vista</strong> (capas, modo de vista, idioma, leyendas plegadas) se guardan en el almacenamiento local de su navegador. Al borrar los datos del navegador se eliminan.</li>
+  </ul>
+
+  <h2>Lo que guardamos y por cuánto tiempo</h2>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Qué</th><th>Para qué</th><th>Por cuánto tiempo</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Reportes de vecinos</strong>: el tipo (calle inundada, calle con hielo, sin luz o volvió la luz, granizo, daños por tormenta), una profundidad, tamaño o tipo de daño, la hora y una zona: un hexágono del tamaño de una cuadra para calles y daños, o uno del tamaño de un vecindario (como un tercio de milla) para luz y granizo. Nunca el punto exacto que usted tocó.</td><td>Para mostrar a los vecinos lo que pasa y contar reportes independientes.</td><td>Los reportes desaparecen del mapa entre 3 y 24 horas después, según el tipo, y se borran de la base de datos más o menos un día después.</td></tr>
+      <tr><td><strong>Un identificador anónimo de quien reporta</strong>, creado por nuestro proveedor de base de datos (Supabase) la primera vez que envía un reporte. Sin nombre, correo ni teléfono.</td><td>Para que cada persona cuente una sola vez, limitar el spam (12 reportes por hora) y que usted pueda quitar o actualizar sus propios reportes.</td><td>Se guarda con sus reportes; el identificador no tiene datos personales.</td></tr>
+      <tr><td><strong>Marcas de "¿Incorrecto?"</strong> en los reportes.</td><td>Para ocultar los reportes que suficientes vecinos dicen que están mal.</td><td>Unos 2 días.</td></tr>
+      <tr><td><strong>Suscripción a alertas push</strong>, si activa las alertas: la dirección push de su navegador, los nombres de sus lugares guardados, sus ubicaciones redondeadas a una cuadra aproximadamente, su condado, los tipos de alerta que eligió y el idioma de la app (inglés o español) para el texto de la alerta.</td><td>Para enviarle una notificación cuando una alerta cubra uno de sus lugares.</td><td>Hasta que desactive las alertas (eso la borra de inmediato) o su navegador cancele la suscripción. Los mensajes de alerta se borran después de 2 días.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Lugares que consulta</h2>
+  <p>Para mostrar las condiciones, la app envía las coordenadas del lugar que está viendo (el centro del mapa, un punto marcado o su ubicación de Cerca de mí) a servicios públicos de datos: el Servicio Meteorológico Nacional, NOAA, FEMA, Open-Meteo y, si revisa una ruta, el servicio de rutas OSRM. Ellos reciben la dirección IP de su dispositivo como cualquier sitio web que visite. No reciben su nombre ni ningún identificador de nuestra parte. Se aplican sus propias políticas de privacidad.</p>
+
+  <h2>Quién lo opera</h2>
+  <ul>
+    <li><strong>Cloudflare</strong> aloja el sitio y el pequeño servidor que revisa ERCOT, envía las alertas push y guarda las suscripciones. Como la mayoría de los proveedores, puede registrar datos técnicos como direcciones IP por seguridad.</li>
+    <li><strong>Supabase</strong> guarda los reportes de vecinos.</li>
+    <li>Las notificaciones push pasan por el servicio push del fabricante de su navegador (Google, Apple, Mozilla o Microsoft).</li>
+  </ul>
+  <p>No vendemos ni compartimos información personal, y no la usamos para publicidad.</p>
+
+  <h2>Sus opciones</h2>
+  <ul>
+    <li>Use el mapa sin Cerca de mí, reportes ni alertas. Todo lo demás sigue funcionando.</li>
+    <li>Desactive las alertas en Mis lugares para borrar su suscripción.</li>
+    <li>Borre los datos del sitio en su navegador para eliminar los lugares guardados y los ajustes.</li>
+  </ul>
+
+  <h2>Niños</h2>
+  <p>Stormline no está dirigido a menores de 13 años y no recopila su información a sabiendas.</p>
+
+  <h2>Contacto</h2>
+  <p>Preguntas o solicitudes: abra un "issue" en la <a href="https://github.com/0xReap3r/weather-protocol/issues" target="_blank" rel="noopener">página del proyecto en GitHub</a>.</p>
+
+  <footer><a href="./">Volver al mapa</a> · <a href="terms-es.html">Términos</a></footer>
+</main>
+</body>
+</html>

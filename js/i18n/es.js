@@ -230,7 +230,7 @@ export const ES = {
   "{0} active tropical systems, none headed for Texas": "{0} sistemas tropicales activos, ninguno se dirige a Texas",
   "{0} area NHC is watching for development (dashed).": "{0} zona que el NHC vigila por posible formación (punteada).",
   "{0} areas NHC is watching for development (dashed).": "{0} zonas que el NHC vigila por posible formación (punteadas).",
-  "{0}% chance in 7 days": "{0}% de probabilidad en 7 días", "Texas in cone": "Texas en el cono",
+  "{0}% chance in {1} days": "{0}% de probabilidad en {1} días", "Texas in cone": "Texas en el cono",
   "The cone shows where the center may go. Wind, surge and flooding reach far outside it. Evacuation orders come from your county; routes from TxDOT.":
     "El cono muestra por donde podría pasar el centro. El viento, la marejada y las inundaciones llegan mucho más allá. Las órdenes de evacuación vienen de su condado; las rutas, de TxDOT.",
   "Hurricane data isn't loading right now.": "Los datos de huracanes no están cargando ahora.",
@@ -523,8 +523,8 @@ export const ES = {
     "Sumando acres inundados… Los totales solo cuentan condados con una pulgada de lluvia en 3 días o una alerta de inundación del NWS; los puntos azules en otros lugares suelen ser orillas de lagos o sombras de nubes. Los satélites no ven calles pequeñas ni lo que está bajo nubes, así que esto nunca significa que una calle esté seca.",
   "Little or no flood water seen in the counties shown. Totals count only counties with an inch of rain in 3 days or an NWS flood alert; blue specks elsewhere are usually lake edges or cloud shadows. Satellites miss small streets and anything under cloud, so this never means a road is dry.":
     "Poca o ninguna agua de inundación vista en los condados que se muestran. Los totales solo cuentan condados con una pulgada de lluvia en 3 días o una alerta de inundación del NWS; los puntos azules en otros lugares suelen ser orillas de lagos o sombras de nubes. Los satélites no ven calles pequeñas ni lo que está bajo nubes, así que esto nunca significa que una calle esté seca.",
-  "The satellite flags about {0} acres of possible flood water in the counties shown. Totals count only counties with an inch of rain in 3 days or an NWS flood alert; blue specks elsewhere are usually lake edges or cloud shadows. Satellites miss small streets and anything under cloud, so this never means a road is dry.":
-    "El satélite marca unos {0} acres de posible agua de inundación en los condados que se muestran. Los totales solo cuentan condados con una pulgada de lluvia en 3 días o una alerta de inundación del NWS; los puntos azules en otros lugares suelen ser orillas de lagos o sombras de nubes. Los satélites no ven calles pequeñas ni lo que está bajo nubes, así que esto nunca significa que una calle esté seca.",
+  "The satellite flags about {0} acres of possible flood water in the counties shown. Totals count only counties with an inch of rain in {1} days or an NWS flood alert; blue specks elsewhere are usually lake edges or cloud shadows. Satellites miss small streets and anything under cloud, so this never means a road is dry.":
+    "El satélite marca unos {0} acres de posible agua de inundación en los condados que se muestran. Los totales solo cuentan condados con una pulgada de lluvia en {1} días o una alerta de inundación del NWS; los puntos azules en otros lugares suelen ser orillas de lagos o sombras de nubes. Los satélites no ven calles pequeñas ni lo que está bajo nubes, así que esto nunca significa que una calle esté seca.",
   "This is not an official warning service. Information can be wrong, incomplete or late. Use your own judgment and follow the National Weather Service, emergency managers and local officials. Never drive into water: turn around, don't drown. This map is provided as is, and to the fullest extent the law allows, its makers are not responsible for any loss or decision made from it. Not affiliated with any government agency. Read the full":
     "Este no es un servicio oficial de alertas. La información puede estar equivocada, incompleta o atrasada. Use su propio criterio y siga al Servicio Meteorológico Nacional, a los encargados de emergencias y a las autoridades locales. Nunca maneje hacia el agua: ¡dé la vuelta, no se ahogue! Este mapa se ofrece tal cual y, en la medida que permite la ley, sus creadores no son responsables de ninguna pérdida o decisión tomada con base en él. No está afiliado a ninguna agencia del gobierno. Lea los",
   "privacy policy": "aviso de privacidad", "terms": "términos",
@@ -575,6 +575,7 @@ export const ES = {
     "Lo que ha pasado (últimos 3 días), Mis lugares y Revisar una ruta contra alertas y reportes de vecinos.",
   "Hurricanes, Fires, Lakes, rain gauges, burn bans and low-water crossings: Texas-only layers.": "Huracanes, Incendios, Lagos, pluviómetros, prohibiciones de quemas y cruces bajos: capas solo de Texas.",
   "Spanish: the whole app in Spanish, switch in the menu or footer.": "Español: toda la app en español; cámbielo en el menú o al pie de la página.",
+  "A new look for the whole map, with the storm line that changes color with the most serious alert.": "Un nuevo diseño para todo el mapa, con la línea de tormenta que cambia de color según la alerta más seria.",
   // ---------- Third pass (from a scan of the code) ----------
   "1 report": "1 reporte", "{0} reports": "{0} reportes", "1 report, unconfirmed": "1 reporte, sin confirmar", "Can stall a car.": "Puede apagar un carro.",
   "Enough to make a car lose control.": "Suficiente para que un carro pierda el control.", "A foot of moving water can float most cars.": "Un pie de agua en movimiento puede hacer flotar casi cualquier carro.",
@@ -660,9 +661,9 @@ export const ES = {
   "under 0.1 in/hr": "menos de 0.1 in/h", "about 0.1–0.5 in/hr": "unos 0.1–0.5 in/h", "about 0.5–2 in/hr": "unos 0.5–2 in/h", "about 2 in/hr": "unos 2 in/h", "{0} in/hr": "{0} in/h",
   "Rain chance up to {0}%": "Probabilidad de lluvia hasta {0}%", "rain may start around {0} p.m.": "la lluvia podría empezar hacia las {0} p.m.", "rain may start around {0} a.m.": "la lluvia podría empezar hacia las {0} a.m.",
   "{0} min without traffic": "{0} min sin tráfico", "{0} mi · about {1} min without traffic": "{0} mi · unos {1} min sin tráfico",
-  "{0} ft over flood stage": "{0} ft sobre el nivel de inundación", "Low of {0}°": "Mínima de {0}°", "{0} in of rain in 12 hr": "{0} in de lluvia en 12 h",
+  "{0} ft over flood stage": "{0} ft sobre el nivel de inundación", "Low of {0}°": "Mínima de {0}°", "{0} in of rain in {1} hr": "{0} in de lluvia en {1} h",
   "Freezing tonight: low of {0}°": "Helada esta noche: mínima de {0}°",
-  "Demo only.": "Solo demostración.", "Demo area": "Zona de demostración", "Demo": "Demostración",
+  "Demo only.": "Solo demostración.", "Turn on alerts first.": "Primero active las alertas.", "That's 3 tests this hour. Try again later.": "Ya van 3 pruebas esta hora. Intente más tarde.", "Demo area": "Zona de demostración", "Demo": "Demostración",
   "Thanks. Reports flagged by enough neighbors are hidden.": "Gracias. Los reportes que señalan suficientes vecinos se ocultan.",
   "Simple": "Simple", "Normal": "Normal", "Orange": "Naranja", "Green": "Verde", "Blue": "Azul", "Red": "Roja", "Silver": "Plateada", "Streetcar": "Tranvía",
 };
@@ -702,6 +703,7 @@ export const ES_PATTERNS = [
   [/^(.+) issued$/, (m) => (ES_EVENTS[m[1]] ? `${ES_EVENTS[m[1]]} emitido` : null)],
   [/^(.+) updated$/, (m) => (ES_EVENTS[m[1]] ? `${ES_EVENTS[m[1]]} actualizado` : null)],
   [/^\+(\d+) more$/, "+$1 más"],
+  [/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{1,2}), (\d{4})$/, (m) => `${m[2]} de ${{ Jan: "enero", Feb: "febrero", Mar: "marzo", Apr: "abril", May: "mayo", Jun: "junio", Jul: "julio", Aug: "agosto", Sep: "septiembre", Oct: "octubre", Nov: "noviembre", Dec: "diciembre" }[m[1]]} de ${m[3]}`],
   [/^(\d+) min ago · (.+)$/, (m) => `hace ${m[1]} min · ${m[2]}`],
   [/^National Weather Service forecast for (.+)$/, "Pronóstico del Servicio Meteorológico Nacional para $1"],
   [/^Rain likely \(up to (\d+)%\)(.*)$/, "Lluvia probable (hasta $1%)$2"],

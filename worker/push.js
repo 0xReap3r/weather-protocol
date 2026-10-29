@@ -20,6 +20,22 @@ export const KINDS = {
   winter: ["Winter Storm Warning", "Ice Storm Warning", "Blizzard Warning", "Extreme Cold Warning", "Hard Freeze Warning"],
 };
 const ALL_EVENTS = [...new Set(Object.values(KINDS).flat())];
+// Spanish push text (NWS's own Spanish event names) for subscribers who use the app in Spanish.
+const EV_ES = {
+  "Tornado Warning": "Aviso de Tornado", "Tornado Emergency": "Emergencia de Tornado", "Extreme Wind Warning": "Aviso de Vientos Extremos",
+  "Flash Flood Warning": "Aviso de Inundación Repentina", "Flash Flood Emergency": "Emergencia de Inundación Repentina", "Flood Warning": "Aviso de Inundación",
+  "Severe Thunderstorm Warning": "Aviso de Tormenta Eléctrica Severa", "Winter Storm Warning": "Aviso de Tormenta Invernal", "Ice Storm Warning": "Aviso de Tormenta de Hielo",
+  "Blizzard Warning": "Aviso de Ventisca", "Extreme Cold Warning": "Aviso de Frío Extremo", "Hard Freeze Warning": "Aviso de Congelación Severa",
+};
+function pushText(lang, p, names, until, covers) {
+  if (lang === "es") {
+    const ev = EV_ES[p.event] || p.event;
+    const what = p.event.startsWith("Tornado") ? "Refúgiese ahora." : p.event.startsWith("Flash Flood") ? "Suba a un lugar alto. Nunca maneje hacia el agua." : "Vea el mapa para más detalles.";
+    return [`${ev}: ${names}`, `${covers ? "Cubre" : "Emitido para el condado de"} ${names}${until ? ` hasta las ${until}` : ""}. ${what}`];
+  }
+  const what = p.event.startsWith("Tornado") ? "Take shelter now." : p.event.startsWith("Flash Flood") ? "Move to higher ground. Never drive into water." : "Check the map for details.";
+  return [`${p.event}: ${names}`, `${covers ? "Covers" : "Issued for the county of"} ${names}${until ? ` until ${until}` : ""}. ${what}`];
+}
 const kindOf = (event) => Object.keys(KINDS).find((k) => KINDS[k].includes(event));
 
 /* ---------- Schema (created on first use) ---------- */
@@ -37,6 +53,8 @@ async function schema(db) {
     db.prepare(`CREATE INDEX IF NOT EXISTS inbox_sub ON inbox (sub_id, read)`),
     db.prepare(`CREATE INDEX IF NOT EXISTS inbox_push ON inbox (pushed)`),
   ]);
+  // Added Oct 28 (Spanish): the language each device uses for its alert text.
+  try { await db.prepare("ALTER TABLE subs ADD COLUMN lang TEXT NOT NULL DEFAULT 'en'").run(); } catch (_) { /* already there */ }
   schemaReady = true;
 }
 
@@ -125,9 +143,10 @@ export async function handlePush(req, env, url, json) {
   if (path === "/subscribe") {
     const places = clean(body.places);
     const kinds = (Array.isArray(body.kinds) ? body.kinds : ["tornado", "flood"]).filter((k) => k in KINDS);
-    await env.DB.prepare(`INSERT INTO subs (id, endpoint, places, kinds, created, updated) VALUES (?, ?, ?, ?, ?, ?)
-      ON CONFLICT(id) DO UPDATE SET places = excluded.places, kinds = excluded.kinds, updated = excluded.updated, fails = 0`)
-      .bind(id, endpoint, JSON.stringify(places), JSON.stringify(kinds), now, now).run();
+    const lang = body.lang === "es" ? "es" : "en";
+    await env.DB.prepare(`INSERT INTO subs (id, endpoint, places, kinds, created, updated, lang) VALUES (?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET places = excluded.places, kinds = excluded.kinds, updated = excluded.updated, lang = excluded.lang, fails = 0`)
+      .bind(id, endpoint, JSON.stringify(places), JSON.stringify(kinds), now, now, lang).run();
     return json({ ok: true, places: places.length, kinds });
   }
   if (path === "/unsubscribe") {
@@ -135,14 +154,16 @@ export async function handlePush(req, env, url, json) {
     return json({ ok: true });
   }
   if (path === "/test") {
-    const sub = await env.DB.prepare("SELECT tests FROM subs WHERE id = ?").bind(id).first();
+    const sub = await env.DB.prepare("SELECT tests, lang FROM subs WHERE id = ?").bind(id).first();
     if (!sub) return json({ error: "Turn on alerts first." }, 404);
     const recent = JSON.parse(sub.tests || "[]").filter((t) => now - t < 3600e3);
     if (recent.length >= 3) return json({ error: "That's 3 tests this hour. Try again later." }, 429);
     await env.DB.batch([
       env.DB.prepare("UPDATE subs SET tests = ? WHERE id = ?").bind(JSON.stringify([...recent, now]), id),
       env.DB.prepare("INSERT INTO inbox (sub_id, title, body, url, tag, created, pushed) VALUES (?, ?, ?, ?, ?, ?, 1)")
-        .bind(id, "Stormline test alert", "Alerts are working. You'll hear from us when a warning covers one of your places.", "/", "test", now),
+        .bind(id, ...(sub.lang === "es"
+          ? ["Alerta de prueba de Stormline", "Las alertas funcionan. Le avisaremos cuando una alerta cubra uno de sus lugares."]
+          : ["Stormline test alert", "Alerts are working. You'll hear from us when a warning covers one of your places."]), "/", "test", now),
     ]);
     const r = await sendPush(env, endpoint);
     return r === "ok" ? json({ ok: true }) : json({ error: `The push service said no (${r}).` }, 502);
@@ -176,7 +197,7 @@ async function checkAlertsInner(env) {
     const seen = new Set((await env.DB.prepare(`SELECT alert_id FROM seen WHERE alert_id IN (${ids.map(() => "?").join(",")})`).bind(...ids).all()).results.map((x) => x.alert_id));
     const todo = fresh.filter((f) => !seen.has(f.properties.id));
     if (todo.length) {
-      const subs = (await env.DB.prepare("SELECT id, places, kinds FROM subs").all()).results.map((s) => ({ ...s, places: JSON.parse(s.places), kinds: JSON.parse(s.kinds) }));
+      const subs = (await env.DB.prepare("SELECT id, places, kinds, lang FROM subs").all()).results.map((s) => ({ ...s, places: JSON.parse(s.places), kinds: JSON.parse(s.kinds) }));
       const stmts = [];
       for (const f of todo) {
         const p = f.properties;
@@ -184,17 +205,18 @@ async function checkAlertsInner(env) {
         const kind = kindOf(p.event);
         if (!kind) continue;
         const counties = (p.areaDesc || "").split(/;\s*/).map((c) => c.replace(/,\s*[A-Z]{2}$/, "").trim().toLowerCase());
-        const until = p.ends || p.expires ? new Date(p.ends || p.expires).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/Chicago" }) : null;
+        const end = p.ends || p.expires ? new Date(p.ends || p.expires) : null;
+        const until = end ? end.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/Chicago" }) : null;
+        const untilEs = end ? end.toLocaleTimeString("es-US", { hour: "numeric", minute: "2-digit", timeZone: "America/Chicago" }) : null;
         for (const s of subs) {
           if (!s.kinds.includes(kind)) continue;
           const hits = s.places.filter((pl) => (f.geometry ? contains(f.geometry, [pl.lng, pl.lat]) : pl.county && counties.includes(pl.county.toLowerCase())));
           if (!hits.length) continue;
           const names = hits.map((h) => h.name).join(", ");
           const first = hits[0];
+          const [title, text] = pushText(s.lang, p, names, s.lang === "es" ? untilEs : until, !!f.geometry);
           stmts.push(env.DB.prepare("INSERT INTO inbox (sub_id, title, body, url, tag, created) VALUES (?, ?, ?, ?, ?, ?)").bind(
-            s.id, `${p.event}: ${names}`,
-            `${f.geometry ? "Covers" : "Issued for the county of"} ${names}${until ? ` until ${until}` : ""}. ${p.event.startsWith("Tornado") ? "Take shelter now." : p.event.startsWith("Flash Flood") ? "Move to higher ground. Never drive into water." : "Check the map for details."}`,
-            `/#at=${first.lat},${first.lng}`, p.id, now));
+            s.id, title, text, `/#at=${first.lat},${first.lng}`, p.id, now));
         }
       }
       for (let i = 0; i < stmts.length; i += 50) await env.DB.batch(stmts.slice(i, i + 50));

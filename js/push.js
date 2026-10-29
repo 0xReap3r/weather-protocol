@@ -1,3 +1,4 @@
+import { LANG } from "./i18n.js";
 // Push alerts for My places (Phase 7). The phone subscribes with the browser's push service; our
 // Worker stores the subscription with the saved places (rounded to ~100 m) and checks NWS every
 // minute. Shown inside the My places sheet.
@@ -59,7 +60,7 @@ export function initPush({ metro, getPlaces, toast }) {
       const perm = await Notification.requestPermission();
       if (perm !== "granted") throw new Error("Notifications are blocked. Allow them for this site in your browser or phone settings.");
       const sub = await subscription(true);
-      await post("/subscribe", { subscription: sub.toJSON(), places: await placesWithCounty(), kinds: st.kinds });
+      await post("/subscribe", { subscription: sub.toJSON(), places: await placesWithCounty(), kinds: st.kinds, lang: LANG });
       st.on = true; save();
       toast("Alerts are on for your places.");
     } catch (e) { note = e.message || "Couldn't turn on alerts."; }
@@ -80,7 +81,7 @@ export function initPush({ metro, getPlaces, toast }) {
     try {
       const sub = await subscription(false);
       if (!sub) { st.on = false; save(); return render(); }
-      await post("/subscribe", { subscription: sub.toJSON(), places: await placesWithCounty(), kinds: st.kinds });
+      await post("/subscribe", { subscription: sub.toJSON(), places: await placesWithCounty(), kinds: st.kinds, lang: LANG });
     } catch (_) { /* tried again on the next change */ }
   }
   async function test() {

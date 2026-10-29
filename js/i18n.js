@@ -108,6 +108,8 @@ function doText(node) {
   if (nv !== v) node.nodeValue = nv;
 }
 function doEl(el) {
+  // Legal pages have Spanish copies.
+  if (el.nodeName === "A") { const h = el.getAttribute("href"); if (h === "privacy.html" || h === "terms.html") el.setAttribute("href", h.replace(".html", "-es.html")); }
   for (const a of ATTRS) {
     const v = el.getAttribute?.(a);
     if (v && /[A-Za-z]/.test(v)) { const nv = t(v); if (nv !== v) el.setAttribute(a, nv); }

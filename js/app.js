@@ -1083,7 +1083,7 @@ const menu = initMenu({
     news: () => { $("#news-body").innerHTML = menu.newsHTML(); openSheet("news", "What's new"); },
     about: () => openAbout(),
     status: () => openDataStatus(),
-    privacy: () => window.open("privacy.html", "_blank", "noopener"),
+    privacy: () => window.open(isEs ? "privacy-es.html" : "privacy.html", "_blank", "noopener"),
   },
 });
 window.stormlineMenu = menu; // debugging aid

@@ -24,3 +24,5 @@ th { color: var(--text-dim); font-weight: 600; font-size: 13px; }
 .table-wrap { overflow-x: auto; }
 li { margin: 4px 0; }
 footer { margin-top: 40px; color: var(--text-dim); font-size: 14px; }
+.top-links { display: flex; gap: 16px; }
+.courtesy { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--line); color: var(--text-dim); font-size: 14px; }

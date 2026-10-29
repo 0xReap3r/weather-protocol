@@ -28,6 +28,9 @@ const MODES = [
 
 // Newest first. Keep entries short and in plain words.
 const CHANGES = [
+  ["Oct 28, 2026", "Spanish: the whole app in Spanish, switch in the menu or footer."],
+  ["Oct 28, 2026", "Hurricanes, Fires, Lakes, rain gauges, burn bans and low-water crossings: Texas-only layers."],
+  ["Oct 28, 2026", "A new look for the whole map, with the storm line that changes color with the most serious alert."],
   ["Oct 25, 2026", "All of Texas: the map now covers the whole state, with 20 regions to jump to, every NOAA river gauge, and county-level warnings statewide."],
   ["Oct 25, 2026", "Data status page, plus draft privacy policy and terms."],
   ["Oct 25, 2026", "Push alerts: get notified when an NWS warning covers one of My places."],
