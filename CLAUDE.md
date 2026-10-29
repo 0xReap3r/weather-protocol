@@ -82,6 +82,9 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - `js/push.js` — "Alerts on this device" card in My places (subscribe/test/off, kinds)
 - `js/legends.js` — tap a legend card's title row to fold it; cards live in `#legend-dock`
 - `js/storms.js` — Storms chip: SPC day 1–3 outlooks as glowing risk contours (faint wash, blurred glow edge, crisp line, hatch on ENH+, labels along contours, breathing glow on MDT/HIGH); card with 1–5 scale for the current region, tornado/hail/wind chances, per-hazard views; `levelToday()` feeds fast polling
+- `js/tropical.js` — Hurricanes chip (Phase 14a): NHC `NHC_tropical_weather_summary` MapServer layers 3 outlook areas, 5 forecast points, 6 track, 7 cone, 8 coastal watch/warning (`tcww` HWR/HWA/TWR/TWA), 11 past track; strength colors by max wind; TxDOT evacuation routes loaded on first toggle; `nearHTML` says when a spot is in a cone
+- `js/fires.js` — Fires chip (Phase 14a): NIFC WFIGS current locations + perimeters (`POOState='US-TX'`), dots sized by acres, planned burns (RX) faint, no update in 3 days = faded; `nearHTML` lists wildfires within 25 mi. Both modules load with the chip off so the area panel can warn (`getTopHTML` in near.js)
+- Map `maxBounds` (config `STATE`) is wide on purpose ([-124, 10, -76, 39]) so Gulf and eastern Pacific storms can be followed
 - `js/app.js` also: fast alert polling (60 s during active weather), "you're inside the warning" bar (`#danger-bar`) from the Near me location
 - `supabase/migrations/` — run in order on an existing project (002 adds hail + damage kinds)
 - `supabase/schema.sql` — tables, RLS, rate limit, expiry, flags, public `report_cells` view
@@ -89,7 +92,7 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - `sw.js` — offline app shell (network first); bump `VERSION` whenever shell files change. A new version shows open pages a "new version ready · Refresh" bar (`#update-bar`, app.js)
 
 ## Debugging
-In the browser console: `stormlineMap`, `stormlineNear`, `stormlineDemo()` / `stormlineDemo('tornado')` (fake warning around the map center + gauge; with Near me inside it, shows the danger bar), `stormlinePolling()`, `stormlineStorms.demo()` (made-up Marginal→High outlook around the region, with the Storms chip on), and in demo mode `stormlineReports.store.simulate([lng,lat], 'flood', 2, 3)` to add fake neighbors.
+In the browser console: `stormlineMap`, `stormlineNear`, `stormlineDemo()` / `stormlineDemo('tornado')` (fake warning around the map center + gauge; with Near me inside it, shows the danger bar), `stormlinePolling()`, `stormlineTropical.storms()`, `stormlineFires.list()`, `stormlineStorms.demo()` (made-up Marginal→High outlook around the region, with the Storms chip on), and in demo mode `stormlineReports.store.simulate([lng,lat], 'flood', 2, 3)` to add fake neighbors.
 
 ## Revisit later (full list in the build plan doc, "Revisit later" section)
 - No free feed yet: TEXRail / Trinity Metro lines, low-water crossings (Fort Worth HWWS is on OneRain), TxDOT closures (DriveTexas), DART live service alerts, Oncor outages. Don't scrape; outreach is deferred.
