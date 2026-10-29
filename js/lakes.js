@@ -55,7 +55,7 @@ export function initLakes({ map, beforeId, openSheet }) {
         const over = !floodOnly && l.elev != null && l.pool != null ? l.elev - l.pool : null;
         // The board posts once a day; more than 3 days old counts as stale.
         const stale = !l.date || today - Date.parse(`${l.date}T12:00:00`) > 3 * 86400000;
-        return { ...l, flood: floodOnly, over: over ?? -1, stale };
+        return { ...l, dual: l.flood && !floodOnly, flood: floodOnly, over: over ?? -1, stale };
       });
       err = null; loadedAt = Date.now();
     } catch (e) { err = e; }
@@ -88,7 +88,7 @@ export function initLakes({ map, beforeId, openSheet }) {
     const l = lakes[i];
     if (!l) return;
     document.getElementById("lake-body").innerHTML = `
-      <p class="fire-kind" style="--c:${l.over > 0.05 ? LAKE_COLORS.over : l.flood ? LAKE_COLORS.flood : LAKE_COLORS.mid}">${l.flood ? "Flood-control reservoir" : "Water-supply reservoir"}</p>
+      <p class="fire-kind" style="--c:${l.over > 0.05 ? LAKE_COLORS.over : l.flood ? LAKE_COLORS.flood : LAKE_COLORS.mid}">${l.flood ? "Flood-control reservoir" : l.dual ? "Water-supply and flood-control reservoir" : "Water-supply reservoir"}</p>
       <div class="near-stats">
         ${l.flood ? "" : `<div><span class="st-l">Full</span><span class="st-v fire-v">${l.pct == null ? "—" : Math.round(l.pct)}<small>%</small></span></div>`}
         <div><span class="st-l">Level</span><span class="st-v fire-v">${l.elev == null ? "—" : Math.round(l.elev).toLocaleString()}<small>ft</small></span></div>
