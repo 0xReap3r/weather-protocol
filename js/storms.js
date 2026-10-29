@@ -8,7 +8,10 @@
 // Watches and warnings stay on the Warnings layer. An outlook is a chance over a wide area,
 // never a warning for a street.
 import { fetchJSON } from "./data/fetch.js";
-import { t } from "./i18n.js";
+import { t, isEs } from "./i18n.js";
+// SPC level names describe "riesgo" (masculine in Spanish), unlike the rain words that share them.
+const SPC_ES = { Marginal: "Marginal", Slight: "Ligero", Enhanced: "Mayor", Moderate: "Moderado", High: "Alto" };
+const spcName = (n) => (isEs ? SPC_ES[n] || t(n) : n);
 import { contains } from "./near.js";
 
 const esc = (s) =>
@@ -145,7 +148,7 @@ export function initStorms({ map, beforeId, metro }) {
         if (!l) continue;
         out.push({ type: "Feature", geometry: f.geometry, properties: {
           lvl: l.n, color: l.fill, edge: l.n ? l.fill : "#9fd2c0", w: l.n >= 4 ? 1.4 : 1,
-          label: l.n ? `${t(l.name).toUpperCase()} · ${l.n}/5` : t("Thunderstorms").toUpperCase(), ...(l.n >= 3 ? { hatch: `spc-hatch-${l.code}` } : {}) } });
+          label: l.n ? `${spcName(l.name).toUpperCase()} · ${l.n}/5` : t("Thunderstorms").toUpperCase(), ...(l.n >= 3 ? { hatch: `spc-hatch-${l.code}` } : {}) } });
       } else {
         const p = probOf(f.properties);
         if (!p) continue;
@@ -207,7 +210,7 @@ export function initStorms({ map, beforeId, metro }) {
       <p class="so-head">${esc(headline)}</p>
       ${L ? `<p class="so-note">${esc(L.note)}.</p>` : ""}
       <div class="so-scale" role="img" aria-label="Risk ${here > 0 ? `${here} of 5` : "below 1 of 5"} here">
-        ${SPC_LEVELS.slice(1).map((l) => `<span class="so-seg${here >= l.n ? " on" : ""}${here === l.n ? " here" : ""}" style="--c:${l.fill}"><i>${l.n}</i><b>${l.name}</b></span>`).join("")}
+        ${SPC_LEVELS.slice(1).map((l) => `<span class="so-seg${here >= l.n ? " on" : ""}${here === l.n ? " here" : ""}" style="--c:${l.fill}"><i>${l.n}</i><b translate="no">${spcName(l.name)}</b></span>`).join("")}
       </div>
       ${s && s.state > (here ?? 0) ? `<p class="so-note">Highest in Texas: <strong style="color:${SPC_LEVELS[s.state].fill}">${SPC_LEVELS[s.state].name} (${s.state}/5)</strong></p>` : ""}
       ${s && Object.keys(s.threats || {}).length ? `<div class="so-threats">${Object.entries(s.threats).map(([id, p]) => {
