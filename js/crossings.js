@@ -39,7 +39,7 @@ export function initCrossings({ map, beforeId, openSheet, getAlertsFC, isOn }) {
   badge(map, "lwx", { glyph: "crossing", ring: CROSSING_COLORS.sign });
   badge(map, "lwx-warn", { glyph: "crossing", ring: CROSSING_COLORS.warn, fill: "#4a1010" });
   map.addLayer({ id: "crossings-glow", type: "circle", source: "crossings", minzoom: MIN_ZOOM, filter: ["get", "warn"],
-    paint: { "circle-color": CROSSING_COLORS.warn, "circle-radius": 16, "circle-blur": 1, "circle-opacity": 0.55 } }, beforeId);
+    paint: { "circle-color": CROSSING_COLORS.warn, "circle-radius": 13, "circle-blur": 1, "circle-opacity": 0.35 } }, beforeId);
   map.addLayer({ id: "crossings", type: "symbol", source: "crossings", minzoom: MIN_ZOOM,
     layout: {
       "icon-image": ["case", ["get", "warn"], "mk-lwx-warn", "mk-lwx"],
