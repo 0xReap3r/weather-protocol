@@ -1,25 +1,26 @@
 /* Privacy and terms pages: same dark tokens as the app, plain readable text. */
 :root {
   color-scheme: dark;
-  --ink-0: #0b0f14; --ink-1: #121820; --ink-2: #1b2430; --line: #2a3542;
-  --text: #e8edf2; --text-dim: #9aa7b4; --signal: #f0b429; --danger: #ff5c5c;
-  --font-display: "Saira Semi Condensed", "Arial Narrow", system-ui, sans-serif;
-  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ink-0: #0a1119; --ink-1: #101b27; --ink-2: #172433; --line: #25374b;
+  --text: #e9f0f6; --text-dim: #8ea2b6; --signal: #9cc7ea; --danger: #ff5c5c; --threat: #4a6178;
+  --font-display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--ink-0); color: var(--text); font: 16px/1.6 var(--font-body); }
 main { max-width: 760px; margin: 0 auto; padding: 24px 16px 64px; }
 a { color: var(--signal); }
 .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
-.wordmark { font-family: var(--font-display); font-weight: 700; font-size: 22px; letter-spacing: .04em; text-transform: uppercase; color: var(--text); text-decoration: none; }
-h1 { font-size: 30px; line-height: 1.2; margin: 8px 0 4px; }
+.wordmark { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 800; font-stretch: 125%; font-size: 21px; letter-spacing: -.015em; color: var(--text); text-decoration: none; }
+.wordmark::before { content: ""; width: 22px; height: 3px; border-radius: 2px; background: var(--threat); }
+h1 { font-size: 38px; font-stretch: 75%; font-weight: 650; letter-spacing: -.01em; line-height: 1.05; margin: 8px 0 6px; }
 h2 { font-size: 19px; margin: 32px 0 8px; }
 .meta { color: var(--text-dim); font-size: 14px; margin: 0 0 18px; }
-.draft { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--signal); background: rgba(240,180,41,.08); font-size: 14px; }
+.draft { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--warn, #ff9f43); background: rgba(255,159,67,.08); font-size: 14px; }
 .danger { padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,92,92,.5); background: rgba(255,92,92,.08); }
 table { width: 100%; border-collapse: collapse; font-size: 14.5px; margin: 8px 0; }
 th, td { text-align: left; vertical-align: top; padding: 10px 8px; border-bottom: 1px solid var(--line); }
-th { color: var(--text-dim); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; }
+th { color: var(--text-dim); font-weight: 600; font-size: 13px; }
 .table-wrap { overflow-x: auto; }
 li { margin: 4px 0; }
 footer { margin-top: 40px; color: var(--text-dim); font-size: 14px; }

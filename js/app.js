@@ -76,7 +76,7 @@ window.addEventListener("pageshow", resizeMap);
 
 // Map layer ids behind each chip. Chips without data yet map to nothing.
 const MAP_LAYERS = {
-  alerts: ["alerts-fill", "alerts-line", "alerts-pulse", "alerts-label"],
+  alerts: ["alerts-fill", "alerts-glow", "alerts-line", "alerts-pulse", "alerts-label"],
   rivers: ["gauges-pulse", "gauges-circle", "gauges-label"],
   rain: [], // filled in once the radar frames are added
   zones: ["fema-zones"],
@@ -114,7 +114,7 @@ map.on("load", () => {
     id: "pilot-area-line",
     type: "line",
     source: "pilot-area",
-    paint: { "line-color": "#f0b429", "line-width": 1.25, "line-opacity": 0.55, "line-dasharray": [3, 3] },
+    paint: { "line-color": "#c9d6e2", "line-width": 1.1, "line-opacity": 0.4, "line-dasharray": [2, 3] },
   });
 
   // Blue water: the basemap draws lakes and rivers in gray; tint them so water reads as water
@@ -160,13 +160,25 @@ map.on("load", () => {
     id: "alerts-fill",
     type: "fill",
     source: "alerts",
-    paint: { "fill-color": ["get", "color"], "fill-opacity": ["case", ["get", "storm"], 0.28, 0.14] },
+    paint: { "fill-color": ["get", "color"], "fill-opacity": ["case", ["get", "storm"], 0.2, 0.1] },
+  });
+  // Soft glow just outside each warning edge (same treatment as the storm outlook contours).
+  map.addLayer({
+    id: "alerts-glow",
+    type: "line",
+    source: "alerts",
+    paint: {
+      "line-color": ["get", "color"],
+      "line-width": ["interpolate", ["linear"], ["zoom"], 5, ["case", ["get", "storm"], 6, 3], 10, ["case", ["get", "storm"], 14, 7]],
+      "line-blur": ["interpolate", ["linear"], ["zoom"], 5, 4, 10, 10],
+      "line-opacity": ["case", ["get", "storm"], 0.45, 0.25],
+    },
   });
   map.addLayer({
     id: "alerts-line",
     type: "line",
     source: "alerts",
-    paint: { "line-color": ["get", "color"], "line-width": ["case", ["get", "storm"], 2.5, 1.25], "line-opacity": 0.9 },
+    paint: { "line-color": ["get", "color"], "line-width": ["case", ["get", "storm"], 2, 1.1], "line-opacity": 0.95 },
   });
 
   // Pulse ring around warnings and watches (rank 45+) so active events catch the eye.
@@ -190,7 +202,7 @@ map.on("load", () => {
       "text-max-width": 12,
       "text-allow-overlap": false,
     },
-    paint: { "text-color": ["get", "color"], "text-halo-color": "#0b0f14", "text-halo-width": 2 },
+    paint: { "text-color": ["get", "color"], "text-halo-color": "#0a1119", "text-halo-width": 2 },
   });
 
   // Gauges
@@ -211,7 +223,7 @@ map.on("load", () => {
       "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, ["case", [">=", ["get", "rank"], 2], 5, 2], 8, ["case", [">=", ["get", "rank"], 2], 7, 4.5], 13, 10],
       "circle-color": ["get", "color"],
       "circle-opacity": ["case", ["get", "stale"], 0.45, 1],
-      "circle-stroke-color": "#0b0f14",
+      "circle-stroke-color": "#0a1119",
       "circle-stroke-width": 2,
     },
   });
@@ -234,7 +246,7 @@ map.on("load", () => {
       "text-anchor": "top",
       "text-allow-overlap": false,
     },
-    paint: { "text-color": "#e8edf2", "text-halo-color": "#0b0f14", "text-halo-width": 1.5 },
+    paint: { "text-color": "#e8edf2", "text-halo-color": "#0a1119", "text-halo-width": 1.5 },
   });
 
   // DART rail sits under warnings' labels but above the shading.
@@ -470,6 +482,7 @@ function renderBanner() {
   if (!alertList.length) {
     b.dataset.level = "none";
     b.style.removeProperty("--alert");
+    document.documentElement.style.removeProperty("--threat");
     b.innerHTML = `<span class="ab-dot" aria-hidden="true"></span><span class="ab-text"><span class="txt-long">No active NWS alerts for ${esc(metro.name)}</span><span class="txt-short">No NWS alerts now</span></span><span class="ab-next">What's coming ›</span>`;
     return;
   }
@@ -477,6 +490,7 @@ function renderBanner() {
   const others = alertList.length - 1;
   b.dataset.level = "active";
   b.style.setProperty("--alert", top.color);
+  document.documentElement.style.setProperty("--threat", top.color);
   b.innerHTML = `<span class="ab-dot" aria-hidden="true"></span><span class="ab-text"><strong>${esc(top.event)}</strong>${
     others ? ` <span class="ab-more">+${others} more</span>` : ""
   }</span><span class="ab-next">What's coming ›</span>`;

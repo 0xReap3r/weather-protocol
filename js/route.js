@@ -29,7 +29,7 @@ export function initRoute({ map, getSpot, getMe, getPlaces, getAlertsFC, getRoad
 
   map.addSource("route", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
   map.addLayer({ id: "route-case", type: "line", source: "route", layout: { "line-join": "round", "line-cap": "round" }, paint: { "line-color": "#0b0f14", "line-width": 8 } });
-  map.addLayer({ id: "route-line", type: "line", source: "route", layout: { "line-join": "round", "line-cap": "round" }, paint: { "line-color": "#f0b429", "line-width": 4 } });
+  map.addLayer({ id: "route-line", type: "line", source: "route", layout: { "line-join": "round", "line-cap": "round" }, paint: { "line-color": "#e9f0f6", "line-width": 4 } });
 
   const fromPoint = () => (from === "me" && getMe() ? getMe() : getSpot().at);
 
