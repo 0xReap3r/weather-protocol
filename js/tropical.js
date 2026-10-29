@@ -56,7 +56,7 @@ export function initTropical({ map, beforeId, openSheet, onChange }) {
   // Evacuation routes sit lowest, under the storm drawing.
   map.addLayer({ id: "evac-line", type: "line", source: "evac", minzoom: 5,
     layout: { "line-join": "round", "line-cap": "round" },
-    paint: { "line-color": EVAC_COLOR, "line-opacity": 0.75, "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1, 9, 2.2, 13, 4] } }, beforeId);
+    paint: { "line-color": EVAC_COLOR, "line-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0.4, 9, 0.8], "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1, 9, 2.2, 13, 4] } }, beforeId);
   map.addLayer({ id: "evac-label", type: "symbol", source: "evac", minzoom: 8,
     layout: { "symbol-placement": "line", "symbol-spacing": 500, "text-field": ["concat", "Evacuation route ", ["get", "label"]],
       "text-font": ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"], "text-size": 11, "text-letter-spacing": 0.04 },
