@@ -5,6 +5,7 @@
 // The data loads even with the chip off: the area panel mentions a wildfire within 25 miles.
 // Fire locations can lag what crews on the ground know; local evacuation orders always win.
 import { fetchJSON } from "./data/fetch.js";
+import { t } from "./i18n.js";
 import { milesBetween, contains } from "./near.js";
 import { loadBurnBans } from "./data/texas.js";
 import { loadCounties } from "./data/counties.js";
@@ -146,10 +147,10 @@ export function initFires({ map, metro, beforeId, openSheet, onChange }) {
           return {
             type: "Feature", geometry: f.geometry,
             properties: {
-              id: p.UniqueFireIdentifier || name, name: planned ? `Planned burn: ${name}` : `${name} Fire`.replace(/ Fire Fire$/i, " Fire"),
+              id: p.UniqueFireIdentifier || name, name: t(planned ? `Planned burn: ${name}` : `${name} Fire`.replace(/ Fire Fire$/i, " Fire")),
               planned, stale, acres: p.IncidentSize, contained, county: p.POOCounty || "",
               found: p.FireDiscoveryDateTime, updated: p.ModifiedOnDateTime_dt, cause: p.FireCauseGeneral || "", behavior: p.FireBehaviorGeneral || "",
-              line: `${acresText(p.IncidentSize)}${contained != null && !planned ? ` · ${contained}% contained` : ""}`,
+              line: t(`${acresText(p.IncidentSize)}${contained != null && !planned ? ` · ${contained}% contained` : ""}`),
             },
           };
         }).sort((a, b) => (b.properties.acres || 0) - (a.properties.acres || 0)),

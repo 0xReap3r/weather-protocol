@@ -21,7 +21,7 @@ export function setLang(lang) {
   location.reload();
 }
 
-const NUM = /\d+(?:[.,:]\d+)*/g;
+const NUM = /\d+(?:[.,:]\d+)*|\.\d+/g;
 // Translate one string; unknown strings come back unchanged (English).
 export function t(s, vars) {
   let out = s;
@@ -36,8 +36,9 @@ export function t(s, vars) {
   if (vars) out = out.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m));
   return out;
 }
-function lookup(core) {
+function lookup(core, deep = true) {
   if (core in ES) return ES[core];
+  if (core in ES_EVENTS) return ES_EVENTS[core];
   // Same sentence with different numbers: "12 lakes…" -> "{0} lakes…"
   const nums = core.match(NUM);
   if (nums) {
@@ -47,7 +48,20 @@ function lookup(core) {
   }
   for (const [re, rep] of ES_PATTERNS) {
     const m = core.match(re);
-    if (m) return typeof rep === "function" ? rep(m) : core.replace(re, rep);
+    if (!m) continue;
+    const out = typeof rep === "function" ? rep(m) : core.replace(re, rep);
+    if (out != null) return out;
+  }
+  // "Austin, TX · Map center", "ERCOT · 8:20 p.m.": translate each piece on its own.
+  if (deep && core.includes(" · ")) {
+    let any = false;
+    const parts = core.split(" · ").map((p) => {
+      const c = p.trim();
+      const hit = c ? lookup(c, false) : null;
+      if (hit != null) { any = true; return p.replace(c, hit); }
+      return p;
+    });
+    if (any) return parts.join(" · ");
   }
   return null;
 }

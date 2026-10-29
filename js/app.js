@@ -212,7 +212,7 @@ map.on("load", () => {
     type: "symbol",
     source: "alerts",
     layout: {
-      "text-field": ["upcase", ["get", "event"]],
+      "text-field": ["upcase", ["coalesce", ["get", "label"], ["get", "event"]]],
       "text-font": LABEL_FONT,
       "text-size": 11,
       "text-letter-spacing": 0.06,
@@ -408,6 +408,7 @@ let gaugesFC = { type: "FeatureCollection", features: [] };
 async function refreshAlerts() {
   try {
     alertsFC = await loadAlerts(metro);
+    if (isEs) for (const f of alertsFC.features) f.properties.label = eventName(f.properties.event);
     allAlerts = uniqueAlerts(alertsFC);
     alertBoxes = alertsFC.features.map((f) => [f.properties.id, geomBox(f.geometry)]);
     alertList = regionAlerts();
@@ -634,15 +635,16 @@ function renderAlertList(focusId) {
         <span class="ai-swatch" aria-hidden="true"></span>
         <span class="ai-head">
           <span class="ai-event">${esc(a.event)}</span>
-          <span class="ai-when">Until ${esc(clock(a.expires))}</span>
+          <span class="ai-when">${t("Until")} ${esc(clock(a.expires))}</span>
         </span>
       </summary>
       <div class="ai-body">
-        <p class="ai-area">${esc(a.areaDesc)}</p>
-        ${a.instruction ? `<h4>What to do</h4><p class="ai-text">${esc(a.instruction)}</p>` : ""}
+        <p class="ai-area" translate="no">${esc(a.areaDesc)}</p>
+        ${isEs ? `<p class="ai-lang">Official text from the National Weather Service, in English.</p>` : ""}
+        ${a.instruction ? `<h4>What to do</h4><p class="ai-text" translate="no" lang="en">${esc(a.instruction)}</p>` : ""}
         <h4>Details</h4>
-        <p class="ai-text">${esc(a.description)}</p>
-        <p class="ai-meta">Issued ${esc(clock(a.sent))} by ${esc(a.sender || "National Weather Service")}</p>
+        <p class="ai-text" translate="no" lang="en">${esc(a.description)}</p>
+        <p class="ai-meta">${t("Issued")} ${esc(clock(a.sent))} · ${esc(a.sender || t("National Weather Service"))}</p>
       </div>
     </details>`
     )

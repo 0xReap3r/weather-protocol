@@ -1,5 +1,543 @@
-// Spanish strings for i18n.js. Keys are the English text exactly as it appears on screen
-// (trimmed); numbers inside a sentence are written {0}, {1}… Add a key, reload, done.
-export const ES = {};
-export const ES_PATTERNS = [];
-export const ES_EVENTS = {};
+// Spanish strings for i18n.js (US Spanish, "usted"). Keys are the English text exactly as it
+// appears on screen (trimmed); numbers inside a sentence are written {0}, {1}… in order.
+// Alert names follow the National Weather Service's own Spanish (Aviso = Warning,
+// Vigilancia = Watch, Advertencia = Advisory, Declaración = Statement).
+// Text joined with " · " is translated piece by piece, so most keys are short.
+
+export const ES_EVENTS = {
+  "Tornado Emergency": "Emergencia de Tornado",
+  "Flash Flood Emergency": "Emergencia de Inundación Repentina",
+  "Tornado Warning": "Aviso de Tornado",
+  "Tornado Watch": "Vigilancia de Tornado",
+  "Severe Thunderstorm Warning": "Aviso de Tormenta Eléctrica Severa",
+  "Severe Thunderstorm Watch": "Vigilancia de Tormenta Eléctrica Severa",
+  "Flash Flood Warning": "Aviso de Inundación Repentina",
+  "Flash Flood Watch": "Vigilancia de Inundación Repentina",
+  "Flood Warning": "Aviso de Inundación",
+  "Flood Watch": "Vigilancia de Inundación",
+  "Flood Advisory": "Advertencia de Inundación",
+  "Flood Statement": "Declaración de Inundación",
+  "Hydrologic Outlook": "Perspectiva Hidrológica",
+  "Coastal Flood Warning": "Aviso de Inundación Costera",
+  "Coastal Flood Watch": "Vigilancia de Inundación Costera",
+  "Coastal Flood Advisory": "Advertencia de Inundación Costera",
+  "Coastal Flood Statement": "Declaración de Inundación Costera",
+  "Hurricane Warning": "Aviso de Huracán",
+  "Hurricane Watch": "Vigilancia de Huracán",
+  "Tropical Storm Warning": "Aviso de Tormenta Tropical",
+  "Tropical Storm Watch": "Vigilancia de Tormenta Tropical",
+  "Storm Surge Warning": "Aviso de Marejada Ciclónica",
+  "Storm Surge Watch": "Vigilancia de Marejada Ciclónica",
+  "Extreme Wind Warning": "Aviso de Vientos Extremos",
+  "High Wind Warning": "Aviso de Vientos Fuertes",
+  "High Wind Watch": "Vigilancia de Vientos Fuertes",
+  "Wind Advisory": "Advertencia de Viento",
+  "Lake Wind Advisory": "Advertencia de Viento en Lagos",
+  "Winter Storm Warning": "Aviso de Tormenta Invernal",
+  "Winter Storm Watch": "Vigilancia de Tormenta Invernal",
+  "Winter Weather Advisory": "Advertencia de Tiempo Invernal",
+  "Ice Storm Warning": "Aviso de Tormenta de Hielo",
+  "Blizzard Warning": "Aviso de Ventisca",
+  "Freeze Warning": "Aviso de Congelación",
+  "Freeze Watch": "Vigilancia de Congelación",
+  "Hard Freeze Warning": "Aviso de Congelación Severa",
+  "Hard Freeze Watch": "Vigilancia de Congelación Severa",
+  "Frost Advisory": "Advertencia de Escarcha",
+  "Extreme Cold Warning": "Aviso de Frío Extremo",
+  "Extreme Cold Watch": "Vigilancia de Frío Extremo",
+  "Cold Weather Advisory": "Advertencia de Frío",
+  "Wind Chill Warning": "Aviso de Sensación Térmica",
+  "Wind Chill Advisory": "Advertencia de Sensación Térmica",
+  "Extreme Heat Warning": "Aviso de Calor Extremo",
+  "Extreme Heat Watch": "Vigilancia de Calor Extremo",
+  "Excessive Heat Warning": "Aviso de Calor Excesivo",
+  "Excessive Heat Watch": "Vigilancia de Calor Excesivo",
+  "Heat Advisory": "Advertencia de Calor",
+  "Red Flag Warning": "Aviso de Bandera Roja",
+  "Fire Weather Watch": "Vigilancia de Tiempo de Incendios",
+  "Fire Warning": "Aviso de Incendio",
+  "Dense Fog Advisory": "Advertencia de Niebla Densa",
+  "Dense Smoke Advisory": "Advertencia de Humo Denso",
+  "Dust Storm Warning": "Aviso de Tormenta de Polvo",
+  "Blowing Dust Advisory": "Advertencia de Polvo",
+  "Air Quality Alert": "Alerta de Calidad del Aire",
+  "Special Weather Statement": "Declaración Especial del Tiempo",
+  "Severe Weather Statement": "Declaración de Tiempo Severo",
+  "Hazardous Weather Outlook": "Perspectiva de Tiempo Peligroso",
+  "Rip Current Statement": "Declaración de Corrientes de Resaca",
+  "Beach Hazards Statement": "Declaración de Peligros en la Playa",
+  "Small Craft Advisory": "Advertencia para Embarcaciones Pequeñas",
+  "Gale Warning": "Aviso de Vendaval",
+  "Marine Weather Statement": "Declaración del Tiempo Marino",
+  "Special Marine Warning": "Aviso Marino Especial",
+  "Civil Emergency Message": "Mensaje de Emergencia Civil",
+  "Evacuation Immediate": "Evacuación Inmediata",
+  "Shelter In Place Warning": "Aviso de Refugiarse en el Lugar",
+};
+
+export const ES = {
+  // ---------- Top bar, chips, footer ----------
+  "LIVE": "EN VIVO", "LOADING": "CARGANDO", "STALE": "RETRASADO", "OFFLINE": "SIN CONEXIÓN",
+  "Menu": "Menú", "Close": "Cerrar", "Close menu": "Cerrar menú", "Map layers": "Capas del mapa", "Map of Texas": "Mapa de Texas",
+  "Warnings": "Alertas", "Rivers": "Ríos", "Radar": "Radar", "Storms": "Tormentas", "Hurricanes": "Huracanes", "Fires": "Incendios",
+  "Lakes": "Lagos", "Flood from space": "Inundación desde el espacio", "Rain totals": "Lluvia acumulada", "Flood zones": "Zonas de inundación",
+  "Grid": "Red eléctrica", "Rail": "Tren", "Neighbors": "Vecinos", "soon": "pronto",
+  "Report": "Reportar", "Near me": "Cerca de mí", "Layers": "Capas", "Map key": "Leyenda", "About": "Acerca de", "Install app": "Instalar app",
+  "Show my location": "Mostrar mi ubicación", "Layer details": "Detalles de capas",
+  "Report a flooded road, iced road, power outage, hail or storm damage": "Reportar una calle inundada, una calle con hielo, un apagón, granizo o daños por tormenta",
+  "Not an official warning service. In danger? Call": "No es un servicio oficial de alertas. ¿En peligro? Llame al",
+  "Not an official warning service. Information can be wrong or late. Follow National Weather Service warnings and local officials. In danger? Call 911.":
+    "No es un servicio oficial de alertas. La información puede estar equivocada o atrasada. Siga las alertas del Servicio Meteorológico Nacional y a las autoridades locales. ¿En peligro? Llame al 911.",
+  "No NWS alerts now": "Sin alertas del NWS", "What's coming ›": "Lo que viene ›", "What's coming": "Lo que viene",
+  "Texas grid:": "Red de Texas:", "Grid:": "Red:", "Normal": "Normal", "Normal Conditions": "Condiciones normales",
+  "A new version of the map is ready.": "Hay una nueva versión del mapa.", "Refresh": "Actualizar", "Not now": "Ahora no",
+  "Hide legend": "Ocultar leyenda", "Show legend": "Mostrar leyenda", "Zoom in": "Acercar", "Zoom out": "Alejar",
+  "Details": "Detalles", "Call 911": "Llamar al 911", "Pause": "Pausa", "Play": "Reproducir",
+
+  // ---------- Area panel ----------
+  "Near you": "Cerca de usted", "Which spot to check": "Qué lugar revisar", "Map center": "Centro del mapa", "My location": "Mi ubicación",
+  "Dropped pin": "Punto marcado", "Your location": "Su ubicación", "outside Texas": "fuera de Texas",
+  "Checking this area…": "Revisando esta zona…", "Checking…": "Revisando…",
+  "No NWS warnings here": "No hay alertas del NWS aquí",
+  "From National Weather Service alerts. Conditions can change fast. Keep Wireless Emergency Alerts on.":
+    "Según las alertas del Servicio Meteorológico Nacional. Las condiciones pueden cambiar rápido. Mantenga activadas las Alertas Inalámbricas de Emergencia.",
+  "Here": "Aquí", "Nearby": "Cerca",
+  "No rain falling here now. None expected in the next 2 hours.": "No está lloviendo aquí ahora. No se espera lluvia en las próximas 2 horas.",
+  "Checking for rain…": "Revisando si llueve…", "Loading forecast…": "Cargando pronóstico…", "Forecast unavailable right now.": "El pronóstico no está disponible ahora.",
+  "Alerts here": "Alertas aquí", "Rain, 6 hr": "Lluvia, 6 h", "Temp": "Temp.",
+  "Rain chance, next 12 hours": "Probabilidad de lluvia, próximas 12 horas", "Rain, next 12 hours": "Lluvia, próximas 12 horas",
+  "Highest chance anywhere in the area each hour.": "La probabilidad más alta en cualquier punto de la zona, cada hora.",
+  "peak {0}%": "máx. {0}%", "peak {0}% around {1}pm": "máx. {0}% hacia las {1} p.m.", "peak {0}% around {1}am": "máx. {0}% hacia las {1} a.m.",
+  "FEMA flood zone": "Zona de inundación de FEMA", "Checking FEMA's flood map…": "Revisando el mapa de inundaciones de FEMA…",
+  "Zone A": "Zona A", "Zone AE": "Zona AE", "Zone X": "Zona X", "Zone X (shaded)": "Zona X (sombreada)", "Zone VE": "Zona VE", "Zone AO": "Zona AO", "Zone AH": "Zona AH",
+  "high risk": "riesgo alto",
+  "High-risk area. FEMA maps a 1% or greater chance of flooding each year (the \"100-year\" floodplain).":
+    "Zona de alto riesgo. FEMA calcula una probabilidad de inundación del 1 % o más cada año (la llanura aluvial \"de 100 años\").",
+  "Moderate-risk area: about a 0.2% chance of flooding each year (the \"500-year\" floodplain).":
+    "Zona de riesgo moderado: cerca de un 0.2 % de probabilidad de inundación cada año (la llanura aluvial \"de 500 años\").",
+  "Outside FEMA's mapped high-risk floodplain. Flash flooding can still happen here, especially on streets and in low spots.":
+    "Fuera de la llanura aluvial de alto riesgo de FEMA. Aquí también puede haber inundaciones repentinas, sobre todo en calles y zonas bajas.",
+  "No FEMA flood map here": "No hay mapa de FEMA aquí", "FEMA hasn't mapped flood zones at this spot.": "FEMA no ha mapeado zonas de inundación en este lugar.",
+  "Directions": "Cómo llegar", "Copy link": "Copiar enlace", "Link copied": "Enlace copiado", "Link copied.": "Enlace copiado.",
+  "Save place": "Guardar lugar", "Clear pin": "Quitar punto",
+  "Rain so far": "Lluvia hasta ahora", "Last hour": "Última hora", "24 hours": "24 horas", "3 days": "3 días", "1 hour": "1 hora",
+  "Checking radar rain totals…": "Revisando la lluvia acumulada del radar…",
+  "NOAA radar · to {0} p.m.": "Radar de NOAA · hasta las {0} p.m.", "NOAA radar · to {0} a.m.": "Radar de NOAA · hasta las {0} a.m.",
+  "Nearest gauges": "Medidores más cercanos", "Loading gauges…": "Cargando medidores…", "Nearby cities": "Ciudades cercanas",
+  "No warnings": "Sin alertas",
+  "In danger now?": "¿En peligro ahora?", "In danger now? Call": "¿En peligro ahora? Llame al", "In danger?": "¿En peligro?", "In danger? Call": "¿En peligro? Llame al",
+  "Someone in danger? Call": "¿Alguien en peligro? Llame al",
+  "Not an official warning. Information can be wrong or late; follow the National Weather Service and local officials.":
+    "No es una alerta oficial. La información puede estar equivocada o atrasada; siga al Servicio Meteorológico Nacional y a las autoridades locales.",
+  "Sources and terms": "Fuentes y condiciones",
+  "Mostly Clear": "Mayormente despejado", "Mostly Cloudy": "Mayormente nublado", "Partly Cloudy": "Parcialmente nublado", "Clear": "Despejado",
+  "Sunny": "Soleado", "Mostly Sunny": "Mayormente soleado", "Partly Sunny": "Parcialmente soleado", "Cloudy": "Nublado", "Fog": "Niebla",
+  "Rain": "Lluvia", "Showers": "Chubascos", "Rain Showers": "Chubascos", "Thunderstorms": "Tormentas eléctricas", "Chance Rain Showers": "Posibles chubascos",
+  "Slight Chance Rain Showers": "Leve probabilidad de chubascos", "Chance Showers And Thunderstorms": "Posibles chubascos y tormentas",
+  "Slight Chance Showers And Thunderstorms": "Leve probabilidad de chubascos y tormentas", "Showers And Thunderstorms": "Chubascos y tormentas",
+  "Patchy Fog": "Niebla dispersa", "Areas Of Fog": "Zonas de niebla", "Windy": "Ventoso", "Breezy": "Con brisa",
+  "wind {0} mph": "viento {0} mph", "low {0}°": "mínima {0}°", "high {0}°": "máxima {0}°",
+  "Rain now": "Lluvia ahora",
+  "Light rain": "Lluvia ligera", "Moderate rain": "Lluvia moderada", "Heavy rain": "Lluvia fuerte", "Very heavy rain": "Lluvia muy fuerte",
+  "Wildfires nearby": "Incendios forestales cerca", "Tropical storms": "Tormentas tropicales",
+  "Low-water crossings": "Cruces bajos", "{0} within {1} mi": "{0} a menos de {1} mi",
+  "{0} is inside a flood warning. Avoid it.": "{0} está dentro de un aviso de inundación. Evítelo.",
+  "{0} are inside a flood warning. Avoid them.": "{0} están dentro de un aviso de inundación. Evítelos.",
+
+  // ---------- Danger bar ----------
+  "you're inside it": "usted está dentro", "you're near it": "está cerca de usted",
+  "Take shelter now. Go to the lowest floor, an interior room away from windows. Cover your head and neck.":
+    "Refúgiese ahora. Vaya al piso más bajo, a un cuarto interior lejos de las ventanas. Cúbrase la cabeza y el cuello.",
+  "Move to higher ground now. Never drive or walk into flood water.": "Suba a un lugar alto ahora. Nunca maneje ni camine por agua de inundación.",
+  "From your last location just now": "Según su última ubicación, ahora mismo",
+
+  // ---------- Warnings sheet / key ----------
+  "Alerts": "Alertas",
+  "Alerts from the National Weather Service. Keep Wireless Emergency Alerts on; this map can lag behind official warnings.":
+    "Alertas del Servicio Meteorológico Nacional. Mantenga activadas las Alertas Inalámbricas de Emergencia; este mapa puede ir atrasado respecto a las alertas oficiales.",
+  "Area": "Zona", "Until": "Hasta", "Issued": "Emitido", "National Weather Service": "Servicio Meteorológico Nacional", "What to do": "Qué hacer", "What's happening": "Qué está pasando",
+  "Official text from the National Weather Service, in English.": "Texto oficial del Servicio Meteorológico Nacional, en inglés.",
+  "Warnings and watches": "Avisos y vigilancias",
+  "Rare. A confirmed, damaging tornado heading for people. Take shelter now.": "Poco común. Un tornado confirmado y destructivo se dirige a zonas pobladas. Refúgiese ahora.",
+  "Tornado seen or on radar. Take shelter now.": "Tornado visto o detectado por radar. Refúgiese ahora.",
+  "Flash flooding happening or about to. Move to higher ground; never drive into water.": "Hay o habrá pronto inundaciones repentinas. Suba a un lugar alto; nunca maneje hacia el agua.",
+  "Damaging wind or large hail.": "Vientos dañinos o granizo grande.",
+  "River or area flooding expected or happening.": "Se espera o ya hay inundación de ríos o zonas.",
+  "Heavy snow, sleet or ice.": "Mucha nieve, aguanieve o hielo.",
+  "Freezing temperatures. Protect pipes, plants and pets.": "Temperaturas bajo cero. Proteja tuberías, plantas y mascotas.",
+  "Conditions could produce tornadoes. Be ready.": "Las condiciones podrían producir tornados. Esté preparado.",
+  "Flooding is possible. Be ready.": "Es posible que haya inundaciones. Esté preparado.",
+  "Minor flooding or ponding. Use caution.": "Inundación leve o encharcamientos. Tenga precaución.",
+  "NOAA's Storm Prediction Center forecast for severe storms, in its own colors. A wide-area chance, not a warning.":
+    "Pronóstico de tormentas severas del Centro de Predicción de Tormentas de NOAA, en sus propios colores. Es una probabilidad para una zona amplia, no una alerta.",
+  "Storm outlook (Storms layer)": "Perspectiva de tormentas (capa Tormentas)",
+  "The color rule:": "La regla de colores:",
+  "red and purple mean danger, orange and yellow mean watch out, blue means water or rain, and gray means no data. Gray never means \"safe.\"":
+    "rojo y morado significan peligro, naranja y amarillo significan precaución, azul significa agua o lluvia, y gris significa sin datos. Gris nunca significa \"seguro\".",
+  "Red and purple mean danger, orange and yellow mean watch out, blue means water or rain. Gray means no data, never \"safe.\"":
+    "Rojo y morado significan peligro, naranja y amarillo significan precaución, azul significa agua o lluvia. Gris significa sin datos, nunca \"seguro\".",
+  "Marks on the map": "Marcas en el mapa", "Texas state line": "Límite de Texas", "Coverage stops at the state line for now.": "Por ahora la cobertura termina en el límite del estado.",
+  "Your location": "Su ubicación", "The spot the side panel is describing. Tap the map anywhere to move it.": "El lugar que describe el panel lateral. Toque el mapa para moverlo.",
+  "The panel follows this when no pin is dropped.": "El panel sigue este punto cuando no hay ningún punto marcado.",
+  "Rivers and lakes": "Ríos y lagos", "Rain radar": "Radar de lluvia", "Flood maps": "Mapas de inundación", "Neighbor reports": "Reportes de vecinos",
+  "Rail (DART)": "Tren (DART)", "Lake level": "Nivel del lago", "Lake level {0} ft": "Nivel del lago {0} ft",
+  "Lakes have no flood stages here; tap for the level.": "Los lagos no tienen niveles de inundación aquí; toque para ver el nivel.",
+  "Major flooding": "Inundación mayor", "Moderate flooding": "Inundación moderada", "Minor flooding": "Inundación leve",
+  "Near flood stage": "Cerca del nivel de inundación", "Below flood stage": "Bajo el nivel de inundación", "Action stage": "Nivel de acción",
+  "Widespread flooding; evacuations possible.": "Inundación extensa; posibles evacuaciones.", "Some roads and buildings flood.": "Se inundan algunas calles y edificios.",
+  "Low roads and parks flood.": "Se inundan calles bajas y parques.", "Rising toward flooding. Watch it.": "Subiendo hacia nivel de inundación. Esté atento.",
+  "Normal for this river. Not a promise roads are clear.": "Normal para este río. No garantiza que las calles estén despejadas.",
+  "No recent reading": "Sin lectura reciente", "Old readings fade so you can tell what's current.": "Las lecturas viejas se ven tenues para distinguir lo actual.",
+  "Light": "Ligera", "Moderate": "Moderada", "Heavy": "Fuerte", "Very heavy": "Muy fuerte", "Hail": "Granizo", "Hail / torrential": "Granizo / torrencial",
+  "Drops show rain falling from live radar, not flood water on the ground.": "Las gotas muestran la lluvia que cae según el radar en vivo, no el agua de inundación en el suelo.",
+  "Drops show where rain is falling now, from live NEXRAD radar. They don't show water on the ground.": "Las gotas muestran dónde llueve ahora, según el radar NEXRAD en vivo. No muestran agua en el suelo.",
+  "latest": "lo más reciente", "no rain in view": "no hay lluvia a la vista",
+  "Modeled flooding": "Inundación modelada", "From a gauge's detail panel: where water would reach at each flood level. A model, not observed flooding.":
+    "Desde el panel de un medidor: hasta dónde llegaría el agua en cada nivel de inundación. Es un modelo, no inundación observada.",
+  "Long-term flood risk, in FEMA's own map colors. Zoom in to see them; tap a spot for its zone.": "Riesgo de inundación a largo plazo, en los colores del mapa de FEMA. Acerque el mapa para verlas; toque un lugar para ver su zona.",
+  "Flood water": "Agua de inundación", "Floods often": "Se inunda a menudo", "Normal water": "Agua normal", "Clouds, no view": "Nubes, sin vista",
+  "Flood water NASA satellites saw in the last 2 days. Light blue: places that flood often. Faint gray: clouds blocked the view.":
+    "Agua de inundación que vieron los satélites de la NASA en los últimos 2 días. Azul claro: lugares que se inundan a menudo. Gris tenue: las nubes taparon la vista.",
+  "Each dot is an official gauge, colored by NWS flood stage. A pulsing ring means it's at or near flood stage.":
+    "Cada punto es un medidor oficial, con el color de su nivel de inundación del NWS. Un anillo que late significa que está en o cerca del nivel de inundación.",
+  "Shaded areas from the National Weather Service, in its official colors. A pulsing outline means the warning or watch is active now.":
+    "Zonas sombreadas del Servicio Meteorológico Nacional, en sus colores oficiales. Un contorno que late significa que el aviso o la vigilancia está vigente ahora.",
+  "In each line's own color.": "Con el color de cada línea.", "Rail lines": "Líneas de tren", "Station": "Estación", "Station inside a warning": "Estación dentro de una alerta",
+  "Flooding confirmed nearby": "Inundación confirmada cerca",
+  "Flooded road": "Calle inundada", "Iced road": "Calle con hielo", "Power out": "Sin luz", "Power's back": "Volvió la luz", "Storm damage": "Daños por tormenta",
+  "Flooded road, shallow": "Calle inundada, poco profunda", "Flooded road, knee-deep": "Calle inundada, hasta la rodilla", "Flooded road, waist-deep or more": "Calle inundada, hasta la cintura o más",
+  "Faint with a dashed edge until a second neighbor confirms. Reports fade after 6 hours (ice: 12).":
+    "Tenue y con borde punteado hasta que un segundo vecino confirme. Los reportes desaparecen después de 6 horas (hielo: 12).",
+  "Neighborhood-sized area; stronger with more neighbors.": "Zona del tamaño de un vecindario; más intensa con más vecinos.",
+  "Neighborhood-sized area, with the reported size. Fades after 3 hours.": "Zona del tamaño de un vecindario, con el tamaño reportado. Desaparece después de 3 horas.",
+  "Trees down, roof damage or power lines down. Fades after 24 hours.": "Árboles caídos, techos dañados o cables caídos. Desaparece después de 24 horas.",
+  "Electricity came back": "Regresó la electricidad",
+
+  // ---------- Hurricanes ----------
+  "Hurricanes": "Huracanes", "Forecast cone": "Cono de pronóstico", "Hurricane warning": "Aviso de huracán", "Hurricane watch": "Vigilancia de huracán",
+  "Tropical storm warning": "Aviso de tormenta tropical", "Tropical storm watch": "Vigilancia de tormenta tropical", "Evacuation route": "Ruta de evacuación",
+  "Area to watch": "Zona en observación", "Drawn along the coast": "Dibujado a lo largo de la costa",
+  "Possible path of the storm's center over 5 days": "Trayectoria posible del centro de la tormenta en 5 días",
+  "Chance a storm forms in 7 days: yellow low, orange medium, red high": "Probabilidad de que se forme una tormenta en 7 días: amarillo baja, naranja media, rojo alta",
+  "TxDOT hurricane evacuation route. Leave when your county says to.": "Ruta de evacuación por huracán de TxDOT. Salga cuando su condado lo indique.",
+  "From the National Hurricane Center. The cone is where the center may go; wind, surge and flooding reach far outside it.":
+    "Del Centro Nacional de Huracanes. El cono es por donde podría pasar el centro; el viento, la marejada y las inundaciones llegan mucho más allá.",
+  "Tropical depression": "Depresión tropical", "Tropical storm": "Tormenta tropical",
+  "Category 1 hurricane": "Huracán categoría 1", "Category 2 hurricane": "Huracán categoría 2", "Category 3 hurricane": "Huracán categoría 3",
+  "Category 4 hurricane": "Huracán categoría 4", "Category 5 hurricane": "Huracán categoría 5",
+  "No active tropical storms": "No hay tormentas tropicales activas", "A storm's forecast cone reaches Texas": "El cono de pronóstico de una tormenta llega a Texas",
+  "{0} active tropical system, none headed for Texas": "{0} sistema tropical activo, ninguno se dirige a Texas",
+  "{0} active tropical systems, none headed for Texas": "{0} sistemas tropicales activos, ninguno se dirige a Texas",
+  "{0} area NHC is watching for development (dashed).": "{0} zona que el NHC vigila por posible formación (punteada).",
+  "{0} areas NHC is watching for development (dashed).": "{0} zonas que el NHC vigila por posible formación (punteadas).",
+  "{0}% chance in 7 days": "{0}% de probabilidad en 7 días", "Texas in cone": "Texas en el cono",
+  "The cone shows where the center may go. Wind, surge and flooding reach far outside it. Evacuation orders come from your county; routes from TxDOT.":
+    "El cono muestra por donde podría pasar el centro. El viento, la marejada y las inundaciones llegan mucho más allá. Las órdenes de evacuación vienen de su condado; las rutas, de TxDOT.",
+  "Hurricane data isn't loading right now.": "Los datos de huracanes no están cargando ahora.",
+  "Winds": "Vientos", "Gusts": "Ráfagas", "Moving": "Avanza", "Forecast": "Pronóstico",
+  "Atlantic": "Atlántico", "Eastern Pacific": "Pacífico oriental",
+  "Follow your county's evacuation orders and the National Weather Service.": "Siga las órdenes de evacuación de su condado y al Servicio Meteorológico Nacional.",
+
+  // ---------- Fires ----------
+  "Wildfires": "Incendios forestales", "Wildfire": "Incendio forestal", "Planned burn": "Quema prescrita", "Mapped fire edge": "Borde del incendio mapeado",
+  "Burn ban": "Prohibición de quemas", "Burn ban (county)": "Prohibición de quemas (condado)", "Wildfire, sized by acres": "Incendio forestal, según sus acres",
+  "No active wildfires reported in Texas": "No hay incendios forestales activos reportados en Texas",
+  "{0} active wildfire in Texas": "{0} incendio forestal activo en Texas", "{0} active wildfires in Texas": "{0} incendios forestales activos en Texas",
+  "{0} of {1} counties under a burn ban": "{0} de {1} condados con prohibición de quemas",
+  "{0} planned burns (prescribed fire) under way. Expect smoke nearby.": "{0} quemas prescritas en curso. Puede haber humo cerca.",
+  "{0} planned burn (prescribed fire) under way. Expect smoke nearby.": "{0} quema prescrita en curso. Puede haber humo cerca.",
+  "Fires from the national interagency fire feed; it can lag reports from crews. Burn bans from Texas A&M Forest Service, as counties report them. Follow evacuation orders from local officials.":
+    "Incendios según la fuente nacional interagencial de incendios; puede ir atrasada respecto a los equipos en el terreno. Prohibiciones de quemas del Servicio Forestal de Texas A&M, según las reportan los condados. Siga las órdenes de evacuación de las autoridades locales.",
+  "Fire data isn't loading right now.": "Los datos de incendios no están cargando ahora.",
+  "Planned burn (prescribed fire)": "Quema prescrita", "Size": "Tamaño", "Contained": "Contenido", "Updated": "Actualizado", "Found": "Detectado",
+  "Fire behavior": "Comportamiento del fuego", "Cause": "Causa", "acres": "acres",
+  "Planned burns are set on purpose by land managers and can still send smoke over roads. In danger now? Call":
+    "Las quemas prescritas las hacen a propósito los administradores de tierras y aun así pueden echar humo sobre las calles. ¿En peligro ahora? Llame al",
+  "Leave when local officials say to. Don't wait for this map. In danger now? Call": "Salga cuando las autoridades locales lo indiquen. No espere a este mapa. ¿En peligro ahora? Llame al",
+  "From the National Interagency Fire Center's current incident feed (WFIGS), shared with Texas A&M Forest Service. Size and containment are what crews last reported and can lag.":
+    "De la fuente de incidentes actuales del Centro Nacional Interagencial de Incendios (WFIGS), compartida con el Servicio Forestal de Texas A&M. El tamaño y la contención son lo último que reportaron los equipos y pueden ir atrasados.",
+  "No update from crews in over 3 days, so this may be out of date (often a fire that is out but not yet closed).":
+    "Los equipos no han actualizado en más de 3 días, así que puede estar desactualizado (a menudo es un incendio apagado que aún no se ha cerrado).",
+  "Bigger flame, bigger fire. Tap for acres and containment.": "Llama más grande, incendio más grande. Toque para ver acres y contención.",
+  "Prescribed fire set on purpose by land managers. Expect smoke nearby.": "Fuego prescrito que hacen a propósito los administradores de tierras. Puede haber humo cerca.",
+  "Where crews last mapped the fire; it can move": "Donde los equipos mapearon el incendio por última vez; puede moverse",
+  "County where outdoor burning is banned (Texas A&M Forest Service)": "Condado donde se prohíben las quemas al aire libre (Servicio Forestal de Texas A&M)",
+  "under 1 acre": "menos de 1 acre", "size not reported": "tamaño no reportado", "{0} acres": "{0} acres", "{0} acre": "{0} acre",
+  "{0}% contained": "{0}% contenido",
+  "Active fires, red flag warnings, neighbor reports": "Incendios activos, avisos de bandera roja, reportes de vecinos",
+
+  // ---------- Lakes ----------
+  "Low": "Bajo", "Half": "Mitad", "Full": "Lleno", "Above full": "Sobre su nivel lleno", "Below full": "Bajo su nivel lleno", "Near full": "Casi lleno", "Level": "Nivel",
+  "Flood-control reservoir": "Embalse de control de inundaciones", "Water-supply reservoir": "Embalse de abastecimiento de agua",
+  "Water-supply and flood-control reservoir": "Embalse de abastecimiento y control de inundaciones",
+  "Under about 40% full": "Por debajo de un 40 % de su capacidad", "Water-supply lake close to its normal full level": "Lago de abastecimiento cerca de su nivel lleno normal",
+  "Holding flood water; dams may release it downstream": "Retiene agua de inundación; las presas podrían soltarla río abajo",
+  "Kept mostly empty; fills only in floods": "Casi siempre vacío; solo se llena en inundaciones",
+  "Rain gauge (Rain totals layer)": "Pluviómetro (capa Lluvia acumulada)", "TexMesonet station with the rain it measured": "Estación TexMesonet con la lluvia que midió",
+  "No major lake is above its full level": "Ningún lago importante está por encima de su nivel lleno",
+  "{0} lake is above full and may be releasing water": "{0} lago está por encima de su nivel lleno y podría estar soltando agua",
+  "{0} lakes are above full and may be releasing water": "{0} lagos están por encima de su nivel lleno y podrían estar soltando agua",
+  "{0} major reservoirs; water-supply lakes average {1}% full.": "{0} embalses principales; los lagos de abastecimiento están en promedio al {1} %.",
+  "{0} ft above full": "{0} ft sobre su nivel lleno", "{0}% full": "{0}% lleno", "flood control": "control de inundaciones", "no reading": "sin lectura",
+  "Lake levels aren't loading right now.": "Los niveles de los lagos no están cargando ahora.", "Loading lakes…": "Cargando lagos…",
+  "Daily levels from the Texas Water Development Board. A lake above full is holding flood water; follow the river authority and NWS for releases downstream.":
+    "Niveles diarios de la Junta de Desarrollo de Agua de Texas. Un lago por encima de su nivel lleno retiene agua de inundación; siga a la autoridad del río y al NWS sobre descargas río abajo.",
+  "This lake is above its normal full level and is storing flood water. Dam operators may release water downstream, raising the river below. Follow the river authority and the National Weather Service.":
+    "Este lago está por encima de su nivel lleno normal y está guardando agua de inundación. Los operadores de la presa podrían soltar agua río abajo y subir el río. Siga a la autoridad del río y al Servicio Meteorológico Nacional.",
+  "Flood-control reservoirs stay mostly empty and fill only during floods, then release slowly.": "Los embalses de control de inundaciones casi siempre están vacíos, solo se llenan en inundaciones y luego sueltan el agua poco a poco.",
+  "Below its full level, the lake can still absorb some runoff.": "Por debajo de su nivel lleno, el lago todavía puede absorber algo de escorrentía.",
+  "Water Data for Texas": "Water Data for Texas",
+
+  // ---------- Rain totals / stations / satellite ----------
+  "NOAA radar · last 1 hour": "Radar de NOAA · última hora", "NOAA radar · last 24 hours": "Radar de NOAA · últimas 24 horas", "NOAA radar · last 3 days": "Radar de NOAA · últimos 3 días",
+  "Time period": "Período", "and up": "o más", "loading…": "cargando…", "Legend unavailable": "Leyenda no disponible",
+  "Inches of rain estimated from radar, updated hourly. Radar can miss or overcount; local gauges are the final word.":
+    "Pulgadas de lluvia estimadas por radar, actualizadas cada hora. El radar puede fallar o contar de más; los medidores locales tienen la última palabra.",
+  "Inches of rain estimated from radar, updated hourly. Radar can miss or overcount; local gauges are the final word. Circles are TexMesonet rain gauges with the inches they measured.":
+    "Pulgadas de lluvia estimadas por radar, actualizadas cada hora. El radar puede fallar o contar de más; los medidores locales tienen la última palabra. Los círculos son pluviómetros de TexMesonet con las pulgadas que midieron.",
+  "Inches of rain estimated from radar, updated hourly. Radar can miss or overcount; local gauges are the final word. Rain gauges (circles) report 24 hours and longer.":
+    "Pulgadas de lluvia estimadas por radar, actualizadas cada hora. El radar puede fallar o contar de más; los medidores locales tienen la última palabra. Los pluviómetros (círculos) reportan 24 horas o más.",
+  "Rain, 24 hr": "Lluvia, 24 h", "48 hr": "48 h", "Temperature": "Temperatura", "Wind": "Viento", "Soil water": "Agua en el suelo", "Reading": "Lectura",
+  "{0}% of the soil by volume": "{0}% del volumen del suelo", "(over 2 hours old)": "(de hace más de 2 horas)",
+  "Wetter soil soaks up less rain, so more runs off into streets and creeks. What counts as wet depends on the soil type at this station.":
+    "La tierra más mojada absorbe menos lluvia, así que más agua corre hacia calles y arroyos. Qué tan mojada es mucho depende del tipo de suelo en esta estación.",
+  "Measured by a rain gauge at this station, run by the Texas Water Development Board.": "Medido por un pluviómetro en esta estación, operada por la Junta de Desarrollo de Agua de Texas.",
+  "no rain, last 24 hours": "sin lluvia, últimas 24 horas", "no rain, last 3 days": "sin lluvia, últimos 3 días", "no rain, last 1 hour": "sin lluvia, última hora",
+  "{0}\" avg": "{0}\" prom.", "{0}\" most": "{0}\" máx.", ".{0}\" avg": ".{0}\" prom.", ".{0}\" most": ".{0}\" máx.",
+  "{0} ft · flood {1}": "{0} ft · inundación {1}", "elev.": "elev.",
+  "satellite": "satélite", "~{0} acres possible flooding": "~{0} acres con posible inundación", "little or no flood water seen": "poca o ninguna agua de inundación vista",
+  "{0}% under cloud": "{0}% bajo nubes",
+  "NASA flood map": "Mapa de inundaciones de la NASA",
+
+  // ---------- Crossings ----------
+  "Low-water crossing": "Cruce bajo", "Crossing inside a flood warning": "Cruce dentro de un aviso de inundación",
+  "Road that dips through a creek (Rivers layer, zoomed in). We don't know if it's flooded or closed.":
+    "Calle que baja y cruza un arroyo (capa Ríos, con el mapa acercado). No sabemos si está inundada o cerrada.",
+  "Don't drive or walk into water here. Turn around, don't drown.": "No maneje ni camine hacia el agua aquí. ¡Dé la vuelta, no se ahogue!",
+  "Crosses": "Cruza", "Where": "Dónde", "Type": "Tipo", "Signs": "Señales", "Maintained by": "Mantenido por",
+  "Road dips through the creek bed (no culverts)": "La calle baja por el lecho del arroyo (sin alcantarillas)",
+  "Low road over culverts; water flows over it in high water": "Calle baja sobre alcantarillas; con agua alta, el agua pasa por encima",
+  "Low bridge that can go under water": "Puente bajo que puede quedar bajo el agua", "Low path or trail crossing": "Cruce bajo de sendero o camino peatonal",
+  "Depth gauge posted": "Tiene medidor de profundidad", "Advance warning sign": "Señal de advertencia previa", "No signs on record": "Sin señales registradas",
+  "City": "Ciudad", "County": "Condado", "State": "Estado", "Private": "Privado",
+  "This map doesn't know if the crossing is flooded or barricaded. Water over the road can be deeper and faster than it looks: 12 inches can float a car. Turn around, don't drown.":
+    "Este mapa no sabe si el cruce está inundado o con barricadas. El agua sobre la calle puede ser más profunda y rápida de lo que parece: 12 pulgadas pueden hacer flotar un carro. ¡Dé la vuelta, no se ahogue!",
+  "From the statewide low-water crossing inventory, Texas Geographic Information Office and Texas Water Development Board. Some crossings may be missing or since rebuilt.":
+    "Del inventario estatal de cruces bajos, Oficina de Información Geográfica de Texas y Junta de Desarrollo de Agua de Texas. Pueden faltar cruces o algunos ya se reconstruyeron.",
+  "covers this crossing. Don't drive or walk into water here. Turn around, don't drown.": "cubre este cruce. No maneje ni camine hacia el agua aquí. ¡Dé la vuelta, no se ahogue!",
+
+  // ---------- Storms ----------
+  "Storm outlook": "Perspectiva de tormentas", "Today": "Hoy", "Tomorrow": "Mañana", "Day 3": "Día 3", "Outlook day": "Día de la perspectiva",
+  "Marginal": "Marginal", "Slight": "Ligero", "Enhanced": "Mayor", "High": "Alto",
+  "Thunderstorms possible, not expected to be severe": "Posibles tormentas, no se esperan severas", "No severe storms expected": "No se esperan tormentas severas",
+  "Storms possible, not expected to be severe": "Posibles tormentas, no se esperan severas",
+  "Isolated severe storms possible": "Posibles tormentas severas aisladas", "Scattered severe storms possible": "Posibles tormentas severas dispersas",
+  "Numerous severe storms possible": "Posibles tormentas severas numerosas", "Widespread severe storms likely": "Probables tormentas severas extensas",
+  "Widespread, long-lived, intense storms expected": "Se esperan tormentas intensas, extensas y duraderas",
+  "Widespread, long-lived, intense storms expected.": "Se esperan tormentas intensas, extensas y duraderas.",
+  "Loading the outlook…": "Cargando la perspectiva…", "The outlook isn't loading right now.": "La perspectiva no está cargando ahora.",
+  "Overall": "General", "Tornado": "Tornado", "Show on the map": "Mostrar en el mapa",
+  "Glowing contours are SPC's risk levels; hatching marks Enhanced and up. From NOAA's Storm Prediction Center. Not a warning.":
+    "Los contornos brillantes son los niveles de riesgo del SPC; el rayado marca Mayor o más. Del Centro de Predicción de Tormentas de NOAA. No es una alerta.",
+  "Chance of that hazard within 25 miles of a point. From NOAA's Storm Prediction Center. Not a warning.":
+    "Probabilidad de ese peligro a menos de 25 millas de un punto. Del Centro de Predicción de Tormentas de NOAA. No es una alerta.",
+  "Risk {0} of {1} here": "Riesgo {0} de {1} aquí", "Risk below 1 of 5 here": "Riesgo menor que 1 de 5 aquí",
+  "Highest in Texas:": "Lo más alto en Texas:", "{0} · Marginal": "{0} · Marginal", "{0} · Slight": "{0} · Ligero", "{0} · Enhanced": "{0} · Mayor", "{0} · Moderate": "{0} · Moderado", "{0} · High": "{0} · Alto",
+  "Marginal risk today": "Riesgo marginal hoy", "Slight risk today": "Riesgo ligero hoy", "Enhanced risk today": "Riesgo mayor hoy", "Moderate risk today": "Riesgo moderado hoy", "High risk today": "Riesgo alto hoy",
+  "Marginal risk tomorrow": "Riesgo marginal mañana", "Slight risk tomorrow": "Riesgo ligero mañana", "Enhanced risk tomorrow": "Riesgo mayor mañana", "Moderate risk tomorrow": "Riesgo moderado mañana", "High risk tomorrow": "Riesgo alto mañana",
+  "Marginal risk on day 3": "Riesgo marginal el día 3", "Slight risk on day 3": "Riesgo ligero el día 3", "Enhanced risk on day 3": "Riesgo mayor el día 3", "Moderate risk on day 3": "Riesgo moderado el día 3", "High risk on day 3": "Riesgo alto el día 3",
+
+  // ---------- What's coming ----------
+  "Risk today and tonight": "Riesgo hoy y esta noche", "Week": "Semana", "Outlook period": "Período de la perspectiva",
+  "Elevated": "Elevado", "Extreme": "Extremo",
+  "No official warnings, outlooks or heavy rain forecast for this area right now. Conditions can change; this view refreshes every 15 minutes.":
+    "No hay alertas oficiales, perspectivas ni pronóstico de lluvia fuerte para esta zona ahora. Las condiciones pueden cambiar; esta vista se actualiza cada 15 minutos.",
+  "Risk levels summarize official NWS, SPC and WPC products; they are not official warnings. \"Low\" doesn't mean safe.":
+    "Los niveles de riesgo resumen productos oficiales del NWS, SPC y WPC; no son alertas oficiales. \"Bajo\" no significa seguro.",
+  "Cities": "Ciudades", "{0} other cities: nothing flagged.": "{0} ciudades más: nada señalado.",
+
+  // ---------- Reports ----------
+  "Send a report": "Enviar un reporte", "Send report": "Enviar reporte", "What's happening?": "¿Qué está pasando?", "How deep is it?": "¿Qué tan profunda está?",
+  "Water over the road": "Agua sobre la calle", "Water over the road?": "¿Agua sobre la calle?", "Ice or sleet on the road": "Hielo o aguanieve en la calle",
+  "No electricity here": "Sin electricidad aquí", "Hail falling or just fell": "Cae granizo o acaba de caer", "Trees, roofs or power lines down": "Árboles, techos o cables caídos",
+  "Ankle-deep": "Hasta el tobillo", "Ankle-deep to over the curb.": "Del tobillo a más arriba de la banqueta.", "Knee-deep": "Hasta la rodilla", "Waist-deep": "Hasta la cintura",
+  "Over the curb": "Sobre la banqueta", "Over a car": "Sobre un carro", "Life-threatening.": "Peligro de muerte.",
+  "Never wade or drive in to check. Estimate from what's around it: curbs, tires, mailboxes.": "Nunca camine ni maneje en el agua para revisar. Calcule con lo que hay alrededor: banquetas, llantas, buzones.",
+  "under {0} in · Can stall a car.": "menos de {0} in · Puede apagar un carro.",
+  "{0}–{1} in · Enough to make a car lose control.": "{0}–{1} in · Suficiente para que un carro pierda el control.",
+  "{0}–{1} ft · A foot of moving water can float most cars.": "{0}–{1} ft · Un pie de agua en movimiento puede hacer flotar casi cualquier carro.",
+  "{0}–{1} ft · Two feet can sweep away SUVs and trucks.": "{0}–{1} ft · Dos pies pueden arrastrar camionetas y trocas.",
+  "{0} ft or more · Life-threatening. Stay out of it.": "{0} ft o más · Peligro de muerte. No se acerque.",
+  "A foot of moving water can float a car.": "Un pie de agua en movimiento puede hacer flotar un carro.",
+  "Tap the map first to report a different spot. We store only a block-sized area, never your exact location.":
+    "Toque el mapa primero para reportar otro lugar. Solo guardamos una zona del tamaño de una cuadra, nunca su ubicación exacta.",
+  "Call 911. This map does not contact emergency services.": "Llame al 911. Este mapa no se comunica con los servicios de emergencia.",
+  "Call 911. This map doesn't reach emergency services and can lag behind official warnings.": "Llame al 911. Este mapa no llega a los servicios de emergencia y puede ir atrasado respecto a las alertas oficiales.",
+  "Reports near here": "Reportes cerca de aquí", "No reports nearby yet.": "Todavía no hay reportes cerca.", "Report here": "Reportar aquí", "Report a road": "Reportar una calle",
+  "Report what you see.": "Reporte lo que ve.",
+  "No neighbor has reported water within half a mile. That doesn't mean roads are clear.": "Ningún vecino ha reportado agua a menos de media milla. Eso no significa que las calles estén despejadas.",
+  "Neighbors confirm a flooded road within a few blocks.": "Vecinos confirman una calle inundada a pocas cuadras.",
+  "Roads to avoid": "Calles que debe evitar", "None reported in Texas": "Ninguna reportada en Texas",
+  "No neighbor has reported a flooded, iced or blocked road in Texas right now.": "Ningún vecino ha reportado ahora una calle inundada, con hielo o bloqueada en Texas.",
+  "From neighbor reports, not official closures. A road that isn't listed can still be flooded, iced or blocked.":
+    "Según reportes de vecinos, no cierres oficiales. Una calle que no aparece aquí puede estar inundada, con hielo o bloqueada.",
+  ", not \"safe.\" A road with no reports can still be flooded or iced.": ", no \"seguro\". Una calle sin reportes puede estar inundada o con hielo.",
+  "Check before you drive.": "Revise antes de manejar.", "no water reported": "no se ha reportado agua", "neighbor reports": "reportes de vecinos",
+  "Flag": "Señalar", "Flagged": "Señalado", ". Not an official alert.": ". No es una alerta oficial.", ". This doesn't reach emergency services.": ". Esto no llega a los servicios de emergencia.",
+  "Thanks. Reports flagged by enough neighbors are hidden.": "Gracias. Los reportes que señalan suficientes vecinos se ocultan.",
+  "Report sent. Thank you.": "Reporte enviado. Gracias.",
+  "This is a demo: reports stay in this browser.": "Esto es una demostración: los reportes se quedan en este navegador.",
+
+  // ---------- Menu ----------
+  "Show me": "Mostrarme", "Go to": "Ir a", "All of Texas": "Todo Texas", "Right now": "Ahora mismo", "Map": "Mapa", "What's happened": "Lo que ha pasado",
+  "This area": "Esta zona", "Texas power grid": "Red eléctrica de Texas", "Tools": "Herramientas", "My places": "Mis lugares", "Check a route": "Revisar una ruta",
+  "Share this view": "Compartir esta vista", "About this map": "Acerca de este mapa", "How to use it": "Cómo usarlo", "What's new": "Novedades", "Data status": "Estado de los datos",
+  "Privacy": "Privacidad", "Terms": "Condiciones", "View": "Vista", "View mode": "Modo de vista", "Simple": "Simple", "Advanced": "Avanzado", "Language": "Idioma",
+  "Everything": "Todo", "All official layers and neighbor reports": "Todas las capas oficiales y reportes de vecinos",
+  "Flooding": "Inundaciones", "Warnings, rivers, radar, flood zones, reports": "Alertas, ríos, radar, zonas de inundación, reportes",
+  "Tornadoes and storms": "Tornados y tormentas", "Warnings, storm outlook, radar, hail and damage reports": "Alertas, perspectiva de tormentas, radar, reportes de granizo y daños",
+  "Storm cone, coastal warnings, evacuation routes, rivers, radar": "Cono de tormenta, alertas costeras, rutas de evacuación, ríos, radar",
+  "Winter and ice": "Invierno y hielo", "Warnings, iced-road and power reports, rail": "Alertas, reportes de hielo y de luz, tren",
+  "Power outages": "Apagones", "Warnings and neighbor power reports": "Alertas y reportes de luz de vecinos",
+  "Getting around": "Para moverse", "Warnings, radar, roads to avoid, rail": "Alertas, radar, calles que debe evitar, tren",
+  "Showing:": "Mostrando:",
+  "The full map with layer chips, details and neighbor reports.": "El mapa completo con botones de capas, detalles y reportes de vecinos.",
+  "Just the essentials: warnings, the area panel and big buttons.": "Solo lo esencial: alertas, el panel de la zona y botones grandes.",
+  "Everything, plus data status and source details.": "Todo, más el estado de los datos y detalles de las fuentes.",
+  "Pick what to see.": "Elija qué ver.", "Read the panel.": "Lea el panel.", "Watch the colors.": "Fíjese en los colores.", "Report what you see. ": "Reporte lo que ve.",
+
+  // ---------- Places, push, route ----------
+  "Save the places you care about to check them at a glance. Saved on this device only; nothing is sent anywhere.":
+    "Guarde los lugares que le importan para revisarlos de un vistazo. Se guardan solo en este dispositivo; no se envía nada.",
+  "No saved places yet.": "Todavía no tiene lugares guardados.", "Save the spot the panel is showing": "Guardar el lugar que muestra el panel",
+  "Save": "Guardar", "Home": "Casa", "Work": "Trabajo", "School": "Escuela", "Family": "Familia", "Name": "Nombre", "Remove": "Quitar", "Show": "Mostrar", "Route": "Ruta",
+  "Use Near me first": "Use primero Cerca de mí",
+  "Couldn't save on this device. Private browsing can block it.": "No se pudo guardar en este dispositivo. La navegación privada puede impedirlo.",
+  "Alerts on this device": "Alertas en este dispositivo", "Alerts for My places": "Alertas para Mis lugares",
+  "Get a notification when an NWS warning covers one of your places, even with the map closed.": "Reciba una notificación cuando un aviso del NWS cubra uno de sus lugares, aunque el mapa esté cerrado.",
+  "Turn on alerts": "Activar alertas", "Turn off": "Desactivar", "Send a test": "Enviar una prueba", "off": "desactivadas", "on": "activadas",
+  "Alerts are on for your places.": "Las alertas están activadas para sus lugares.", "Alerts are off on this device.": "Las alertas están desactivadas en este dispositivo.",
+  "Notifications are blocked for this site. Allow them in your browser or phone settings, then come back.":
+    "Las notificaciones están bloqueadas para este sitio. Permítalas en la configuración del navegador o del teléfono y regrese.",
+  "Your saved places are stored on our server, rounded to about a block, only to match warnings. Turning alerts off deletes them. Alerts can be late or fail: keep Wireless Emergency Alerts on.":
+    "Sus lugares guardados se almacenan en nuestro servidor, redondeados a una cuadra aproximadamente, solo para compararlos con las alertas. Al desactivar las alertas se borran. Las alertas pueden llegar tarde o fallar: mantenga activadas las Alertas Inalámbricas de Emergencia.",
+  "Tornado and extreme wind warnings": "Avisos de tornado y de vientos extremos", "Flash flood and flood warnings": "Avisos de inundación repentina e inundación",
+  "Severe thunderstorm warnings": "Avisos de tormenta eléctrica severa", "Winter storm, ice and extreme cold warnings": "Avisos de tormenta invernal, hielo y frío extremo",
+  "From": "Desde", "To": "Hasta", "Tap the map…": "Toque el mapa…", "Tap where you're going.": "Toque adonde va.", "Save places in My places to pick them here.": "Guarde lugares en Mis lugares para elegirlos aquí.",
+  "Checks NWS warnings and neighbor reports only. It can't see every flooded street, closures or traffic. Routing: OSRM, OpenStreetMap data.":
+    "Solo revisa alertas del NWS y reportes de vecinos. No puede ver todas las calles inundadas, los cierres ni el tráfico. Rutas: OSRM, datos de OpenStreetMap.",
+  "Check route": "Revisar ruta", "Finding a route…": "Buscando una ruta…", "No warnings or reported roads on this route.": "No hay alertas ni calles reportadas en esta ruta.",
+  "That doesn't mean roads are clear. Never drive into water you can't see the bottom of.": "Eso no significa que las calles estén despejadas. Nunca maneje hacia agua en la que no vea el fondo.",
+  "Route couldn't be found right now.": "No se pudo encontrar una ruta ahora.",
+
+  // ---------- Feed, grid, status, about ----------
+  "Last 3 days": "Últimos 3 días", "All": "Todo", "Loading the last 3 days…": "Cargando los últimos 3 días…", "issued": "emitido", "updated": "actualizado",
+  "ERCOT grid": "Red de ERCOT", "Conservation appeal": "Llamado a ahorrar energía", "Conservation notice": "Aviso de ahorro de energía", "Weather Watch": "Vigilancia por clima",
+  "Emergency level 1": "Emergencia nivel 1", "Emergency level 2": "Emergencia nivel 2", "Emergency level 3": "Emergencia nivel 3",
+  "There is enough power for current demand.": "Hay suficiente electricidad para la demanda actual.",
+  "Operating reserves: {0} MW": "Reservas operativas: {0} MW", "Texas grid status is loading…": "El estado de la red de Texas está cargando…",
+  "Data status": "Estado de los datos",
+  "Our server checks each public source every 10 minutes. When one is down, the parts of the map it powers show their last good data with its time, or say they're unavailable.":
+    "Nuestro servidor revisa cada fuente pública cada 10 minutos. Si una falla, las partes del mapa que dependen de ella muestran sus últimos datos buenos con la hora, o indican que no están disponibles.",
+  "All {0} sources answered at the last check.": "Las {0} fuentes respondieron en la última revisión.",
+  "OK": "Bien", "Sources": "Fuentes", "Live": "En vivo",
+  "Rain now, city rain chances": "Lluvia ahora, probabilidad de lluvia por ciudad",
+  "just now": "ahora mismo", "{0} min ago": "hace {0} min", "{0} hr ago": "hace {0} h", "{0} days ago": "hace {0} días", "unknown": "desconocido",
+  "Updated just now": "Actualizado ahora mismo", "Updated {0} min ago": "Actualizado hace {0} min", "updated just now": "actualizado ahora mismo", "updated {0} min ago": "actualizado hace {0} min",
+  "every {0} min": "cada {0} min", "shared database · every {0} min": "base de datos compartida · cada {0} min",
+  "Location is blocked. Allow it in your browser settings to use Near me.": "La ubicación está bloqueada. Permítala en la configuración del navegador para usar Cerca de mí.",
+  "Location isn't available in this browser.": "La ubicación no está disponible en este navegador.",
+  "Zoom in closer to see FEMA flood zones.": "Acerque más el mapa para ver las zonas de inundación de FEMA.",
+  "Rail is on. Tap a station for details.": "El tren está activado. Toque una estación para ver detalles.",
+  "A live picture of severe weather across Texas, built from public government data and reports from neighbors. It started in Dallas–Fort Worth; some features (DART rail, a few named gauges) are DFW-only for now.":
+    "Una imagen en vivo del tiempo severo en todo Texas, hecha con datos públicos del gobierno y reportes de vecinos. Empezó en Dallas–Fort Worth; algunas funciones (tren DART, algunos medidores con nombre) por ahora son solo de DFW.",
+  "Every reading shows its time.": "Cada lectura muestra su hora.", "Gray means no data": "Gris significa sin datos",
+  "Official flood stages": "Niveles de inundación oficiales",
+  "Choose what shows on the map. Official sources load first; neighbor reports fill the gaps between gauges.":
+    "Elija qué se muestra en el mapa. Las fuentes oficiales cargan primero; los reportes de vecinos llenan los huecos entre medidores.",
+  "Flood, tornado, winter and freeze warnings from the National Weather Service": "Avisos de inundación, tornado, invierno y congelación del Servicio Meteorológico Nacional",
+  "River, creek and lake levels with official flood stages. Zoom in to see low-water crossings, which turn red inside a flood warning.":
+    "Niveles de ríos, arroyos y lagos con niveles de inundación oficiales. Acerque el mapa para ver los cruces bajos, que se ponen rojos dentro de un aviso de inundación.",
+  "Rain drops from live radar, looping the last 50 minutes": "Gotas de lluvia del radar en vivo, repitiendo los últimos 50 minutos",
+  "Severe-storm and tornado risk for today, tomorrow and day 3, in SPC's 1–5 levels. Watches and warnings are on the Warnings layer.":
+    "Riesgo de tormentas severas y tornados para hoy, mañana y el día 3, en los niveles 1–5 del SPC. Las vigilancias y avisos están en la capa Alertas.",
+  "Tropical storms and hurricanes from the National Hurricane Center: forecast cone, track, coastal watches and warnings, areas to watch over 7 days, and TxDOT hurricane evacuation routes.":
+    "Tormentas tropicales y huracanes del Centro Nacional de Huracanes: cono de pronóstico, trayectoria, vigilancias y avisos costeros, zonas en observación a 7 días y rutas de evacuación por huracán de TxDOT.",
+  "Active wildfires in Texas, sized by acres, with containment and mapped fire edges, plus counties under a burn ban. Planned (prescribed) burns get their own gold symbol.":
+    "Incendios forestales activos en Texas, según sus acres, con contención y bordes mapeados, más los condados con prohibición de quemas. Las quemas prescritas tienen su propio símbolo dorado.",
+  "Texas's major reservoirs, filled to how full they are. Lakes above their normal full level are holding flood water and may be releasing it downstream.":
+    "Los embalses principales de Texas, llenos según su nivel. Los lagos por encima de su nivel lleno normal retienen agua de inundación y podrían soltarla río abajo.",
+  "Flood water seen by NASA satellites over the last 2 days, with flooded acres per county when zoomed out. Misses small streets and anything under cloud.":
+    "Agua de inundación vista por satélites de la NASA en los últimos 2 días, con acres inundados por condado al alejar el mapa. No ve calles pequeñas ni lo que está bajo nubes.",
+  "How much rain has fallen in the last hour, 24 hours or 3 days, with county averages when zoomed out and measured totals from Texas weather stations.":
+    "Cuánta lluvia ha caído en la última hora, 24 horas o 3 días, con promedios por condado al alejar el mapa y totales medidos por estaciones meteorológicas de Texas.",
+  "FEMA flood hazard zones (zoom in to see them)": "Zonas de peligro de inundación de FEMA (acerque el mapa para verlas)",
+  "Texas power grid status from ERCOT, from Normal up to Energy Emergency level 3, shown under the warnings banner.":
+    "Estado de la red eléctrica de Texas según ERCOT, desde Normal hasta Emergencia energética nivel 3, debajo del aviso de alertas.",
+  "DART light rail, TRE, Silver Line and streetcar. Stations are flagged when a flood or tornado warning covers them or neighbors confirm flooding nearby.":
+    "Tren ligero DART, TRE, Silver Line y tranvía. Las estaciones se marcan cuando un aviso de inundación o tornado las cubre o los vecinos confirman inundación cerca.",
+  "Neighbor reports: flooded or iced roads, power out, hail, storm damage. One report stays faint until a second neighbor confirms.":
+    "Reportes de vecinos: calles inundadas o con hielo, apagones, granizo, daños por tormenta. Un reporte se ve tenue hasta que un segundo vecino lo confirma.",
+  "Community reports": "Reportes de la comunidad", "Water level, last 48 hours": "Nivel del agua, últimas 48 horas", "Loading 48-hour trend…": "Cargando la tendencia de 48 horas…",
+  "No NWS forecast issued for this gauge right now.": "El NWS no ha emitido pronóstico para este medidor ahora.", "Full NWS gauge page ↗": "Página completa del medidor en el NWS ↗",
+  "The gauge hasn't reported in over 2 hours.": "El medidor no ha reportado en más de 2 horas.",
+  "{0} ft below flood stage": "{0} ft bajo el nivel de inundación", "{0} ft above flood stage": "{0} ft sobre el nivel de inundación",
+  "{0} ft above current": "{0} ft sobre el nivel actual", "{0} ft · flood stage {1} ft": "{0} ft · nivel de inundación {1} ft",
+  "Flow {0} cfs": "Caudal {0} pies³/s", "Stage": "Nivel", "Flood stage": "Nivel de inundación",
+  "Moderate flood stage": "Nivel de inundación moderada", "Major flood stage": "Nivel de inundación mayor", "Minor flood stage": "Nivel de inundación leve",
+  "Flood maps for this gauge": "Mapas de inundación de este medidor", "Minor": "Leve", "Major": "Mayor", "Off": "No",
+  "Turn around, don't drown.": "¡Dé la vuelta, no se ahogue!", "Turn around, don't drown": "¡Dé la vuelta, no se ahogue!",
+  "No electricity": "Sin electricidad",
+  "Tap Report for a flooded or iced road, a power outage, hail or storm damage. We keep only a block or neighborhood, never your exact spot.":
+    "Toque Reportar para una calle inundada o con hielo, un apagón, granizo o daños por tormenta. Solo guardamos la cuadra o el vecindario, nunca su ubicación exacta.",
+  "Roads to avoid lists flooded, iced or blocked roads neighbors reported. Turn around, don't drown.":
+    "Calles que debe evitar enumera las calles inundadas, con hielo o bloqueadas que reportaron los vecinos. ¡Dé la vuelta, no se ahogue!",
+  "It describes the map center, your location (Near me) or a spot you tap. The top line is the most serious official warning there.":
+    "Describe el centro del mapa, su ubicación (Cerca de mí) o un lugar que usted toque. La primera línea es la alerta oficial más seria en ese lugar.",
+  "Open the menu and choose a Show me option, or switch layers on and off with the chips along the top.":
+    "Abra el menú y elija una opción de Mostrarme, o active y desactive capas con los botones de arriba.",
+  "Rail layer": "Capa de tren", "Lines and stations from DART's published schedule data. Flags come from NWS warnings and neighbor reports, not from DART.":
+    "Líneas y estaciones de los datos de horarios publicados por DART. Las marcas vienen de alertas del NWS y reportes de vecinos, no de DART.",
+  "A flood or tornado warning covers it. Check DART before you go.": "Un aviso de inundación o tornado la cubre. Revise DART antes de salir.",
+  "No flood or tornado warning covers this station and no neighbor has confirmed flooding nearby. That's not a service status: check DART before you travel.":
+    "Ningún aviso de inundación o tornado cubre esta estación y ningún vecino ha confirmado inundación cerca. Eso no es el estado del servicio: revise DART antes de viajar.",
+  "Winter weather plan": "Plan para clima invernal", "Freezing tonight": "Helada esta noche",
+};
+
+// Sentences with names or times inside. Each: [regex, replacement string or function(match)].
+const ev = (s) => ES_EVENTS[s] || s;
+export const ES_PATTERNS = [
+  [/^(.+) County$/, "Condado de $1"],
+  [/^No active NWS alerts for (.+)$/, "No hay alertas activas del NWS para $1"],
+  [/^No active National Weather Service alerts for (.+) right now\. Checked (.+)\.$/, (m) => `No hay alertas activas del Servicio Meteorológico Nacional para ${m[1]} ahora. Revisado ${m[2] === "just now" ? "ahora mismo" : m[2].replace(/^(\d+) min ago$/, "hace $1 min")}.`],
+  [/^Burn ban in (.+) County since (.+)\. No outdoor burning\.$/, "Prohibición de quemas en el condado de $1 desde el $2. No haga quemas al aire libre."],
+  [/^Burn ban in (.+) County\. No outdoor burning\.$/, "Prohibición de quemas en el condado de $1. No haga quemas al aire libre."],
+  [/^Planned burn: (.+)$/, "Quema prescrita: $1"],
+  [/^(.+) Fire$/, "Incendio $1"],
+  [/^In the forecast cone of (.+)$/, "En el cono de pronóstico de $1"],
+  [/^(.+), (\d+) mph winds$/, (m) => `${ES[m[1]] || m[1]}, vientos de ${m[2]} mph`],
+  [/^over (.+)$/, "sobre $1"],
+  [/^Showing: (.+)\.$/, "Mostrando: $1."],
+  [/^Saved (.+)\.$/, "Se guardó $1."],
+  [/^Nothing flagged for any of (\d+) cities in the (.+) area\.$/, "Nada señalado en ninguna de las $1 ciudades de la zona de $2."],
+  [/^Last 3 days of NWS alerts for (.+) counties, rivers now at or near flood stage, and active neighbor reports\.$/,
+    "Alertas del NWS de los últimos 3 días para los condados de $1, ríos en o cerca del nivel de inundación, y reportes activos de vecinos."],
+  [/^Advance outlook for (.+) from official forecasts\. Updated (.+?)\.?$/, "Perspectiva anticipada para $1 según pronósticos oficiales. Actualizado $2."],
+  [/^Map center · (.+)\. Tap the map or use Near me first to save somewhere else\.$/, "Centro del mapa · $1. Toque el mapa o use Cerca de mí primero para guardar otro lugar."],
+  [/^Reading for (.+?)\. Full = top of the conservation pool \((.+)\)\. From the Texas Water Development Board,$/, "Lectura del $1. Lleno = tope del nivel de conservación ($2). De la Junta de Desarrollo de Agua de Texas,"],
+  [/^Reading for (.+?)( \(more than 3 days old\))?\. From the Texas Water Development Board,$/, (m) => `Lectura del ${m[1]}${m[2] ? " (de hace más de 3 días)" : ""}. De la Junta de Desarrollo de Agua de Texas,`],
+  [/^Reading from (.+) \((.+)\)$/, (m) => `Lectura de ${m[1]} (${m[2] === "just now" ? "ahora mismo" : m[2].replace(/^(\d+) min ago$/, "hace $1 min").replace(/^(\d+) hr ago$/, "hace $1 h")})`],
+  [/^Advisory (\S+) from the National Hurricane Center, (.+)\.$/, "Boletín $1 del Centro Nacional de Huracanes, $2."],
+  [/^TexMesonet weather station$/, "Estación meteorológica TexMesonet"],
+  [/^(.+): (minor flooding|moderate flooding|major flooding|near flood stage)$/, (m) => `${m[1]}: ${{ "minor flooding": "inundación leve", "moderate flooding": "inundación moderada", "major flooding": "inundación mayor", "near flood stage": "cerca del nivel de inundación" }[m[2]]}`],
+  [/^until (.+)$/, "hasta $1"],
+  [/^(.+) here$/, (m) => (ES_EVENTS[m[1].replace(/ \(demo\)$/, "")] ? `${ev(m[1].replace(/ \(demo\)$/, ""))}${/\(demo\)/.test(m[1]) ? " (demostración)" : ""} aquí` : null)],
+  [/^(.+) nearby$/, (m) => (ES_EVENTS[m[1].replace(/ \(demo\)$/, "")] ? `${ev(m[1].replace(/ \(demo\)$/, ""))}${/\(demo\)/.test(m[1]) ? " (demostración)" : ""} cerca` : null)],
+  [/^(.+) in effect$/, (m) => (ES_EVENTS[m[1].replace(/ \(demo\)$/, "")] ? `${ev(m[1].replace(/ \(demo\)$/, ""))}${/\(demo\)/.test(m[1]) ? " (demostración)" : ""} vigente` : null)],
+  [/^(.+) \(demo\)$/, (m) => (ES_EVENTS[m[1]] ? `${ES_EVENTS[m[1]]} (demostración)` : null)],
+  [/^(.+) issued$/, (m) => (ES_EVENTS[m[1]] ? `${ES_EVENTS[m[1]]} emitido` : null)],
+  [/^(.+) updated$/, (m) => (ES_EVENTS[m[1]] ? `${ES_EVENTS[m[1]]} actualizado` : null)],
+  [/^\+(\d+) more$/, "+$1 más"],
+  [/^Tide Station \((.+)\) at (.+)$/, "Estación de marea ($1) en $2"],
+  [/^You're outside (.+)\. Coverage there is limited for now\.$/, "Está fuera de $1. Por ahora la cobertura ahí es limitada."],
+];

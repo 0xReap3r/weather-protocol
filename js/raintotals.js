@@ -3,6 +3,7 @@
 // mapservices ImageServer. Map colors and legend come from NOAA's own rendering, so they match.
 // County labels show the average and the most rain anywhere in the county.
 import { fetchJSON } from "./data/fetch.js";
+import { t, isEs } from "./i18n.js";
 import { loadCounties, countiesIn } from "./data/counties.js";
 import { loadMesonet } from "./data/texas.js";
 
@@ -198,7 +199,7 @@ export function initRainTotals({ map, metro, beforeId, openSheet }) {
         type: "FeatureCollection",
         features: rows.filter((r) => r.mean != null).map((r) => ({
           type: "Feature", geometry: { type: "Point", coordinates: r.center },
-          properties: { name: `${r.name.toUpperCase()} CO.`, max: r.max, line: r.max < 0.01 ? `no rain, last ${p.label}` : `${inches(r.mean)}" avg · ${inches(r.max)}" most` },
+          properties: { name: isEs ? `CONDADO ${r.name.toUpperCase()}` : `${r.name.toUpperCase()} CO.`, max: r.max, line: t(r.max < 0.01 ? `no rain, last ${p.label}` : `${inches(r.mean)}" avg · ${inches(r.max)}" most`) },
         })),
       });
     } catch (_) { /* labels are a bonus; the map layer still shows */ }

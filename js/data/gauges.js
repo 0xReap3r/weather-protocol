@@ -2,6 +2,7 @@
 // Verified live Oct 24, 2026: /nwps/v1/gauges/{lid} and /nwps/v1/gauges/{lid}/stageflow.
 
 import { fetchJSON } from "./fetch.js";
+import { t } from "../i18n.js";
 
 import { APP, GAUGE_NAMES } from "../config.js";
 
@@ -111,10 +112,10 @@ function feature(g) {
       // elevation), so pair it with that gauge's flood stage when it's known.
       label:
         g.stage == null
-          ? "No recent reading"
+          ? t("No recent reading")
           : g.stages.minor != null
-            ? `${g.stage.toFixed(1)} ft · flood ${g.stages.minor.toFixed(0)}`
-            : `${g.stage.toFixed(1)} ft${g.kind === "lake" ? " elev." : ""}`,
+            ? t("{0} ft · flood {1}").replace("{0}", g.stage.toFixed(1)).replace("{1}", g.stages.minor.toFixed(0))
+            : `${g.stage.toFixed(1)} ft${g.kind === "lake" ? t(" elev.") : ""}`,
     },
   };
 }

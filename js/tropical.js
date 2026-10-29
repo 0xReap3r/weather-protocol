@@ -7,6 +7,7 @@
 //   - areas NHC is watching for development over the next 7 days, by chance
 // The data loads with the chip off too, so the area panel can say when a spot is in a cone.
 import { fetchJSON } from "./data/fetch.js";
+import { t } from "./i18n.js";
 import { contains } from "./near.js";
 
 const esc = (s) =>
@@ -58,7 +59,7 @@ export function initTropical({ map, beforeId, openSheet, onChange }) {
     layout: { "line-join": "round", "line-cap": "round" },
     paint: { "line-color": EVAC_COLOR, "line-opacity": ["interpolate", ["linear"], ["zoom"], 5, 0.4, 9, 0.8], "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1, 9, 2.2, 13, 4] } }, beforeId);
   map.addLayer({ id: "evac-label", type: "symbol", source: "evac", minzoom: 8,
-    layout: { "symbol-placement": "line", "symbol-spacing": 500, "text-field": ["concat", "Evacuation route ", ["get", "label"]],
+    layout: { "symbol-placement": "line", "symbol-spacing": 500, "text-field": ["concat", t("Evacuation route"), " ", ["get", "label"]],
       "text-font": ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"], "text-size": 11, "text-letter-spacing": 0.04 },
     paint: { "text-color": EVAC_COLOR, "text-halo-color": "#0a1119", "text-halo-width": 1.6 } });
 
@@ -116,7 +117,7 @@ export function initTropical({ map, beforeId, openSheet, onChange }) {
     map.getSource("trop-track")?.setData(fcOf(data.track));
     map.getSource("trop-past")?.setData(fcOf(data.past));
     map.getSource("trop-warn")?.setData(fcOf(data.warn.map((f) => ({ ...f, properties: { ...f.properties, color: COAST[f.properties.tcww]?.color || "#e9f0f6" } }))));
-    map.getSource("trop-outlook")?.setData(fcOf(data.outlook.map((f) => ({ ...f, properties: { risk: f.properties.risk7day, label: `${f.properties.prob7day} chance in 7 days` } }))));
+    map.getSource("trop-outlook")?.setData(fcOf(data.outlook.map((f) => ({ ...f, properties: { risk: f.properties.risk7day, label: t(`${f.properties.prob7day} chance in 7 days`) } }))));
     map.getSource("trop-points")?.setData(fcOf(data.points.map((f) => {
       const p = f.properties, s = strength(p.maxwind);
       return { ...f, properties: { tau: p.tau, color: s.color, name: p.stormname, now: `${mph(p.maxwind)} mph`, when: p.datelbl || "", num: p.stormnum } };

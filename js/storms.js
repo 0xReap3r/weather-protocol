@@ -8,6 +8,7 @@
 // Watches and warnings stay on the Warnings layer. An outlook is a chance over a wide area,
 // never a warning for a street.
 import { fetchJSON } from "./data/fetch.js";
+import { t } from "./i18n.js";
 import { contains } from "./near.js";
 
 const esc = (s) =>
@@ -144,7 +145,7 @@ export function initStorms({ map, beforeId, metro }) {
         if (!l) continue;
         out.push({ type: "Feature", geometry: f.geometry, properties: {
           lvl: l.n, color: l.fill, edge: l.n ? l.fill : "#9fd2c0", w: l.n >= 4 ? 1.4 : 1,
-          label: l.n ? `${l.name.toUpperCase()} · ${l.n}/5` : "THUNDERSTORMS", ...(l.n >= 3 ? { hatch: `spc-hatch-${l.code}` } : {}) } });
+          label: l.n ? `${t(l.name).toUpperCase()} · ${l.n}/5` : t("Thunderstorms").toUpperCase(), ...(l.n >= 3 ? { hatch: `spc-hatch-${l.code}` } : {}) } });
       } else {
         const p = probOf(f.properties);
         if (!p) continue;

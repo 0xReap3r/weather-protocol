@@ -4,6 +4,7 @@
 // bright ring and "X ft above full". Flood-control reservoirs (Addicks, Barker and others) sit
 // empty on purpose and only fill in floods, so they show feet above their normal level instead of %.
 import { loadLakes } from "./data/texas.js";
+import { t } from "./i18n.js";
 
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -61,7 +62,7 @@ export function initLakes({ map, beforeId, openSheet }) {
     } catch (e) { err = e; }
     map.getSource("lakes")?.setData({ type: "FeatureCollection", features: lakes.map((l, i) => ({
       type: "Feature", geometry: { type: "Point", coordinates: l.at },
-      properties: { i, short: l.short, pct: l.pct, over: l.over, flood: l.flood, stale: l.stale, line: lineFor(l) },
+      properties: { i, short: l.short, pct: l.pct, over: l.over, flood: l.flood, stale: l.stale, line: t(lineFor(l)) },
     })) });
     render();
   }

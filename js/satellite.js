@@ -5,6 +5,7 @@
 //   Insufficient data (clouds, no pass) → faint gray, because gray means "no data", never "dry"
 // and total the flooded acres per county for labels shown when zoomed out.
 import { loadCounties, countiesIn } from "./data/counties.js";
+import { t, isEs } from "./i18n.js";
 import { contains } from "./near.js";
 import { countyRain } from "./raintotals.js";
 
@@ -208,8 +209,8 @@ export function initSatellite({ map, metro, beforeId, getAlertsFC }) {
           features: totals.map((c) => ({
             type: "Feature", geometry: { type: "Point", coordinates: c.center },
             properties: {
-              name: `${c.name.toUpperCase()} CO.`, acres: c.acres,
-              line: c.acres >= MIN_ACRES ? `~${c.acres.toLocaleString()} acres possible flooding · satellite` : `little or no flood water seen${c.cloudPct >= 20 ? ` · ${c.cloudPct}% under cloud` : ""}`,
+              name: isEs ? `CONDADO ${c.name.toUpperCase()}` : `${c.name.toUpperCase()} CO.`, acres: c.acres,
+              line: t(c.acres >= MIN_ACRES ? `~${c.acres.toLocaleString()} acres possible flooding · satellite` : `little or no flood water seen${c.cloudPct >= 20 ? ` · ${c.cloudPct}% under cloud` : ""}`),
             },
           })),
         });
