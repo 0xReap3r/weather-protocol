@@ -55,6 +55,7 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - No public feed (outreach, don't scrape): LCRA Hydromet, Harris County FWS, ATXfloods live status.
 
 ## Layout
+- `js/i18n.js` + `js/i18n/es.js` — Spanish (Phase 11). Language from localStorage `stormline.lang.v1`, else the browser language; switch in the menu (Language) or the footer button, which reloads. In Spanish a MutationObserver translates text nodes and aria-label/title/placeholder/alt through `ES` (keys = English text as shown; numbers become {0},{1}…), then `ES_PATTERNS` (sentences with names), then piece by piece across " · ". `t()` for map labels built in code, `eventName()` + `ES_EVENTS` for NWS event names (NWS's own Spanish). Mark names/user text `translate="no"`. NWS alert text stays English (labeled). Dates/numbers with no locale follow the language. Push subscriptions carry `lang`; worker/push.js writes Spanish alert text. `privacy-es.html` / `terms-es.html` are courtesy translations (English prevails). New UI text: add its Spanish to es.js; `stormlineI18n.misses()` in Spanish mode lists what's untranslated
 - `js/config.js` — app name, disclaimer, basemap, `STATE` (Texas bounds, FIPS, refresh), `REGIONS` (20 named areas with radius and ERCOT flag), `GAUGE_NAMES` (friendly names for DFW gauges), legacy `METROS.dfw`
 - `js/region.js` — `metro` facade used everywhere: current region by map center (name, center, radius, gridErcot), statewide bounds, `cities` (all towns 2,500+), `regionCities` (top 30 nearby), `counties` (names near the region)
 - `worker/geo.js` — `/api/gauges?state=TX` (all NOAA gauges, 5 min), `/api/geo/counties?state=48`, `/api/geo/cities?state=48` (7 days), edge-cached with D1 fallback
@@ -96,10 +97,10 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - `sw.js` — offline app shell (network first); bump `VERSION` whenever shell files change. A new version shows open pages a "new version ready · Refresh" bar (`#update-bar`, app.js)
 
 ## Debugging
-In the browser console: `stormlineMap`, `stormlineNear`, `stormlineDemo()` / `stormlineDemo('tornado')` (fake warning around the map center + gauge; with Near me inside it, shows the danger bar), `stormlinePolling()`, `stormlineTropical.storms()`, `stormlineFires.list()`, `stormlineLakes`, `stormlineCrossings.warned()`, `stormlineStorms.demo()` (made-up Marginal→High outlook around the region, with the Storms chip on), and in demo mode `stormlineReports.store.simulate([lng,lat], 'flood', 2, 3)` to add fake neighbors.
+In the browser console: `stormlineMap`, `stormlineNear`, `stormlineDemo()` / `stormlineDemo('tornado')` (fake warning around the map center + gauge; with Near me inside it, shows the danger bar), `stormlinePolling()`, `stormlineTropical.storms()`, `stormlineFires.list()`, `stormlineLakes`, `stormlineCrossings.warned()`, `stormlineI18n.misses()`, `stormlineStorms.demo()` (made-up Marginal→High outlook around the region, with the Storms chip on), and in demo mode `stormlineReports.store.simulate([lng,lat], 'flood', 2, 3)` to add fake neighbors.
 
 ## Revisit later (full list in the build plan doc, "Revisit later" section)
 - No free feed yet: TEXRail / Trinity Metro lines, low-water crossings (Fort Worth HWWS is on OneRain), TxDOT closures (DriveTexas), DART live service alerts, Oncor outages. Don't scrape; outreach is deferred.
 - Report photos/moderation history not built. Push: free plan caps ~35 pushes per minute-run (50 subrequests); fine for the pilot, revisit if subscribers grow.
-- Mobile pass 1 done Oct 25 (`js/legends.js` folds legend cards, folded by default < 720 px; status row; icon-only FABs). Still test on a real iPhone, landscape, and very small phones.
+- Mobile pass 1 done Oct 25 (`js/legends.js` folds legend cards, folded by default < 720 px; status row; icon-only FABs). Real-phone use confirmed by the owner (Oct 28, a week of daily use).
 - Housekeeping: final name; lawyer review of privacy.html/terms.html. (Report cleanup + Supabase keep-alive now run from the Worker every 10 min.)
