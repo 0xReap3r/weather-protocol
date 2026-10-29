@@ -91,7 +91,7 @@ export const STATE = {
   fips: "48",
   nwsAlertArea: "TX",
   bounds: [-106.7, 25.8, -93.5, 36.6],
-  maxBounds: [-112, 17, -80, 38.5], // wide enough to follow Gulf and eastern Pacific storms toward Texas
+  maxBounds: [-124, 10, -76, 39], // wide enough to follow Gulf and eastern Pacific storms toward Texas
   view: { center: [-99.3, 31.3], zoom: 5.4 },
   refresh: { alertsMs: 2 * 60 * 1000, gaugesMs: 5 * 60 * 1000 },
 };
