@@ -1268,3 +1268,76 @@ body { font: 15px/1.45 var(--font-body); font-stretch: 100%; letter-spacing: .00
   .disclaimer-short { font-size: 11.5px; line-height: 1.35; }
 }
 @media (max-width: 380px) { .footbar { gap: 8px; } .foot-actions { gap: 8px; } }
+
+/* ---------- Search (Oct 28) ---------- */
+.search-btn {
+  flex: none; display: inline-flex; align-items: center; gap: 10px; height: 40px; padding: 0 11px; margin-left: auto;
+  border-radius: 12px; border: 1px solid var(--line); background: var(--glass); color: var(--text-dim);
+  font: inherit; font-size: 13.5px; cursor: pointer;
+  -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2);
+}
+.search-btn:hover { color: var(--text); border-color: #3a5068; }
+.search-btn svg { width: 18px; height: 18px; flex: none; fill: none; stroke: var(--text); stroke-width: 1.9; stroke-linecap: round; }
+.sb-label { display: none; white-space: nowrap; }
+.sb-key { display: none; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 6px; border: 1px solid var(--line); font: inherit; font-size: 11.5px; line-height: 18px; text-align: center; color: var(--text-dim); }
+.brand-row .status { margin-left: 0; }
+@media (min-width: 960px) {
+  .search-btn { width: 300px; padding: 0 10px 0 12px; }
+  .sb-label { display: inline; flex: 1; text-align: left; }
+  .sb-key { display: inline-block; }
+}
+.search-scrim { position: fixed; inset: 0; z-index: 44; background: rgba(5,9,14,.55); opacity: 0; transition: opacity .16s; }
+.search-scrim.open { opacity: 1; }
+.search-scrim[hidden], .search[hidden] { display: none; }
+.search {
+  position: fixed; z-index: 45; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 10px);
+  width: min(580px, calc(100% - 24px)); transform: translate(-50%, -8px); opacity: 0;
+  transition: transform .16s ease-out, opacity .16s ease-out;
+  border-radius: var(--r-panel); border: 1px solid #33485f; background: var(--glass-strong); box-shadow: 0 24px 60px -16px rgba(0,0,0,.8);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2); backdrop-filter: blur(18px) saturate(1.2);
+  overflow: hidden;
+}
+.search.open { transform: translate(-50%, 0); opacity: 1; }
+@media (min-width: 720px) { .search { top: calc(env(safe-area-inset-top, 0px) + 72px); } }
+.search-field { display: flex; align-items: center; gap: 12px; padding: 0 12px 0 16px; border-bottom: 1px solid var(--line); }
+.search-field svg { width: 20px; height: 20px; flex: none; fill: none; stroke: var(--text-dim); stroke-width: 1.9; stroke-linecap: round; }
+#search-input {
+  flex: 1; min-width: 0; height: 58px; border: 0; background: none; color: var(--text); outline: none;
+  font: inherit; font-size: 18px; font-weight: 500; letter-spacing: -.005em;
+}
+#search-input::placeholder { color: #6f8399; }
+#search-input::-webkit-search-cancel-button { display: none; }
+.search-close { flex: none; height: 26px; padding: 0 8px; border-radius: 7px; border: 1px solid var(--line); background: none; color: var(--text-dim); font: inherit; font-size: 11.5px; cursor: pointer; }
+.search-results { list-style: none; margin: 0; padding: 6px; max-height: min(60vh, 440px); overflow-y: auto; }
+.sr-row {
+  width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 10px; border: 0; border-radius: 12px;
+  background: none; color: var(--text); font: inherit; text-align: left; cursor: pointer;
+}
+.sr-row:hover, .sr-row.on { background: rgba(233,240,246,.07); }
+.sr-ico { width: 34px; height: 34px; flex: none; display: grid; place-items: center; border-radius: 10px; background: var(--ink-2); border: 1px solid var(--line); }
+.sr-ico svg { width: 18px; height: 18px; fill: none; stroke: var(--text); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.sr-text { display: grid; gap: 1px; min-width: 0; }
+.sr-label { font-size: 15.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sr-sub { font-size: 12.5px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.sr-h { padding: 8px 10px 4px; font-size: 12px; font-weight: 600; color: var(--text-dim); }
+.sr-hint { padding: 14px 12px; font-size: 13.5px; color: var(--text-dim); }
+.sr-more { padding-top: 6px; font-size: 12.5px; }
+@media (max-width: 719px) {
+  .search-btn { width: 40px; padding: 0; justify-content: center; }
+  .search-results { max-height: 62vh; }
+}
+@media (prefers-reduced-motion: reduce) { .search, .search-scrim { transition: none; } }
+
+/* ---------- Calmer chrome (Oct 28 review) ---------- */
+/* Secondary layers only show as chips while on; everything else is one tap away in "More layers". */
+.chip[data-tier="more"][aria-pressed="false"] { display: none; }
+.chip-more { color: var(--text); border-style: dashed; border-color: #3a5068; }
+.chip-more svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.fc-facts { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
+.fc-facts li { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-dim); }
+.fc-facts li span:not(.sl-sw):not(.ban-sw) { flex: 1; }
+.fc-facts li .ban-sw { margin-right: 0; }
+.fc-facts b { color: var(--text); font-weight: 650; font-variant-numeric: tabular-nums; }
+.near-quiet { display: flex; align-items: center; gap: 8px; margin: 10px 0 0; font-size: 13px; color: var(--text-dim); line-height: 1.4; }
+.near-quiet svg, .near-quiet .ban-sw { flex: none; margin: 0; }
+.sat-total { font-size: 14.5px; }

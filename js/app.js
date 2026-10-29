@@ -17,6 +17,7 @@ import { initTropical } from "./tropical.js";
 import { initLakes } from "./lakes.js";
 import { initCrossings } from "./crossings.js";
 import { initMenu } from "./menu.js";
+import { initSearch } from "./search.js";
 import { initSatellite } from "./satellite.js";
 import { initFeed } from "./feed.js";
 import { initPlaces } from "./places.js";
@@ -540,8 +541,17 @@ for (const layer of LAYERS) {
   btn.innerHTML = `<span class="chip-dot" aria-hidden="true"></span>${layer.label}${
     MAP_LAYERS[layer.id] ? "" : '<span class="chip-soon">soon</span>'
   }`;
+  if (layer.tier === "more") btn.dataset.tier = "more"; // shown only while switched on; the rest live in "More layers"
   btn.addEventListener("click", () => toggleLayer(layer.id));
   chipRow.appendChild(btn);
+}
+{
+  const more = document.createElement("button");
+  more.className = "chip chip-more";
+  more.type = "button";
+  more.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>More layers`;
+  more.addEventListener("click", () => { renderLayerList(); openSheet("layers", "Layers"); });
+  chipRow.appendChild(more);
 }
 
 function applyLayerVisibility() {
@@ -950,7 +960,8 @@ near = initNearPanel({
     crossings?.prepNear(pt).then((changed) => changed && near?.render());
     return (tropical?.nearHTML(pt) || "") + (crossings?.nearHTML(pt, "top") || "") + (fires?.nearHTML(pt) || "");
   },
-  getReportsHTML: (pt) => (crossings?.nearHTML(pt, "list") || "") + rainSoFarHTML(pt) + (reports?.summaryHTML(pt) || "") + stationsHTML(pt),
+  getQuietHTML: (pt) => (crossings?.nearHTML(pt, "list") || "") + (fires?.banLine(pt) || ""),
+  getReportsHTML: (pt) => rainSoFarHTML(pt) + (reports?.summaryHTML(pt) || "") + stationsHTML(pt),
 });
 
 // Rain that has already fallen at the spot (NOAA MRMS radar estimates), loaded in the background.
@@ -991,6 +1002,17 @@ document.addEventListener("click", (e) => {
   }
 });
 // Fly to a spot and describe it in the side panel (Roads to avoid, stations).
+// Search: move the map to the place and point the area panel at it.
+initSearch({
+  map, metro,
+  onPick: (r) => {
+    closeSheet();
+    if (r.region) return flyToRegion(r.region);
+    map.flyTo({ center: r.at, zoom: r.zoom || 11.5, speed: 1.6 });
+    near?.setPin(r.at);
+  },
+});
+
 function pickSpot(at) {
   closeSheet();
   map.flyTo({ center: at, zoom: Math.max(map.getZoom(), 15), speed: 1.4 });

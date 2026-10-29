@@ -77,12 +77,11 @@ export function initLakes({ map, beforeId, openSheet }) {
       <div class="rl-head"><span class="rl-title">Lakes</span><span class="rl-time">${date ? `TWDB · ${esc(new Date(`${date}T12:00:00`).toLocaleDateString([], { month: "short", day: "numeric" }))}` : err ? "unavailable" : "loading…"}</span></div>
       <p class="fc-head">${err && !loadedAt ? "Lake levels aren't loading right now." : !loadedAt ? "Loading lakes…" :
         over.length ? `${over.length} lake${over.length === 1 ? " is" : "s are"} above full and may be releasing water` : "No major lake is above its full level"}</p>
-      ${avg != null ? `<p class="so-note">${lakes.length} major reservoirs; water-supply lakes average ${avg}% full.</p>` : ""}
       ${over.length ? `<ul class="fc-list">${over.slice(0, 4).map((l) => `<li><button type="button" class="fc-row" data-lake="${lakes.indexOf(l)}" style="--c:${LAKE_COLORS.over}">
         <span class="fc-dot" aria-hidden="true"></span><span class="fc-name">${esc(l.name)}</span><span class="fc-meta">${esc(ft(l.over))} ft above full</span></button></li>`).join("")}</ul>` : ""}
       <div class="lake-bar" aria-hidden="true"></div>
       <div class="rl-labels"><span>Low</span><span>Half</span><span>Full</span><span style="color:${LAKE_COLORS.over}">Above full</span></div>
-      <p class="rl-note">Daily levels from the Texas Water Development Board. A lake above full is holding flood water; follow the river authority and NWS for releases downstream.</p>`;
+      <p class="rl-note">Above full means a dam may release water downstream.</p>`;
   }
 
   function openLake(i) {

@@ -150,6 +150,8 @@ export function initCrossings({ map, beforeId, openSheet, getAlertsFC, isOn }) {
     const alerts = floodAlerts();
     const warned = nearCache.filter((c) => warnAt(c.at, alerts));
     if ((where === "top") !== (warned.length > 0)) return "";
+    // Calm version: one quiet line; the list only matters when a flood warning covers a crossing.
+    if (where === "list") return `<p class="near-quiet">${crossingIconSVG(false, 14)}${nearCache.length} low-water crossing${nearCache.length === 1 ? "" : "s"} within ${NEAR_MI} mi. Never drive into water.</p>`;
     const list = (warned.length ? warned : nearCache).slice(0, 3);
     return `<h3 class="near-h">Low-water crossings<span class="near-h-note">${nearCache.length} within ${NEAR_MI} mi</span></h3>
       ${warned.length ? `<p class="near-note" style="color:#ffb3b3">${warned.length} ${warned.length === 1 ? "is" : "are"} inside a flood warning. Avoid ${warned.length === 1 ? "it" : "them"}.</p>` : ""}

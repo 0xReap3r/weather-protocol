@@ -153,7 +153,7 @@ function rainChart(w) {
 }
 
 /* ---------- Panel ---------- */
-export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, openAlerts, locate, openAbout, getReportsHTML, getTopHTML }) {
+export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, openAlerts, locate, openAbout, getReportsHTML, getTopHTML, getQuietHTML }) {
   let lastPlace = null;
   const panel = document.getElementById("near");
   const body = document.getElementById("near-body");
@@ -307,6 +307,7 @@ export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, o
       ${freezeCard(info?.hourly)}
       <div class="nd-more">
       ${weather}
+      ${getQuietHTML?.(pt) || ""}
       ${zoneRow(zone)}
       ${rainChart(w)}
       </div>

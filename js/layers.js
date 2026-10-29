@@ -53,6 +53,7 @@ export const LAYERS = [
   },
   {
     id: "lakes",
+    tier: "more",
     label: "Lakes",
     hint: "Texas's major reservoirs, filled to how full they are. Lakes above their normal full level are holding flood water and may be releasing it downstream.",
     source: "Texas Water Development Board",
@@ -61,6 +62,7 @@ export const LAYERS = [
   },
   {
     id: "satflood",
+    tier: "more",
     label: "Flood from space",
     hint: "Flood water seen by NASA satellites over the last 2 days, with flooded acres per county when zoomed out. Misses small streets and anything under cloud.",
     source: "NASA LANCE MODIS flood map (GIBS)",
@@ -77,6 +79,7 @@ export const LAYERS = [
   },
   {
     id: "zones",
+    tier: "more",
     label: "Flood zones",
     hint: "FEMA flood hazard zones (zoom in to see them)",
     source: "FEMA",
@@ -85,6 +88,7 @@ export const LAYERS = [
   },
   {
     id: "grid",
+    tier: "more",
     label: "Grid",
     hint: "Texas power grid status from ERCOT, from Normal up to Energy Emergency level 3, shown under the warnings banner.",
     source: "ERCOT grid conditions",
@@ -93,6 +97,7 @@ export const LAYERS = [
   },
   {
     id: "transit",
+    tier: "more",
     label: "Rail",
     hint: "DART light rail, TRE, Silver Line and streetcar. Stations are flagged when a flood or tornado warning covers them or neighbors confirm flooding nearby.",
     source: "DART schedule data (GTFS)",

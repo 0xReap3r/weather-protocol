@@ -3,6 +3,7 @@
 //   GET /api/tx/lakes      Texas Water Development Board: major reservoirs, daily level and % full (1 hr)
 //   GET /api/tx/mesonet    TexMesonet (TWDB) weather stations: latest rain 24/48/72 hr, wind, soil water (5 min)
 //   GET /api/tx/burnbans   Texas A&M Forest Service county burn bans (1 hr), if its map service answers
+//   GET /api/tx/geocode?q= street address -> point, from the U.S. Census Bureau geocoder (Texas only, 1 day)
 import { cached } from "./geo.js";
 
 const UA = "Stormline/1.0 (public severe-weather map; https://weather-protocol.protocolxv-dev.workers.dev)";
@@ -60,8 +61,34 @@ async function burnbans() {
   };
 }
 
+async function geocode(q) {
+  const addr = /\b(TX|Texas)\b/i.test(q) ? q : `${q}, TX`;
+  const r = await fetch(`https://geocoding.geo.census.gov/geocoder/locations/onelineaddress?address=${encodeURIComponent(addr)}&benchmark=Public_AR_Current&format=json`, { headers: { "User-Agent": UA } });
+  if (!r.ok) throw new Error(`Census geocoder ${r.status}`);
+  const j = await r.json();
+  // Rows: [label, lng, lat]; Texas only
+  return {
+    matches: (j.result?.addressMatches || []).filter((m) => m.addressComponents?.state === "TX").slice(0, 5)
+      .map((m) => [m.matchedAddress, n(m.coordinates.x, 5), n(m.coordinates.y, 5)]),
+  };
+}
+
 export async function handleTexas(req, env, ctx, url, json) {
   const p = url.pathname;
+  if (p === "/api/tx/geocode") {
+    const q = (url.searchParams.get("q") || "").trim().slice(0, 120);
+    if (q.length < 5) return json({ matches: [] });
+    // Edge cache only (no D1 copy): addresses people look up aren't kept on our side.
+    const cache = caches.default;
+    const ck = new Request(new URL(`/__cache/geo/${encodeURIComponent(q.toLowerCase())}`, req.url).toString());
+    const hit = await cache.match(ck);
+    if (hit) return hit;
+    try {
+      const res = json(await geocode(q), 200, { "Cache-Control": "public, max-age=86400" });
+      ctx.waitUntil(cache.put(ck, res.clone()));
+      return res;
+    } catch (_) { return json({ error: "Address search is unavailable right now." }, 502); }
+  }
   if (p === "/api/tx/lakes") return (await cached(env, ctx, req, "tx-lakes", 3600, lakes)) || json({ error: "Lake levels are unavailable right now." }, 502);
   if (p === "/api/tx/mesonet") return (await cached(env, ctx, req, "tx-mesonet", 300, mesonet)) || json({ error: "TexMesonet is unavailable right now." }, 502);
   if (p === "/api/tx/burnbans") return (await cached(env, ctx, req, "tx-burnbans-v2", 3600, burnbans)) || json({ error: "Burn bans are unavailable right now." }, 502);

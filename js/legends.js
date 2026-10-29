@@ -1,38 +1,43 @@
-// Collapsible legend cards (rain radar, storm outlook, flood from space, rain totals).
-// Tap a card's title row to fold it down to one line. On phones they start folded and sit
-// side by side, so the map stays visible. The choice is remembered per card on this device.
-const KEY = "stormline.legends.v1";
+// Collapsible legend cards (rain radar, storm outlook, hurricanes, fires, lakes, flood from space,
+// rain totals). Only one card is open at a time, so the map never disappears under legends:
+//   - switching a layer on opens its card and folds the others to one-line pills
+//   - tapping a pill opens it (and folds the rest); tapping an open card's title folds it
+// On phones every card starts folded.
 const phone = window.matchMedia("(max-width: 719px)");
 
 export function initLegends() {
   const dock = document.getElementById("legend-dock");
-  let saved = {};
-  try { saved = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (_) {}
-  const store = () => { try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (_) {} };
+  const cards = () => [...dock.querySelectorAll(".radar-legend")];
+  const visible = () => cards().filter((c) => !c.hidden);
 
-  const apply = (card) => {
-    if (!card.id) return;
-    const folded = card.id in saved ? saved[card.id] : phone.matches;
-    card.classList.toggle("lg-collapsed", folded);
+  const label = (card) => {
+    const folded = card.classList.contains("lg-collapsed");
     const head = card.querySelector(".rl-head");
-    if (head) {
-      head.setAttribute("role", "button");
-      head.setAttribute("tabindex", "0");
-      head.setAttribute("aria-expanded", String(!folded));
-      head.title = folded ? "Show legend" : "Hide legend";
+    if (!head) return;
+    head.setAttribute("role", "button");
+    head.setAttribute("tabindex", "0");
+    head.setAttribute("aria-expanded", String(!folded));
+    head.title = folded ? "Show legend" : "Hide legend";
+  };
+  const setOpen = (card, open) => { card.classList.toggle("lg-collapsed", !open); label(card); };
+  const openOnly = (card) => { for (const c of cards()) setOpen(c, c === card); };
+
+  // Start: on phones everything folded; elsewhere only the first visible card open.
+  cards().forEach((c, i) => setOpen(c, !phone.matches && c === visible()[0]));
+
+  // Cards re-render their insides (re-label them) and appear when their layer is switched on.
+  const seen = new WeakMap(cards().map((c) => [c, !c.hidden]));
+  new MutationObserver(() => {
+    for (const c of cards()) {
+      const was = seen.get(c) ?? false, now = !c.hidden;
+      if (now && !was && !phone.matches) openOnly(c);
+      else if (now && !was) setOpen(c, false);
+      seen.set(c, now);
+      label(c);
     }
-  };
-  const all = () => dock.querySelectorAll(".radar-legend");
-  all().forEach(apply);
+  }).observe(dock, { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden"] });
 
-  // Cards re-render their insides; re-apply head attributes and pick up cards added later.
-  new MutationObserver(() => all().forEach(apply)).observe(dock, { childList: true, subtree: true });
-
-  const toggle = (card) => {
-    saved[card.id] = !card.classList.contains("lg-collapsed");
-    store();
-    apply(card);
-  };
+  const toggle = (card) => (card.classList.contains("lg-collapsed") ? openOnly(card) : setOpen(card, false));
   dock.addEventListener("click", (e) => {
     const head = e.target.closest(".rl-head");
     if (!head || e.target.closest("button")) return; // Pause, day buttons keep working

@@ -178,7 +178,7 @@ export function initRainTotals({ map, metro, beforeId, openSheet }) {
       <div class="rl-head"><span class="rl-title">Rain totals</span><span class="rl-time">NOAA radar · last ${esc(period.label)}</span></div>
       <div class="sl-days" role="group" aria-label="Time period">${PERIODS.map((p) => `<button type="button" class="sl-day" data-rt="${p.id}" aria-pressed="${p.id === period.id}">${p.label}</button>`).join("")}</div>
       <ul class="rl-drops sl-levels rt-steps"><li class="on">loading…</li></ul>
-      <p class="rl-note">Inches of rain estimated from radar, updated hourly. Radar can miss or overcount; local gauges are the final word.${stationsAt ? period.id === "1h" ? " Rain gauges (circles) report 24 hours and longer." : ` Circles are TexMesonet rain gauges with the inches they measured.` : ""}</p>`;
+      <p class="rl-note">${stationsAt && period.id !== "1h" ? "Radar estimate. Circles are rain gauges." : "Radar estimate, updated hourly."}</p>`;
     const p = period;
     try {
       const lg = await loadLegend(p);

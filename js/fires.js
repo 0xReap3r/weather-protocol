@@ -178,12 +178,13 @@ export function initFires({ map, metro, beforeId, openSheet, onChange }) {
       <div class="rl-head"><span class="rl-title">Wildfires</span><span class="rl-time">${loadedAt ? `NIFC · ${esc(ago(loadedAt))}` : err ? "unavailable" : "loading…"}</span></div>
       <p class="fc-head">${err && !loadedAt ? "Fire data isn't loading right now." : !loadedAt ? "Loading fires…" :
         w.length ? `${w.length} active wildfire${w.length === 1 ? "" : "s"} in Texas` : "No active wildfires reported in Texas"}</p>
-      ${bans ? `<p class="so-note"><span class="ban-sw" aria-hidden="true"></span>${bans.banned.size} of ${bans.total} counties under a burn ban</p>` : ""}
-      ${planned ? `<p class="so-note fc-planned">${fireIconSVG("planned", 15)}${planned} planned burn${planned === 1 ? "" : "s"} (prescribed fire) under way. Expect smoke nearby.</p>` : ""}
       ${big.length ? `<ul class="fc-list">${big.map((f) => `<li><button type="button" class="fc-row" data-fire="${esc(f.properties.id)}">
         <span class="fc-dot" aria-hidden="true"></span><span class="fc-name">${esc(f.properties.name)}</span><span class="fc-meta">${esc(f.properties.line)}</span></button></li>`).join("")}</ul>` : ""}
-      <ul class="rl-drops"><li>${fireIconSVG("wild", 14)}Wildfire, sized by acres</li><li>${fireIconSVG("planned", 14)}Planned burn</li><li><span class="sl-sw" style="--c:${FIRE_COLORS.perimeter};opacity:.6"></span>Mapped fire edge</li><li><span class="sl-sw" style="--c:${FIRE_COLORS.ban};opacity:.45;border:1px dashed ${FIRE_COLORS.ban}"></span>Burn ban (county)</li></ul>
-      <p class="rl-note">Fires from the national interagency fire feed; it can lag reports from crews. Burn bans from Texas A&amp;M Forest Service, as counties report them. Follow evacuation orders from local officials.</p>`;
+      <ul class="fc-facts">
+        <li>${fireIconSVG("planned", 14)}<span>Planned burns</span><b>${planned}</b></li>
+        ${bans ? `<li><span class="ban-sw" aria-hidden="true"></span><span>Counties with a burn ban</span><b>${bans.banned.size}</b></li>` : ""}
+      </ul>
+      <p class="rl-note">Follow local evacuation orders; this map can lag crews.</p>`;
   }
 
   card.addEventListener("click", (e) => {
@@ -216,12 +217,14 @@ export function initFires({ map, metro, beforeId, openSheet, onChange }) {
 
   // Area panel: a burn ban in this county, and wildfires (not planned burns) within 25 miles.
   function nearHTML(pt) {
+    return firesHTML(pt);
+  }
+  // Burn ban for the spot's county: a quiet line lower in the panel (most of Texas has one in a dry fall).
+  function banLine(pt) {
     const ban = banCounties.find((c) => contains(c.geometry, pt));
-    const banHTML = ban ? `<p class="near-ban"><span class="ban-sw" aria-hidden="true"></span>Burn ban in ${esc(ban.name)} County${(() => {
-      const since = bans.banned.get(String(ban.geoid).slice(-3))?.since;
-      return since ? ` since ${esc(new Date(since).toLocaleDateString([], { month: "short", day: "numeric" }))}` : "";
-    })()}. No outdoor burning.</p>` : "";
-    return banHTML + firesHTML(pt);
+    if (!ban) return "";
+    const since = bans.banned.get(String(ban.geoid).slice(-3))?.since;
+    return `<p class="near-quiet"><span class="ban-sw" aria-hidden="true"></span>Burn ban in ${esc(ban.name)} County${since ? ` since ${esc(new Date(since).toLocaleDateString([], { month: "short", day: "numeric" }))}` : ""}. No outdoor burning.</p>`;
   }
   function firesHTML(pt) {
     if (!loadedAt) return "";
@@ -245,6 +248,7 @@ export function initFires({ map, metro, beforeId, openSheet, onChange }) {
     onToggle(v) { on = v; card.hidden = !v; if (v) render(); },
     openFire: (id) => openFire(id, false),
     nearHTML,
+    banLine,
     list: () => fc.features,
   };
 }

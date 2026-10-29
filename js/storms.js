@@ -220,7 +220,7 @@ export function initStorms({ map, beforeId, metro }) {
       }).join("")}</div>` : ""}
       <div class="so-views" role="group" aria-label="Show on the map">${views.map(([id, n]) =>
         `<button type="button" data-storm-view="${id}" aria-pressed="${(views.some((x) => x[0] === view) ? view : "cat") === id}">${esc(n)}</button>`).join("")}</div>
-      <p class="rl-note">${view === "cat" ? "Glowing contours are SPC's risk levels; hatching marks Enhanced and up." : "Chance of that hazard within 25 miles of a point."} From NOAA's Storm Prediction Center. Not a warning.</p>`;
+      <p class="rl-note">${view === "cat" ? "A forecast for a wide area, not a warning." : "Chance within 25 miles. Not a warning."}</p>`;
   }
 
   // Moderate and High edges breathe slowly so they catch the eye (skipped for reduced motion).

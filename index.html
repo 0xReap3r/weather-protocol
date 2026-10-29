@@ -33,6 +33,10 @@
         <span id="app-name" class="wordmark">Stormline</span>
         <span id="metro-name" class="metro" translate="no">Dallas–Fort Worth</span>
       </div>
+      <button id="search-btn" class="search-btn" type="button" aria-label="Search a city, ZIP code or address" aria-controls="search" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+        <span class="sb-label">Search a city, ZIP or address</span><kbd class="sb-key" aria-hidden="true">/</kbd>
+      </button>
       <button id="status" class="status" type="button" data-state="loading" aria-describedby="status-note">
         <span class="status-dot" aria-hidden="true"></span>
         <span id="status-text">LOADING</span>
@@ -58,7 +62,7 @@
         <li><span class="rl-drop" style="--c:#ff4d4d;--s:1.1"></span>Very heavy</li>
         <li><span class="rl-drop" style="--c:#d94cff;--s:1.2"></span>Hail</li>
       </ul>
-      <p class="rl-note">Drops show rain falling from live radar, not flood water on the ground.</p>
+      <p class="rl-note">Falling rain, not water on the ground.</p>
     </div>
     </div>
   </header>
@@ -100,6 +104,16 @@
       <button id="btn-about" class="link-btn" type="button">About</button>
     </div>
   </footer>
+
+  <div id="search-scrim" class="search-scrim" hidden></div>
+  <div id="search" class="search" role="dialog" aria-label="Search" hidden>
+    <div class="search-field">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+      <input id="search-input" type="search" inputmode="search" autocomplete="off" spellcheck="false" placeholder="City, ZIP code, county or address" aria-label="City, ZIP code, county or address" aria-controls="search-results">
+      <button class="search-close" type="button" aria-label="Close search">Esc</button>
+    </div>
+    <ul id="search-results" class="search-results" role="listbox" aria-label="Results"></ul>
+  </div>
 
   <div id="menu-scrim" class="menu-scrim" hidden></div>
   <nav id="menu" class="menu" aria-label="Menu" hidden>

@@ -143,14 +143,12 @@ export function initTropical({ map, beforeId, openSheet, onChange }) {
         list.some((x) => x.texas) ? "A storm's forecast cone reaches Texas" : list.length ? `${list.length} active tropical system${list.length === 1 ? "" : "s"}, none headed for Texas` : "No active tropical storms"}</p>
       ${list.length ? `<ul class="fc-list">${list.map(({ p, s, texas }) => `<li><button type="button" class="fc-row" data-storm="${esc(p.basin)}-${p.stormnum}" style="--c:${s.color}">
         <span class="fc-dot" aria-hidden="true"></span><span class="fc-name">${esc(p.stormname)}</span><span class="fc-meta">${mph(p.maxwind)} mph${texas ? " · Texas in cone" : ""}</span></button></li>`).join("")}</ul>` : ""}
-      ${areas ? `<p class="so-note">${areas} area${areas === 1 ? "" : "s"} NHC is watching for development (dashed).</p>` : ""}
-      <ul class="rl-drops">
-        <li><span class="sl-sw" style="--c:rgba(233,240,246,.35);border:1px solid #e9f0f6"></span>Forecast cone</li>
-        <li><span class="sl-sw" style="--c:${COAST.HWR.color}"></span>Hurricane warning</li>
-        <li><span class="sl-sw" style="--c:${COAST.TWR.color}"></span>Tropical storm warning</li>
-        ${evacLoaded ? `<li><span class="sl-sw" style="--c:${EVAC_COLOR};height:4px"></span>Evacuation route</li>` : ""}
+      <ul class="fc-facts">
+        <li><span class="sl-sw" style="--c:rgba(233,240,246,.3);border:1px solid #e9f0f6"></span><span>Forecast cone</span></li>
+        ${areas ? `<li><span class="sl-sw" style="--c:transparent;border:1.5px dashed ${OUTLOOK.Medium}"></span><span>Areas to watch</span><b>${areas}</b></li>` : ""}
+        ${evacLoaded ? `<li><span class="sl-sw" style="--c:${EVAC_COLOR};height:3px"></span><span>Evacuation routes</span></li>` : ""}
       </ul>
-      <p class="rl-note">The cone shows where the center may go. Wind, surge and flooding reach far outside it. Evacuation orders come from your county; routes from TxDOT.</p>`;
+      <p class="rl-note">Impacts reach far outside the cone.</p>`;
   }
 
   async function loadEvac() {

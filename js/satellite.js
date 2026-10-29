@@ -189,7 +189,8 @@ export function initSatellite({ map, metro, beforeId, getAlertsFC }) {
         <li class="on"><span class="sl-sw" style="--c:${SAT_COLORS.water}"></span>Normal water</li>
         <li class="on"><span class="sl-sw" style="--c:${SAT_COLORS.nodata}"></span>Clouds, no view</li>
       </ul>
-      <p class="rl-note">${err ? "Satellite data isn't loading right now. " : total == null ? "Adding up flooded acres… " : total >= MIN_ACRES ? `The satellite flags about ${total.toLocaleString()} acres of possible flood water in the counties shown. ` : "Little or no flood water seen in the counties shown. "}Totals count only counties with an inch of rain in 3 days or an NWS flood alert; blue specks elsewhere are usually lake edges or cloud shadows. Satellites miss small streets and anything under cloud, so this never means a road is dry.</p>`;
+      <p class="fc-head sat-total">${err ? "Satellite data isn't loading right now." : total == null ? "Adding up flooded acres…" : total >= MIN_ACRES ? `About ${total.toLocaleString()} acres of possible flood water in view` : "Little or no flood water seen in view"}</p>
+      <p class="rl-note">Misses small streets and anything under cloud.</p>`;
   }
 
   async function loadTotals() {
