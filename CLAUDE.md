@@ -50,8 +50,8 @@ Run locally: `npx serve .` then open http://localhost:3000.
 
 ## Texas depth candidates (checked Oct 28; Phase 14 in the plan doc)
 - Browser-OK (CORS): NIFC WFIGS `services3.arcgis.com/T4QMspbfLg3qTGWY/arcgis/rest/services/WFIGS_Incident_Locations_Current/FeatureServer/0` (`POOState='US-TX'`; names starting "Rx" are prescribed burns); NHC `mapservices.weather.noaa.gov/tropical/rest/services/tropical/NHC_tropical_weather/MapServer`; TxDOT evacuation routes `services.arcgis.com/KTcxiTD9dsQw4r7Z/arcgis/rest/services/TxDOT_Evacuation_Routes/FeatureServer/0`; Austin low-water crossing gates `data.austintexas.gov/resource/q6kt-v2zm.json` and San Antonio `services.arcgis.com/g1fRTDLeMgspWrYp/arcgis/rest/services/LowWaterCrossings/FeatureServer` (locations only).
-- Worker needed (no CORS): TWDB reservoirs `waterdatafortexas.org/reservoirs/statewide/recent-conditions.geojson`; TexMesonet `www.texmesonet.org/api/CurrentData` (XML; rain 24/48/72 hr, soil moisture).
-- Unverified: TFS burn bans `gis.tfs.tamu.edu/arcgis/rest/services/EOC/BurnBan/FeatureServer/0` (unreachable from the dev box; try from the Worker). Ignore the stale third-party "Texas_Count_Burn_Bans" copy.
+- Worker needed (no CORS, built in Phase 14b): TWDB reservoirs `waterdatafortexas.org/reservoirs/statewide/recent-conditions.geojson`; TexMesonet `www.texmesonet.org/api/CurrentData` (XML; rain 24/48/72 hr, soil moisture).
+- TFS burn bans `gis.tfs.tamu.edu/arcgis/rest/services/EOC/BurnBan/FeatureServer/0` work from the Worker (fields County, FIPS, BurnBan Yes/No, StartDate). Ignore the stale third-party "Texas_Count_Burn_Bans" copy.
 - No public feed (outreach, don't scrape): LCRA Hydromet, Harris County FWS, ATXfloods live status.
 
 ## Layout
@@ -84,6 +84,9 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - `js/storms.js` — Storms chip: SPC day 1–3 outlooks as glowing risk contours (faint wash, blurred glow edge, crisp line, hatch on ENH+, labels along contours, breathing glow on MDT/HIGH); card with 1–5 scale for the current region, tornado/hail/wind chances, per-hazard views; `levelToday()` feeds fast polling
 - `js/tropical.js` — Hurricanes chip (Phase 14a): NHC `NHC_tropical_weather_summary` MapServer layers 3 outlook areas, 5 forecast points, 6 track, 7 cone, 8 coastal watch/warning (`tcww` HWR/HWA/TWR/TWA), 11 past track; strength colors by max wind; TxDOT evacuation routes loaded on first toggle; `nearHTML` says when a spot is in a cone
 - `js/fires.js` — Fires chip (Phase 14a): NIFC WFIGS current locations + perimeters (`POOState='US-TX'`), dots sized by acres, planned burns (RX) faint, no update in 3 days = faded; `nearHTML` lists wildfires within 25 mi. Both modules load with the chip off so the area panel can warn (`getTopHTML` in near.js)
+- `worker/texas.js` — Phase 14b, Texas sources without CORS, cached with D1 fallback (`cached` in geo.js): `/api/tx/lakes` (TWDB recent-conditions, 1 hr), `/api/tx/mesonet` (TexMesonet CurrentData as JSON via Accept header, 5 min; mm→in, m/s→mph), `/api/tx/burnbans` (TFS `gis.tfs.tamu.edu/.../EOC/BurnBan/FeatureServer/0`, reachable from the Worker, 1 hr). Front-end loaders in `js/data/texas.js`
+- `js/lakes.js` — Lakes chip: reservoirs colored by % full; "above full" (elevation over conservation pool) glows cyan; flood-control-only reservoirs (no %) are never flagged
+- Rain totals chip also draws TexMesonet stations (24 h / 3 day measured rain; hidden for 1 h) with a station sheet; Fires chip also draws county burn bans, and the area panel names a burn ban for the spot's county
 - Map `maxBounds` (config `STATE`) is wide on purpose ([-124, 10, -76, 39]) so Gulf and eastern Pacific storms can be followed
 - `js/app.js` also: fast alert polling (60 s during active weather), "you're inside the warning" bar (`#danger-bar`) from the Near me location
 - `supabase/migrations/` — run in order on an existing project (002 adds hail + damage kinds)
@@ -92,7 +95,7 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - `sw.js` — offline app shell (network first); bump `VERSION` whenever shell files change. A new version shows open pages a "new version ready · Refresh" bar (`#update-bar`, app.js)
 
 ## Debugging
-In the browser console: `stormlineMap`, `stormlineNear`, `stormlineDemo()` / `stormlineDemo('tornado')` (fake warning around the map center + gauge; with Near me inside it, shows the danger bar), `stormlinePolling()`, `stormlineTropical.storms()`, `stormlineFires.list()`, `stormlineStorms.demo()` (made-up Marginal→High outlook around the region, with the Storms chip on), and in demo mode `stormlineReports.store.simulate([lng,lat], 'flood', 2, 3)` to add fake neighbors.
+In the browser console: `stormlineMap`, `stormlineNear`, `stormlineDemo()` / `stormlineDemo('tornado')` (fake warning around the map center + gauge; with Near me inside it, shows the danger bar), `stormlinePolling()`, `stormlineTropical.storms()`, `stormlineFires.list()`, `stormlineLakes`, `stormlineStorms.demo()` (made-up Marginal→High outlook around the region, with the Storms chip on), and in demo mode `stormlineReports.store.simulate([lng,lat], 'flood', 2, 3)` to add fake neighbors.
 
 ## Revisit later (full list in the build plan doc, "Revisit later" section)
 - No free feed yet: TEXRail / Trinity Metro lines, low-water crossings (Fort Worth HWWS is on OneRain), TxDOT closures (DriveTexas), DART live service alerts, Oncor outages. Don't scrape; outreach is deferred.
