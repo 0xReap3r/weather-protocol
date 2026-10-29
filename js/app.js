@@ -14,6 +14,7 @@ import { initStorms } from "./storms.js";
 import { initFires } from "./fires.js";
 import { initTropical } from "./tropical.js";
 import { initLakes } from "./lakes.js";
+import { initCrossings } from "./crossings.js";
 import { initMenu } from "./menu.js";
 import { initSatellite } from "./satellite.js";
 import { initFeed } from "./feed.js";
@@ -97,7 +98,7 @@ let radar = null;
 let reports = null; // neighbor reports, created once the map is ready
 let transit = null; // DART rail, created once the map is ready
 let storms = null; // SPC outlook, created once the map is ready
-let fires = null, tropical = null, lakes = null; // NIFC wildfires and NHC tropical storms
+let fires = null, tropical = null, lakes = null, crossings = null; // NIFC wildfires and NHC tropical storms
 let satellite = null, rainTotals = null; // NASA flood map and NOAA rain totals
 let feed = null, places = null, route = null, push = null; // What's happened, My places, Check a route, alerts
 const LABEL_FONT = ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"]; // must exist in the basemap's glyphs
@@ -265,6 +266,11 @@ map.on("load", () => {
     paint: { "text-color": "#e8edf2", "text-halo-color": "#0a1119", "text-halo-width": 1.5 },
   });
 
+  // Low-water crossings ride with the Rivers chip, zoomed in (statewide TxGIO inventory).
+  crossings = initCrossings({ map, beforeId: "gauges-circle", openSheet, getAlertsFC: () => alertsFC, isOn: () => !!layerState.rivers });
+  MAP_LAYERS.rivers = [...MAP_LAYERS.rivers, ...crossings.layerIds];
+  window.stormlineCrossings = crossings; // debugging aid
+
   // DART rail sits under warnings' labels but above the shading.
   transit = initTransit({
     map,
@@ -405,6 +411,7 @@ async function refreshAlerts() {
     alertBoxes = alertsFC.features.map((f) => [f.properties.id, geomBox(f.geometry)]);
     alertList = regionAlerts();
     map.getSource("alerts")?.setData(alertsFC);
+    crossings?.refresh(); // recolor crossings inside flood warnings
     feeds.alerts = { ok: true, at: new Date() };
   } catch (err) {
     feeds.alerts = { ...(feeds.alerts || {}), ok: false, err: err.message };
@@ -552,6 +559,7 @@ function applyLayerVisibility() {
 function toggleLayer(id) {
   layerState[id] = !layerState[id];
   if (id === "reports" && layerState.reports) reports?.refresh();
+  if (id === "rivers" && layerState.rivers) crossings?.refresh();
   if (id === "zones" && layerState.zones && map.getZoom() < 11) toast("Zoom in closer to see FEMA flood zones.");
   saveLayerState(layerState);
   $(`#chip-${id}`).setAttribute("aria-pressed", String(layerState[id]));
@@ -931,8 +939,11 @@ near = initNearPanel({
   openAlerts,
   locate: locateMe,
   openAbout,
-  getTopHTML: (pt) => (tropical?.nearHTML(pt) || "") + (fires?.nearHTML(pt) || ""),
-  getReportsHTML: (pt) => rainSoFarHTML(pt) + (reports?.summaryHTML(pt) || "") + stationsHTML(pt),
+  getTopHTML: (pt) => {
+    crossings?.prepNear(pt).then((changed) => changed && near?.render());
+    return (tropical?.nearHTML(pt) || "") + (crossings?.nearHTML(pt, "top") || "") + (fires?.nearHTML(pt) || "");
+  },
+  getReportsHTML: (pt) => (crossings?.nearHTML(pt, "list") || "") + rainSoFarHTML(pt) + (reports?.summaryHTML(pt) || "") + stationsHTML(pt),
 });
 
 // Rain that has already fallen at the spot (NOAA MRMS radar estimates), loaded in the background.
@@ -1101,7 +1112,7 @@ window.stormlineDemo = (kind = "flood") => {
     properties: { id: "demo", event: tornado ? "Tornado Warning (demo)" : "Flash Flood Warning (demo)", color: tornado ? "#ff00ff" : "#e0352b", rank: tornado ? 95 : 85, storm: true, headline: "Demo", areaDesc: "Demo area", expires: new Date(Date.now() + 3600e3).toISOString(), sent: new Date().toISOString(), description: "Demo only.", instruction: "" } }] };
   map.getSource("alerts")?.setData(alertsFC);
   if (tornado && !meAt) { meAt = [lng, lat]; meAtTime = Date.now(); } // demo puts "you" at the map center
-  startPulse(); near?.render(); transit?.refresh(); checkDanger();
+  startPulse(); near?.render(); transit?.refresh(); crossings?.refresh(); checkDanger();
   return "Demo on — reload the page to clear it";
 };
 

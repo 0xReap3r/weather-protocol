@@ -7,6 +7,7 @@ import { SPC_LEVELS } from "./storms.js";
 import { STRENGTH, COAST, OUTLOOK, EVAC_COLOR } from "./tropical.js";
 import { FIRE_COLORS, fireIconSVG } from "./fires.js";
 import { LAKE_COLORS } from "./lakes.js";
+import { crossingIconSVG } from "./crossings.js";
 
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -93,6 +94,11 @@ export function renderKey() {
     <h3 class="key-h">Rivers and lakes</h3>
     <p class="key-lead">Each dot is an official gauge, colored by NWS flood stage. A pulsing ring means it's at or near flood stage.</p>
     <ul class="key-list">${gaugeRows}${row(dot(CATEGORY.unknown.color, true), "No recent reading", "The gauge hasn't reported in over 2 hours.")}</ul>
+
+    <ul class="key-list">
+      ${row(`<span class="key-sw key-ico">${crossingIconSVG(false, 18)}</span>`, "Low-water crossing", "Road that dips through a creek (Rivers layer, zoomed in). We don't know if it's flooded or closed.")}
+      ${row(`<span class="key-sw key-ico">${crossingIconSVG(true, 18)}</span>`, "Crossing inside a flood warning", "Don't drive or walk into water here. Turn around, don't drown.")}
+    </ul>
 
     <h3 class="key-h">Rain radar</h3>
     <p class="key-lead">Drops show where rain is falling now, from live NEXRAD radar. They don't show water on the ground.</p>

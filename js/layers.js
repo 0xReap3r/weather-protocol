@@ -14,8 +14,8 @@ export const LAYERS = [
   {
     id: "rivers",
     label: "Rivers",
-    hint: "River, creek and lake levels with official flood stages",
-    source: "NOAA NWPS · USGS",
+    hint: "River, creek and lake levels with official flood stages. Zoom in to see low-water crossings, which turn red inside a flood warning.",
+    source: "NOAA NWPS · USGS · Texas GIO low-water crossings",
     phase: 2,
     defaultOn: true,
   },
