@@ -1353,3 +1353,8 @@ body { font: 15px/1.45 var(--font-body); font-stretch: 100%; letter-spacing: .00
   .legend-dock > .radar-legend { flex: none; }
   .legend-dock:has(> .radar-legend:not(.lg-collapsed):not([hidden])) { flex-wrap: wrap; }
 }
+
+/* Map marker badges in legends, key and panels */
+.mk-ico { flex: none; vertical-align: -4px; filter: drop-shadow(0 1px 2px rgba(0,0,0,.5)); }
+.key-ico { width: 20px; height: 20px; }
+.fire-ico { filter: none; }

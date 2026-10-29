@@ -104,6 +104,7 @@ function feature(g) {
     geometry: { type: "Point", coordinates: [g.lng, g.lat] },
     properties: {
       lid: g.lid,
+      cat: CATEGORY[g.category] ? g.category : "unknown",
       color: CATEGORY[g.category].color,
       rank: CATEGORY[g.category].rank,
       stale: g.stale,

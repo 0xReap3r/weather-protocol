@@ -2,6 +2,7 @@
 // NWS Multi-Radar Multi-Sensor (MRMS) radar estimates (1 km, updated hourly), via NOAA's
 // mapservices ImageServer. Map colors and legend come from NOAA's own rendering, so they match.
 // County labels show the average and the most rain anywhere in the county.
+import { badge } from "./markers.js";
 import { fetchJSON } from "./data/fetch.js";
 import { t, isEs } from "./i18n.js";
 import { loadCounties, countiesIn } from "./data/counties.js";
@@ -92,16 +93,19 @@ export function initRainTotals({ map, metro, beforeId, openSheet }) {
   // TexMesonet weather stations: rain actually measured in a gauge, to check the radar estimate.
   map.addSource("mesonet", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
   const addStationLayers = () => {
-    map.addLayer({ id: "mesonet-dot", type: "circle", source: "mesonet", filter: ["!=", ["get", "show"], false],
-      paint: {
-        "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 3.5, 10, 6],
-        "circle-color": "#0a1119", "circle-stroke-width": 2,
-        "circle-stroke-color": ["case", [">=", ["coalesce", ["get", "r"], 0], 1], "#7fd4ff", [">", ["coalesce", ["get", "r"], 0], 0], "#4f8fbf", "#5d7690"],
-        "circle-opacity": ["case", ["get", "stale"], 0.4, 1], "circle-stroke-opacity": ["case", ["get", "stale"], 0.4, 1],
-      } });
+    // Rain-gauge badges: a raindrop ringed by how much fell (gray dry, blue wet, bright blue 1"+).
+    badge(map, "rain-dry", { glyph: "drop", ring: "#5d7690", ink: "#a9b9c9" });
+    badge(map, "rain-wet", { glyph: "drop", ring: "#4f8fbf" });
+    badge(map, "rain-heavy", { glyph: "drop", ring: "#7fd4ff", ink: "#7fd4ff" });
+    map.addLayer({ id: "mesonet-dot", type: "symbol", source: "mesonet", filter: ["!=", ["get", "show"], false],
+      layout: {
+        "icon-image": ["case", [">=", ["coalesce", ["get", "r"], 0], 1], "mk-rain-heavy", [">", ["coalesce", ["get", "r"], 0], 0], "mk-rain-wet", "mk-rain-dry"],
+        "icon-size": ["interpolate", ["linear"], ["zoom"], 5, 0.5, 9, 0.7, 13, 0.9], "icon-allow-overlap": true,
+      },
+      paint: { "icon-opacity": ["case", ["get", "stale"], 0.4, 1] } });
     map.addLayer({ id: "mesonet-label", type: "symbol", source: "mesonet", minzoom: 7,
       filter: ["all", ["!=", ["get", "show"], false], [">", ["coalesce", ["get", "r"], 0], 0]],
-      layout: { "text-field": ["concat", ["get", "rt"], "\""], "text-font": ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"], "text-size": 11.5, "text-offset": [0, 1], "text-anchor": "top" },
+      layout: { "text-field": ["concat", ["get", "rt"], "\""], "text-font": ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"], "text-size": 11.5, "text-offset": [0, 1.25], "text-anchor": "top" },
       paint: { "text-color": "#bfe6ff", "text-halo-color": "#0a1119", "text-halo-width": 1.6 } });
   };
   addStationLayers();

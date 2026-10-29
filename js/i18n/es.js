@@ -198,6 +198,8 @@ export const ES = {
   "Flood water": "Agua de inundación", "Floods often": "Se inunda a menudo", "Normal water": "Agua normal", "Clouds, no view": "Nubes, sin vista",
   "Flood water NASA satellites saw in the last 2 days. Light blue: places that flood often. Faint gray: clouds blocked the view.":
     "Agua de inundación que vieron los satélites de la NASA en los últimos 2 días. Azul claro: lugares que se inundan a menudo. Gris tenue: las nubes taparon la vista.",
+  "Each badge is an official gauge, ringed in its NWS flood-stage color. A pulsing ring means it's at or near flood stage.":
+    "Cada insignia es un medidor oficial, con un anillo del color de su nivel de inundación del NWS. Un anillo que late significa que está en o cerca del nivel de inundación.",
   "Each dot is an official gauge, colored by NWS flood stage. A pulsing ring means it's at or near flood stage.":
     "Cada punto es un medidor oficial, con el color de su nivel de inundación del NWS. Un anillo que late significa que está en o cerca del nivel de inundación.",
   "Shaded areas from the National Weather Service, in its official colors. A pulsing outline means the warning or watch is active now.":
@@ -627,7 +629,7 @@ export const ES = {
   "From NOAA's Storm Prediction Center. Not a warning.": "Del Centro de Predicción de Tormentas de NOAA. No es una alerta.",
   "Get indoors and away from windows. Damaging wind or large hail is possible.": "Entre a un lugar cerrado y aléjese de las ventanas. Puede haber vientos dañinos o granizo grande.",
   "Get to higher ground now. Don't drive into water. If water is rising inside, go to the highest floor, not the attic.": "Suba a un lugar alto ahora. No maneje hacia el agua. Si el agua sube adentro, vaya al piso más alto, no al ático.",
-  "Golf ball": "Pelota de golf", "Tennis ball": "Pelota de tenis", "Softball": "Pelota de softbol", "Quarter": "Moneda de 25 centavos",
+  "Pea": "Chícharo", "hail": "granizo", "Golf ball": "Pelota de golf", "Tennis ball": "Pelota de tenis", "Softball": "Pelota de softbol", "Quarter": "Moneda de 25 centavos",
   "Hail and damage reports aren't switched on yet. The database needs a one-time update.": "Los reportes de granizo y daños aún no están activados. La base de datos necesita una actualización única.",
   "High risk of flash flooding from rain": "Riesgo alto de inundaciones repentinas por lluvia", "High risk of severe storms": "Riesgo alto de tormentas severas",
   "High-risk area: the channel that carries floodwater. FEMA maps a 1% or greater chance of flooding each year.": "Zona de alto riesgo: el cauce que lleva el agua de inundación. FEMA calcula una probabilidad de inundación del 1 % o más cada año.",

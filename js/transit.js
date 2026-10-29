@@ -3,6 +3,7 @@
 // never "closed" or "open": service status comes from DART only.
 import { loadTransit, DART_ALERTS_URL, DART_WINTER_URL } from "./data/transit.js";
 import { contains, milesBetween } from "./near.js";
+import { badge } from "./markers.js";
 
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -31,13 +32,15 @@ export function initTransit({ map, beforeId, getAlertsFC, getRoadCells, openShee
       "line-opacity": 0.85,
     },
   }, beforeId);
+  // Station badges: a train pictogram; the ring turns the flag's color when a station is flagged.
+  badge(map, "station", { glyph: "train", ring: "#c9d3dc" });
+  for (const [k, c] of Object.entries(FLAG_COLOR)) badge(map, `station-${k}`, { glyph: "train", ring: c, fill: k === "warning" ? "#4a1010" : undefined });
   map.addLayer({
-    id: "transit-station", type: "circle", source: "transit-stations", minzoom: 9,
-    paint: {
-      "circle-radius": ["interpolate", ["linear"], ["zoom"], 9, ["case", ["get", "flagged"], 5, 2.5], 14, ["case", ["get", "flagged"], 9, 6]],
-      "circle-color": ["case", ["get", "flagged"], ["get", "flagColor"], "#e8edf2"],
-      "circle-stroke-color": "#0b0f14",
-      "circle-stroke-width": 1.5,
+    id: "transit-station", type: "symbol", source: "transit-stations", minzoom: 10,
+    layout: {
+      "icon-image": ["case", ["get", "flagged"], ["concat", "mk-station-", ["get", "flagType"]], "mk-station"],
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 10, ["case", ["get", "flagged"], 0.75, 0.55], 14, ["case", ["get", "flagged"], 1, 0.85]],
+      "icon-allow-overlap": true, "symbol-sort-key": ["case", ["get", "flagged"], 0, 1],
     },
   });
   map.addLayer({
@@ -45,7 +48,7 @@ export function initTransit({ map, beforeId, getAlertsFC, getRoadCells, openShee
     layout: {
       "text-field": ["get", "label"],
       "text-font": ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"],
-      "text-size": 11, "text-offset": [0, 1.1], "text-anchor": "top", "text-max-width": 10,
+      "text-size": 11, "text-offset": [0, 1.45], "text-anchor": "top", "text-max-width": 10,
     },
     paint: { "text-color": ["case", ["get", "flagged"], ["get", "flagColor"], "#c9d3dc"], "text-halo-color": "#0b0f14", "text-halo-width": 1.6 },
   });
@@ -81,7 +84,7 @@ export function initTransit({ map, beforeId, getAlertsFC, getRoadCells, openShee
         return {
           type: "Feature",
           geometry: { type: "Point", coordinates: s.at },
-          properties: { id: s.id, label: s.name.replace(/ Station$/, ""), flagged: !!f, flagColor: top ? FLAG_COLOR[top] : "#e8edf2" },
+          properties: { id: s.id, label: s.name.replace(/ Station$/, ""), flagged: !!f, flagType: top || "", flagColor: top ? FLAG_COLOR[top] : "#e8edf2" },
         };
       }),
     });

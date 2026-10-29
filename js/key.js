@@ -8,6 +8,8 @@ import { STRENGTH, COAST, OUTLOOK, EVAC_COLOR } from "./tropical.js";
 import { FIRE_COLORS, fireIconSVG } from "./fires.js";
 import { LAKE_COLORS } from "./lakes.js";
 import { crossingIconSVG } from "./crossings.js";
+import { badgeSVG } from "./markers.js";
+const mk = (o) => `<span class="key-sw key-ico">${badgeSVG(o, 20)}</span>`;
 
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -43,7 +45,7 @@ export function renderKey() {
     ["no_flooding", "Below flood stage", "Normal for this river. Not a promise roads are clear."],
     ["not_defined", "Lake level", "Lakes have no flood stages here; tap for the level."],
   ]
-    .map(([k, label, note]) => row(dot(CATEGORY[k].color), label, note))
+    .map(([k, label, note]) => row(mk({ glyph: k === "not_defined" ? "lake" : "gauge", ring: CATEGORY[k].color }), label, note))
     .join("");
 
   const rainRows = [...RAIN_BANDS]
@@ -74,30 +76,30 @@ export function renderKey() {
 
     <h3 class="key-h">Wildfires</h3>
     <ul class="key-list">
-      ${row(`<span class="key-sw key-ico">${fireIconSVG("wild", 18)}</span>`, "Wildfire", "Bigger flame, bigger fire. Tap for acres and containment.")}
-      ${row(`<span class="key-sw key-ico">${fireIconSVG("planned", 18)}</span>`, "Planned burn", "Prescribed fire set on purpose by land managers. Expect smoke nearby.")}
+      ${row(`<span class="key-sw key-ico">${fireIconSVG("wild", 20)}</span>`, "Wildfire", "Bigger flame, bigger fire. Tap for acres and containment.")}
+      ${row(`<span class="key-sw key-ico">${fireIconSVG("planned", 20)}</span>`, "Planned burn", "Prescribed fire set on purpose by land managers. Expect smoke nearby.")}
       ${row(area(FIRE_COLORS.perimeter), "Mapped fire edge", "Where crews last mapped the fire; it can move")}
       ${row(`<span class="key-sw key-area" style="--c:${FIRE_COLORS.ban};border-style:dashed"></span>`, "Burn ban", "County where outdoor burning is banned (Texas A&M Forest Service)")}
     </ul>
 
     <h3 class="key-h">Lakes</h3>
     <ul class="key-list">
-      ${row(dot(LAKE_COLORS.low), "Low", "Under about 40% full")}
-      ${row(dot(LAKE_COLORS.full), "Near full", "Water-supply lake close to its normal full level")}
-      ${row(`<span class="key-sw key-dot" style="--c:${LAKE_COLORS.full};box-shadow:0 0 0 2px ${LAKE_COLORS.over},0 0 8px ${LAKE_COLORS.over}"></span>`, "Above full", "Holding flood water; dams may release it downstream")}
-      ${row(dot(LAKE_COLORS.flood), "Flood-control reservoir", "Kept mostly empty; fills only in floods")}
+      ${row(mk({ glyph: "lake", ring: LAKE_COLORS.low }), "Low", "Under about 40% full")}
+      ${row(mk({ glyph: "lake", ring: LAKE_COLORS.full }), "Near full", "Water-supply lake close to its normal full level")}
+      ${row(mk({ glyph: "lake", ring: LAKE_COLORS.over, ink: LAKE_COLORS.over }), "Above full", "Holding flood water; dams may release it downstream")}
+      ${row(mk({ glyph: "lake", ring: LAKE_COLORS.flood }), "Flood-control reservoir", "Kept mostly empty; fills only in floods")}
     </ul>
     <ul class="key-list">
-      ${row(`<span class="key-sw key-dot" style="--c:#0a1119;box-shadow:0 0 0 2px #7fd4ff"></span>`, "Rain gauge (Rain totals layer)", "TexMesonet station with the rain it measured")}
+      ${row(mk({ glyph: "drop", ring: "#7fd4ff" }), "Rain gauge (Rain totals layer)", "TexMesonet station with the rain it measured")}
     </ul>
 
     <h3 class="key-h">Rivers and lakes</h3>
-    <p class="key-lead">Each dot is an official gauge, colored by NWS flood stage. A pulsing ring means it's at or near flood stage.</p>
-    <ul class="key-list">${gaugeRows}${row(dot(CATEGORY.unknown.color, true), "No recent reading", "The gauge hasn't reported in over 2 hours.")}</ul>
+    <p class="key-lead">Each badge is an official gauge, ringed in its NWS flood-stage color. A pulsing ring means it's at or near flood stage.</p>
+    <ul class="key-list">${gaugeRows}${row(mk({ glyph: "gauge", ring: CATEGORY.unknown.color, ink: "#8ea2b6" }), "No recent reading", "The gauge hasn't reported in over 2 hours.")}</ul>
 
     <ul class="key-list">
-      ${row(`<span class="key-sw key-ico">${crossingIconSVG(false, 18)}</span>`, "Low-water crossing", "Road that dips through a creek (Rivers layer, zoomed in). We don't know if it's flooded or closed.")}
-      ${row(`<span class="key-sw key-ico">${crossingIconSVG(true, 18)}</span>`, "Crossing inside a flood warning", "Don't drive or walk into water here. Turn around, don't drown.")}
+      ${row(`<span class="key-sw key-ico">${crossingIconSVG(false, 20)}</span>`, "Low-water crossing", "Road that dips through a creek (Rivers layer, zoomed in). We don't know if it's flooded or closed.")}
+      ${row(`<span class="key-sw key-ico">${crossingIconSVG(true, 20)}</span>`, "Crossing inside a flood warning", "Don't drive or walk into water here. Turn around, don't drown.")}
     </ul>
 
     <h3 class="key-h">Rain radar</h3>
@@ -115,21 +117,21 @@ export function renderKey() {
     <h3 class="key-h">Neighbor reports</h3>
     <p class="key-lead">Faint with a dashed edge until a second neighbor confirms. Reports fade after 6 hours (ice: 12).</p>
     <ul class="key-list">
-      ${row(dot("#7fd4ff"), "Flooded road, shallow", "Ankle-deep to over the curb.")}
-      ${row(dot("#2f7fe0"), "Flooded road, knee-deep")}
-      ${row(dot("#ff3b3b"), "Flooded road, waist-deep or more", "Life-threatening.")}
-      ${row(dot("#c9f1ff"), "Iced road")}
-      ${row(area("#ffb020"), "Power out", "Neighborhood-sized area; stronger with more neighbors.")}
-      ${row(area("#d94cff"), "Hail", "Neighborhood-sized area, with the reported size. Fades after 3 hours.")}
-      ${row(dot("#ff8fa3"), "Storm damage", "Trees down, roof damage or power lines down. Fades after 24 hours.")}
+      ${row(mk({ glyph: "flood", ring: "#7fd4ff" }), "Flooded road, shallow", "Ankle-deep to over the curb.")}
+      ${row(mk({ glyph: "flood", ring: "#2f7fe0" }), "Flooded road, knee-deep")}
+      ${row(mk({ glyph: "flood", ring: "#ff3b3b", fill: "#3a1410" }), "Flooded road, waist-deep or more", "Life-threatening.")}
+      ${row(mk({ glyph: "ice", ring: "#c9f1ff" }), "Iced road")}
+      ${row(mk({ glyph: "power", ring: "#ffb020", ink: "#ffb020", filledGlyph: true }), "Power out", "Neighborhood-sized area; stronger with more neighbors.")}
+      ${row(mk({ glyph: "hail", ring: "#d94cff" }), "Hail", "Neighborhood-sized area, with the reported size. Fades after 3 hours.")}
+      ${row(mk({ glyph: "tree", ring: "#ff8fa3" }), "Storm damage", "Trees down, roof damage or power lines down. Fades after 24 hours.")}
     </ul>
 
     <h3 class="key-h">Rail (DART)</h3>
     <ul class="key-list">
       ${row('<span class="key-sw key-rail" style="--c:#198BC3"></span>', "Rail lines", "In each line's own color.")}
-      ${row(dot("#e8edf2"), "Station")}
-      ${row(dot("#ff3b3b"), "Station inside a warning", "A flood or tornado warning covers it. Check DART before you go.")}
-      ${row(dot("#4fb3ff"), "Flooding confirmed nearby", "Neighbors confirm a flooded road within a few blocks.")}
+      ${row(mk({ glyph: "train", ring: "#c9d3dc" }), "Station")}
+      ${row(mk({ glyph: "train", ring: "#ff3b3b", fill: "#4a1010" }), "Station inside a warning", "A flood or tornado warning covers it. Check DART before you go.")}
+      ${row(mk({ glyph: "train", ring: "#4fb3ff" }), "Flooding confirmed nearby", "Neighbors confirm a flooded road within a few blocks.")}
     </ul>
 
     <h3 class="key-h">Marks on the map</h3>

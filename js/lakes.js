@@ -3,6 +3,7 @@
 // full level: it is holding flood water and dams may be releasing it downstream, so those get a
 // bright ring and "X ft above full". Flood-control reservoirs (Addicks, Barker and others) sit
 // empty on purpose and only fill in floods, so they show feet above their normal level instead of %.
+import { badge, ICON_SIZE } from "./markers.js";
 import { loadLakes } from "./data/texas.js";
 import { t } from "./i18n.js";
 
@@ -21,18 +22,16 @@ export function initLakes({ map, beforeId, openSheet }) {
     ["interpolate", ["linear"], ["coalesce", ["get", "pct"], 0], 0, LAKE_COLORS.low, 40, LAKE_COLORS.low, 70, LAKE_COLORS.mid, 95, LAKE_COLORS.full]];
   map.addLayer({ id: "lakes-over", type: "circle", source: "lakes", filter: [">", ["get", "over"], 0.05],
     paint: { "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 11, 10, 18], "circle-color": LAKE_COLORS.over, "circle-blur": 0.9, "circle-opacity": 0.5 } }, beforeId);
-  map.addLayer({ id: "lakes-dot", type: "circle", source: "lakes",
-    paint: {
-      "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 4.5, 10, 9],
-      "circle-color": fill, "circle-opacity": ["case", ["get", "stale"], 0.45, 0.95],
-      "circle-stroke-color": ["case", [">", ["get", "over"], 0.05], LAKE_COLORS.over, "#0a1119"],
-      "circle-stroke-width": ["case", [">", ["get", "over"], 0.05], 2.2, 1.5],
-    } });
+  // Lake badges: a water pictogram ringed by how full the lake is; above full gets a bright ring.
+  for (const [k, c] of Object.entries(LAKE_COLORS)) badge(map, `lake-${k}`, { glyph: "lake", ring: c, ink: k === "over" ? LAKE_COLORS.over : "#f2f6fa" });
+  map.addLayer({ id: "lakes-dot", type: "symbol", source: "lakes",
+    layout: { "icon-image": ["concat", "mk-lake-", ["get", "bucket"]], "icon-size": ICON_SIZE, "icon-allow-overlap": true, "symbol-sort-key": ["-", 0, ["get", "over"]] },
+    paint: { "icon-opacity": ["case", ["get", "stale"], 0.45, 1] } });
   map.addLayer({ id: "lakes-label", type: "symbol", source: "lakes", minzoom: 6.5,
     layout: {
       "text-field": ["format", ["get", "short"], {}, "\n", {}, ["get", "line"], { "font-scale": 0.85 }],
       "text-font": ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"],
-      "text-size": 11.5, "text-line-height": 1.2, "text-offset": [0, 1.1], "text-anchor": "top", "text-max-width": 10, "text-optional": true,
+      "text-size": 11.5, "text-line-height": 1.2, "text-offset": [0, 1.45], "text-anchor": "top", "text-max-width": 10, "text-optional": true,
     },
     paint: { "text-color": ["case", [">", ["get", "over"], 0.05], LAKE_COLORS.over, "#a9c7de"], "text-halo-color": "#0a1119", "text-halo-width": 1.6 } });
   map.on("mouseenter", "lakes-dot", () => (map.getCanvas().style.cursor = "pointer"));
@@ -62,7 +61,8 @@ export function initLakes({ map, beforeId, openSheet }) {
     } catch (e) { err = e; }
     map.getSource("lakes")?.setData({ type: "FeatureCollection", features: lakes.map((l, i) => ({
       type: "Feature", geometry: { type: "Point", coordinates: l.at },
-      properties: { i, short: l.short, pct: l.pct, over: l.over, flood: l.flood, stale: l.stale, line: t(lineFor(l)) },
+      properties: { i, short: l.short, pct: l.pct, over: l.over, flood: l.flood, stale: l.stale, line: t(lineFor(l)),
+        bucket: l.over > 0.05 ? "over" : l.flood ? "flood" : (l.pct ?? 0) >= 85 ? "full" : (l.pct ?? 0) >= 45 ? "mid" : "low" },
     })) });
     render();
   }

@@ -5,6 +5,7 @@
 // The data loads even with the chip off: the area panel mentions a wildfire within 25 miles.
 // Fire locations can lag what crews on the ground know; local evacuation orders always win.
 import { fetchJSON } from "./data/fetch.js";
+import { badge, badgeSVG } from "./markers.js";
 import { t } from "./i18n.js";
 import { milesBetween, contains } from "./near.js";
 import { loadBurnBans } from "./data/texas.js";
@@ -22,45 +23,16 @@ const NEAR_MI = 25;
 
 export const FIRE_COLORS = { wild: "#ff5a1f", planned: "#ffc23d", perimeter: "#ff4d1f", ban: "#d9822b" };
 
-// Map symbols. Wildfire: a solid flame with a hot core. Planned burn: a gold flame inside a dashed
-// ring ("fire kept inside a line"), so it stands out on the map but never reads as a wildfire.
-const FLAME = "M12 1.6c.9 3.4-1.6 5.2-1.6 7.7 0 1.4 1 2.6 2.4 2.6 1.7 0 2.5-1.5 2.2-3.2 2.7 2.1 4.2 4.8 4.2 7.6A7.2 7.2 0 0 1 12 23.4a7.2 7.2 0 0 1-7.2-7c0-4.6 3.9-7.9 7.2-14.8z";
-const CORE = "M12 13.2c1.6 1.6 2.9 3.2 2.9 5.1a2.9 2.9 0 0 1-5.8 0c0-1.6.9-3 2.9-5.1z";
-export function fireIconSVG(kind, size = 16) {
-  return kind === "planned"
-    ? `<svg class="fire-ico" width="${size}" height="${size}" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="#0a1119" stroke="${FIRE_COLORS.planned}" stroke-width="2.4" stroke-dasharray="4.5 3"/><g transform="translate(6.4 5.6) scale(.8)"><path d="${FLAME}" fill="${FIRE_COLORS.planned}"/><path d="${CORE}" fill="#fff4cf"/></g></svg>`
-    : `<svg class="fire-ico" width="${size}" height="${size}" viewBox="0 0 24 25" aria-hidden="true"><path d="${FLAME}" fill="${FIRE_COLORS.wild}" stroke="#0a1119" stroke-width="1.2"/><path d="${CORE}" fill="#ffe08a"/></svg>`;
-}
+// Map symbols (shared badge style, markers.js). Wildfire: a white flame on a solid fire-orange
+// badge. Planned burn: a gold flame in a dashed gold ring ("fire kept inside a line"), so it
+// stands out without ever reading as a wildfire.
+const WILD_BADGE = { glyph: "flame", fill: FIRE_COLORS.wild, ring: "#ffd2b8", ink: "#fff6ec", filledGlyph: true, ringWidth: 1.4 };
+const PLANNED_BADGE = { glyph: "flame", ring: FIRE_COLORS.planned, ink: FIRE_COLORS.planned, dashed: true, filledGlyph: true };
+export function fireIconSVG(kind, size = 16) { return badgeSVG(kind === "planned" ? PLANNED_BADGE : WILD_BADGE, size); }
 function addFireIcons(map) {
-  const draw = (kind) => {
-    const px = 64, c = document.createElement("canvas");
-    c.width = c.height = px;
-    const g = c.getContext("2d");
-    if (kind === "planned") {
-      g.beginPath(); g.arc(32, 32, 28, 0, Math.PI * 2);
-      g.fillStyle = "#0a1119"; g.fill();
-      g.setLineDash([9, 6]); g.lineWidth = 4.5; g.strokeStyle = FIRE_COLORS.planned; g.stroke(); g.setLineDash([]);
-      g.translate(13, 11.5); g.scale(1.6, 1.6);
-      g.fillStyle = FIRE_COLORS.planned; g.fill(new Path2D(FLAME));
-      g.fillStyle = "#fff4cf"; g.fill(new Path2D(CORE));
-    } else {
-      g.translate(4, 2); g.scale(2.33, 2.33);
-      g.lineWidth = 1.4; g.strokeStyle = "#0a1119";
-      g.fillStyle = FIRE_COLORS.wild; g.fill(new Path2D(FLAME)); g.stroke(new Path2D(FLAME));
-      g.fillStyle = "#ffe08a"; g.fill(new Path2D(CORE));
-    }
-    return g.getImageData(0, 0, px, px);
-  };
-  for (const kind of ["wild", "planned"]) if (!map.hasImage(`fire-${kind}`)) map.addImage(`fire-${kind}`, draw(kind), { pixelRatio: 2 });
+  badge(map, "fire-wild", WILD_BADGE);
+  badge(map, "fire-planned", PLANNED_BADGE);
 }
-
-const acresText = (a) => (a == null ? "size not reported" : a < 1 ? "under 1 acre" : `${Math.round(a).toLocaleString()} acre${Math.round(a) === 1 ? "" : "s"}`);
-const ago = (t) => {
-  if (!t) return "";
-  const m = Math.round((Date.now() - t) / 60000);
-  return m < 60 ? `${Math.max(1, m)} min ago` : m < 48 * 60 ? `${Math.round(m / 60)} hr ago` : `${Math.round(m / 1440)} days ago`;
-};
-const when = (t) => (t ? new Date(t).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—");
 
 export function initFires({ map, metro, beforeId, openSheet, onChange }) {
   let bans = null, banCounties = []; // Texas A&M Forest Service county burn bans
@@ -98,14 +70,14 @@ export function initFires({ map, metro, beforeId, openSheet, onChange }) {
   map.addLayer({ id: "fires-glow", type: "circle", source: "fires",
     paint: {
       "circle-color": ["case", ["get", "planned"], FIRE_COLORS.planned, FIRE_COLORS.wild],
-      "circle-radius": ["interpolate", ["linear"], acres, 0, 18, 1000, 26, 10000, 36, 100000, 48],
+      "circle-radius": ["interpolate", ["linear"], acres, 0, 14, 1000, 20, 10000, 28, 100000, 38],
       "circle-blur": 1,
-      "circle-opacity": ["case", ["get", "stale"], 0.12, ["get", "planned"], 0.4, 0.55],
+      "circle-opacity": ["case", ["get", "stale"], 0.1, ["get", "planned"], 0.28, 0.45],
     } });
   map.addLayer({ id: "fires-point", type: "symbol", source: "fires",
     layout: {
-      "icon-image": ["case", ["get", "planned"], "fire-planned", "fire-wild"],
-      "icon-size": ["interpolate", ["linear"], ["zoom"], 5, ["interpolate", ["linear"], acres, 0, 0.8, 1000, 0.95, 10000, 1.2, 100000, 1.5], 9, ["interpolate", ["linear"], acres, 0, 1.05, 1000, 1.2, 10000, 1.45, 100000, 1.75]],
+      "icon-image": ["case", ["get", "planned"], "mk-fire-planned", "mk-fire-wild"],
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 5, ["interpolate", ["linear"], acres, 0, 0.66, 1000, 0.8, 10000, 1, 100000, 1.25], 9, ["interpolate", ["linear"], acres, 0, 0.85, 1000, 1, 10000, 1.2, 100000, 1.45]],
       "icon-allow-overlap": true, "icon-ignore-placement": true,
       "symbol-sort-key": ["case", ["get", "planned"], 1, 0],
     },
@@ -114,7 +86,7 @@ export function initFires({ map, metro, beforeId, openSheet, onChange }) {
     layout: {
       "text-field": ["format", ["get", "name"], {}, "\n", {}, ["get", "line"], { "font-scale": 0.85 }],
       "text-font": ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"],
-      "text-size": 12, "text-line-height": 1.2, "text-offset": [0, 1.9], "text-anchor": "top", "text-max-width": 12,
+      "text-size": 12, "text-line-height": 1.2, "text-offset": [0, 1.6], "text-anchor": "top", "text-max-width": 12,
     },
     paint: { "text-color": ["case", ["get", "planned"], "#ffd98a", "#ffb08a"], "text-halo-color": "#0a1119", "text-halo-width": 1.6 } });
 

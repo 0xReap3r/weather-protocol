@@ -3,6 +3,7 @@
 // Development Board. Most Texas flood deaths happen in vehicles, often at these crossings.
 // We know WHERE they are, not whether they're flooded or closed: no live status exists statewide.
 // So a crossing is never shown as "open" or "safe"; inside a flood warning it turns red.
+import { badge, badgeSVG } from "./markers.js";
 import { fetchJSON } from "./data/fetch.js";
 import { contains, milesBetween } from "./near.js";
 
@@ -25,30 +26,8 @@ const TYPES = {
 const SIGNS = { GAUGE: "Depth gauge posted", ADV_WARN: "Advance warning sign", NONE: "No signs on record" };
 const title = (s) => String(s || "").trim().toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()).replace(/\b(Cr|Fm|Rm|Sh|Us|Ih|Pr)\b/g, (m) => m.toUpperCase());
 
-function addIcons(map) {
-  const draw = (warn) => {
-    const px = 48, c = document.createElement("canvas");
-    c.width = c.height = px;
-    const g = c.getContext("2d");
-    // A road-sign diamond with water waves: yellow normally, red inside a flood warning.
-    g.translate(24, 24); g.rotate(Math.PI / 4);
-    g.fillStyle = "#0a1119"; g.fillRect(-15, -15, 30, 30);
-    g.fillStyle = warn ? CROSSING_COLORS.warn : CROSSING_COLORS.sign; g.fillRect(-12.5, -12.5, 25, 25);
-    g.setTransform(1, 0, 0, 1, 0, 0);
-    g.strokeStyle = "#0a1119"; g.lineWidth = 2.6; g.lineCap = "round";
-    for (const y of [21, 28]) {
-      g.beginPath();
-      g.moveTo(14, y); g.quadraticCurveTo(17.5, y - 3.5, 21, y); g.quadraticCurveTo(24.5, y + 3.5, 28, y); g.quadraticCurveTo(31.5, y - 3.5, 34, y);
-      g.stroke();
-    }
-    return g.getImageData(0, 0, px, px);
-  };
-  if (!map.hasImage("lwx")) map.addImage("lwx", draw(false), { pixelRatio: 2 });
-  if (!map.hasImage("lwx-warn")) map.addImage("lwx-warn", draw(true), { pixelRatio: 2 });
-}
 export function crossingIconSVG(warn = false, size = 16) {
-  const c = warn ? CROSSING_COLORS.warn : CROSSING_COLORS.sign;
-  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="4.5" width="15" height="15" transform="rotate(45 12 12)" fill="${c}" stroke="#0a1119" stroke-width="1.4"/><path d="M7.5 11c1.5-1.6 3-1.6 4.5 0s3 1.6 4.5 0M7.5 14.5c1.5-1.6 3-1.6 4.5 0s3 1.6 4.5 0" fill="none" stroke="#0a1119" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+  return badgeSVG(warn ? { glyph: "crossing", ring: CROSSING_COLORS.warn, fill: "#4a1010" } : { glyph: "crossing", ring: CROSSING_COLORS.sign }, size);
 }
 
 export function initCrossings({ map, beforeId, openSheet, getAlertsFC, isOn }) {
@@ -56,17 +35,19 @@ export function initCrossings({ map, beforeId, openSheet, getAlertsFC, isOn }) {
   let shown = [];
 
   map.addSource("crossings", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
-  addIcons(map);
+  // Badges: a road-dipping-through-water pictogram; yellow ring normally, red inside a flood warning.
+  badge(map, "lwx", { glyph: "crossing", ring: CROSSING_COLORS.sign });
+  badge(map, "lwx-warn", { glyph: "crossing", ring: CROSSING_COLORS.warn, fill: "#4a1010" });
   map.addLayer({ id: "crossings-glow", type: "circle", source: "crossings", minzoom: MIN_ZOOM, filter: ["get", "warn"],
     paint: { "circle-color": CROSSING_COLORS.warn, "circle-radius": 16, "circle-blur": 1, "circle-opacity": 0.55 } }, beforeId);
   map.addLayer({ id: "crossings", type: "symbol", source: "crossings", minzoom: MIN_ZOOM,
     layout: {
-      "icon-image": ["case", ["get", "warn"], "lwx-warn", "lwx"],
-      "icon-size": ["interpolate", ["linear"], ["zoom"], MIN_ZOOM, 0.65, 14, 1],
+      "icon-image": ["case", ["get", "warn"], "mk-lwx-warn", "mk-lwx"],
+      "icon-size": ["interpolate", ["linear"], ["zoom"], MIN_ZOOM, 0.62, 14, 0.95],
       "icon-allow-overlap": true, "symbol-sort-key": ["case", ["get", "warn"], 0, 1],
       "text-field": ["step", ["zoom"], "", 12.5, ["get", "road"]],
       "text-font": ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"], "text-size": 11,
-      "text-offset": [0, 1.3], "text-anchor": "top", "text-optional": true,
+      "text-offset": [0, 1.4], "text-anchor": "top", "text-optional": true,
     },
     paint: { "text-color": ["case", ["get", "warn"], "#ff9a9a", "#f2d98a"], "text-halo-color": "#0a1119", "text-halo-width": 1.6 } });
   map.on("mouseenter", "crossings", () => (map.getCanvas().style.cursor = "pointer"));

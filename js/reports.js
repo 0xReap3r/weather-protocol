@@ -5,6 +5,8 @@
 import { store, KINDS, DEPTHS, HAIL, DAMAGE, hasDetail, loadH3 } from "./data/reports.js";
 import { milesBetween } from "./near.js";
 import { roadNameAt } from "./data/roadnames.js";
+import { badge, badgeSVG } from "./markers.js";
+import { t } from "./i18n.js";
 
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -83,25 +85,32 @@ export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast,
     id: "reports-hail-line", type: "line", source: "reports", filter: ["==", ["get", "kind"], "hail"],
     paint: { "line-color": HAIL_COLOR, "line-width": 1.25, "line-opacity": ["case", [">=", ["get", "reporters"], 2], 0.9, 0.4], "line-dasharray": [1, 2] },
   });
-  // Roads and damage: a dot per block-sized hexagon; faint until a second person confirms.
+  // Every report gets a badge naming what it is (water over a road, ice, power, hail, damage),
+  // ringed in its color; a single unconfirmed report has a dashed ring and sits faint.
+  const BADGES = {
+    ice: { glyph: "ice", ring: ICE_COLOR }, power_out: { glyph: "power", ring: POWER_COLOR, ink: POWER_COLOR, filledGlyph: true },
+    hail: { glyph: "hail", ring: HAIL_COLOR }, "damage-1": { glyph: "tree", ring: DAMAGE_COLOR }, "damage-2": { glyph: "roof", ring: DAMAGE_COLOR },
+    "damage-3": { glyph: "lines", ring: "#ff3b3b", fill: "#4a1010" },
+  };
+  for (let d = 1; d <= 5; d++) BADGES[`flood-${d}`] = { glyph: "flood", ring: DEPTH_COLOR[d], fill: d >= 4 ? "#3a1410" : undefined };
+  for (const [k, b] of Object.entries(BADGES)) { badge(map, `rp-${k}`, b); badge(map, `rp-${k}-1`, { ...b, dashed: true }); }
   map.addLayer({
-    id: "reports-road", type: "circle", source: "reports-points",
-    paint: {
-      "circle-radius": ["interpolate", ["linear"], ["zoom"], 9, 5, 14, 10],
-      "circle-color": ["get", "color"],
-      "circle-opacity": ["case", ["get", "confirmed"], 0.95, 0.45],
-      "circle-stroke-width": 2,
-      "circle-stroke-color": ["case", ["get", "confirmed"], "#ffffff", "rgba(255,255,255,0.35)"],
+    id: "reports-road", type: "symbol", source: "reports-points",
+    layout: {
+      "icon-image": ["concat", "mk-rp-", ["get", "badge"], ["case", ["get", "confirmed"], "", "-1"]],
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 8, 0.62, 12, 0.85, 15, 1], "icon-allow-overlap": true,
+      "symbol-sort-key": ["case", ["get", "confirmed"], 0, 1],
     },
+    paint: { "icon-opacity": ["case", ["get", "confirmed"], 1, 0.7] },
   });
   map.addLayer({
-    id: "reports-road-label", type: "symbol", source: "reports-points", minzoom: 10,
+    id: "reports-road-label", type: "symbol", source: "reports-points", minzoom: 11,
     layout: {
       "text-field": ["get", "label"],
       "text-font": ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"],
-      "text-size": 11, "text-offset": [0, 1.25], "text-anchor": "top", "text-letter-spacing": 0.04,
+      "text-size": 11.5, "text-offset": [0, 1.5], "text-anchor": "top",
     },
-    paint: { "text-color": ["get", "color"], "text-halo-color": "#0b0f14", "text-halo-width": 1.6, "text-opacity": ["case", ["get", "confirmed"], 1, 0.6] },
+    paint: { "text-color": ["get", "color"], "text-halo-color": "#0a1119", "text-halo-width": 1.6, "text-opacity": ["case", ["get", "confirmed"], 1, 0.65] },
   });
 
   // The whole pilot area in one request (reports outside it are refused by the database),
@@ -116,19 +125,24 @@ export function initReports({ map, metro, openSheet, closeSheet, getSpot, toast,
     const h3 = await loadH3().catch(() => null);
     const polys = [], points = [];
     for (const c of cells) {
+      const confirmed = c.reporters >= 2;
       if ((c.kind === "power_out" || c.kind === "hail") && h3) {
         const ring = h3.cellToBoundary(c.cell, true);
         ring.push(ring[0]);
         polys.push({ type: "Feature", geometry: { type: "Polygon", coordinates: [ring] }, properties: { kind: c.kind, reporters: c.reporters } });
+        const [lat, lng] = h3.cellToLatLng(c.cell);
+        const what = c.kind === "hail" ? (HAIL[c.depth]?.label ? `${t(HAIL[c.depth].label)} ${t("hail").toLowerCase()}` : t("Hail")) : t("Power out");
+        points.push({ type: "Feature", geometry: { type: "Point", coordinates: [lng, lat] },
+          properties: { kind: c.kind, cell: c.cell, confirmed, badge: c.kind, label: `${what}${confirmed ? "" : ` · ${t("1 report")}`}`, color: kindColor(c) } });
       } else if (c.kind === "flood" || c.kind === "ice" || c.kind === "damage") {
-        const confirmed = c.reporters >= 2;
-        const what = c.kind === "flood" ? DEPTHS[c.depth]?.label.toUpperCase() || "FLOODED"
-          : c.kind === "ice" ? "ICED" : DAMAGE[c.depth]?.short || "DAMAGE";
-        const label = `${what}${confirmed ? "" : " · 1 REPORT"}`;
+        const what = c.kind === "flood" ? t(DEPTHS[c.depth]?.label || "Flooded")
+          : c.kind === "ice" ? t("Iced road") : t(DAMAGE[c.depth]?.label || "Storm damage");
+        const label = `${what}${confirmed ? "" : ` · ${t("1 report")}`}`;
+        const badgeKey = c.kind === "flood" ? `flood-${c.depth || 3}` : c.kind === "ice" ? "ice" : `damage-${c.depth || 1}`;
         points.push({
           type: "Feature",
           geometry: { type: "Point", coordinates: [c.cell_lng, c.cell_lat] },
-          properties: { kind: c.kind, cell: c.cell, confirmed, label, color: kindColor(c) },
+          properties: { kind: c.kind, cell: c.cell, confirmed, label, badge: badgeKey, color: kindColor(c) },
         });
       }
     }

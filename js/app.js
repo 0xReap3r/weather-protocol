@@ -18,6 +18,7 @@ import { initLakes } from "./lakes.js";
 import { initCrossings } from "./crossings.js";
 import { initMenu } from "./menu.js";
 import { initSearch } from "./search.js";
+import { badge, ICON_SIZE } from "./markers.js";
 import { initSatellite } from "./satellite.js";
 import { initFeed } from "./feed.js";
 import { initPlaces } from "./places.js";
@@ -83,7 +84,7 @@ window.addEventListener("pageshow", resizeMap);
 // Map layer ids behind each chip. Chips without data yet map to nothing.
 const MAP_LAYERS = {
   alerts: ["alerts-fill", "alerts-glow", "alerts-line", "alerts-pulse", "alerts-label"],
-  rivers: ["gauges-pulse", "gauges-circle", "gauges-label"],
+  rivers: ["gauges-pulse", "gauges-dot", "gauges-quiet", "gauges-circle", "gauges-label"],
   rain: [], // filled in once the radar frames are added
   zones: ["fema-zones"],
   transit: [], // filled in once the map is ready
@@ -234,18 +235,25 @@ map.on("load", () => {
     filter: [">=", ["get", "rank"], 2],
     paint: { "circle-radius": 8, "circle-color": ["get", "color"], "circle-opacity": 0, "circle-stroke-width": 0 },
   });
+  // Gauges as badges: a river-gauge pictogram (a lake for lake levels) ringed in its flood-stage
+  // color. Zoomed out, only gauges at action stage or higher get a badge; the rest are quiet dots.
+  for (const [cat, c] of Object.entries(CATEGORY)) {
+    badge(map, `gauge-${cat}`, { glyph: cat === "not_defined" ? "lake" : "gauge", ring: c.color, ink: cat === "unknown" ? "#8ea2b6" : "#f2f6fa" });
+  }
   map.addLayer({
-    id: "gauges-circle",
-    type: "circle",
-    source: "gauges",
+    id: "gauges-dot", type: "circle", source: "gauges", maxzoom: 9, filter: ["<", ["get", "rank"], 2],
     paint: {
-      "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, ["case", [">=", ["get", "rank"], 2], 5, 2], 8, ["case", [">=", ["get", "rank"], 2], 7, 4.5], 13, 10],
-      "circle-color": ["get", "color"],
-      "circle-opacity": ["case", ["get", "stale"], 0.45, 1],
-      "circle-stroke-color": "#0a1119",
-      "circle-stroke-width": 2,
+      "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 1.8, 8.9, 3.2],
+      "circle-color": ["get", "color"], "circle-opacity": ["case", ["get", "stale"], 0.35, 0.8],
+      "circle-stroke-color": "#0a1119", "circle-stroke-width": 1,
     },
   });
+  const gaugeIcon = { "icon-image": ["concat", "mk-gauge-", ["get", "cat"]], "icon-size": ICON_SIZE, "icon-allow-overlap": true, "symbol-sort-key": ["-", 0, ["get", "rank"]] };
+  map.addLayer({ id: "gauges-quiet", type: "symbol", source: "gauges", minzoom: 9, filter: ["<", ["get", "rank"], 2],
+    layout: gaugeIcon, paint: { "icon-opacity": ["case", ["get", "stale"], 0.45, 1] } });
+  map.addLayer({ id: "gauges-circle", type: "symbol", source: "gauges", filter: [">=", ["get", "rank"], 2],
+    layout: { ...gaugeIcon, "icon-size": ["interpolate", ["linear"], ["zoom"], 5, 0.72, 9, 0.88, 13, 1.05] },
+    paint: { "icon-opacity": ["case", ["get", "stale"], 0.45, 1] } });
   map.addLayer({
     id: "gauges-label",
     type: "symbol",
@@ -261,7 +269,7 @@ map.on("load", () => {
       "text-font": LABEL_FONT,
       "text-size": 12.5,
       "text-line-height": 1.25,
-      "text-offset": [0, 1.3],
+      "text-offset": [0, 1.55],
       "text-anchor": "top",
       "text-allow-overlap": false,
     },
@@ -326,14 +334,14 @@ map.on("load", () => {
   reports.refresh();
   startPulse();
 
-  for (const id of ["gauges-circle", "alerts-fill", "reports-road"]) {
+  for (const id of ["gauges-circle", "gauges-quiet", "alerts-fill", "reports-road"]) {
     map.on("mouseenter", id, () => (map.getCanvas().style.cursor = "pointer"));
     map.on("mouseleave", id, () => (map.getCanvas().style.cursor = ""));
   }
   map.on("click", (e) => {
     if (route?.takeClick(e.lngLat.toArray())) return; // choosing a route destination
-    const hit = map.queryRenderedFeatures(e.point, { layers: ["gauges-circle", "transit-station", "alerts-fill"].filter((l) => map.getLayer(l)) });
-    const gauge = hit.find((f) => f.layer.id === "gauges-circle");
+    const hit = map.queryRenderedFeatures(e.point, { layers: ["gauges-circle", "gauges-quiet", "transit-station", "alerts-fill"].filter((l) => map.getLayer(l)) });
+    const gauge = hit.find((f) => f.layer.id === "gauges-circle" || f.layer.id === "gauges-quiet");
     if (gauge) return openGauge(gauge.properties.lid);
     const lake = layerState.lakes && map.getLayer("lakes-dot") && map.queryRenderedFeatures(e.point, { layers: ["lakes-dot"] })[0];
     if (lake) return lakes.openLake(lake.properties.i);
