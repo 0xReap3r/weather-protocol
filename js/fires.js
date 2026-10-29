@@ -41,12 +41,12 @@ export function initFires({ map, beforeId, openSheet, onChange }) {
   // Ember glow under each wildfire point, bigger for bigger fires.
   const r = ["interpolate", ["linear"], ["coalesce", ["get", "acres"], 0], 0, 4, 100, 6, 1000, 9, 10000, 13, 100000, 18];
   map.addLayer({ id: "fires-glow", type: "circle", source: "fires", filter: ["!", ["get", "planned"]],
-    paint: { "circle-color": FIRE_COLORS.wild, "circle-radius": ["*", 2.4, r], "circle-blur": 1, "circle-opacity": 0.45 } });
+    paint: { "circle-color": FIRE_COLORS.wild, "circle-radius": ["*", 2.4, r], "circle-blur": 1, "circle-opacity": ["case", ["get", "stale"], 0.15, 0.45] } });
   map.addLayer({ id: "fires-point", type: "circle", source: "fires",
     paint: {
       "circle-color": ["case", ["get", "planned"], FIRE_COLORS.planned, FIRE_COLORS.wild],
       "circle-radius": r,
-      "circle-opacity": ["case", ["get", "planned"], 0.55, 1],
+      "circle-opacity": ["case", ["get", "planned"], 0.55, ["get", "stale"], 0.5, 1],
       "circle-stroke-color": ["case", ["get", "planned"], "rgba(0,0,0,0)", "#ffd2b8"],
       "circle-stroke-width": ["case", ["get", "planned"], 0, 1.2],
     } });
@@ -83,12 +83,13 @@ export function initFires({ map, beforeId, openSheet, onChange }) {
           const p = f.properties;
           const planned = p.IncidentTypeCategory === "RX" || /^rx\b/i.test(p.IncidentName || "");
           const name = String(p.IncidentName || "Unnamed fire").replace(/^rx\s+/i, "").trim();
-          const contained = p.PercentContained == null ? null : Math.round(p.PercentContained);
+          const contained = p.PercentContained == null || planned ? null : Math.round(p.PercentContained);
+          const stale = !!p.ModifiedOnDateTime_dt && Date.now() - p.ModifiedOnDateTime_dt > 3 * 86400000;
           return {
             type: "Feature", geometry: f.geometry,
             properties: {
               id: p.UniqueFireIdentifier || name, name: planned ? `Planned burn: ${name}` : `${name} Fire`.replace(/ Fire Fire$/i, " Fire"),
-              planned, acres: p.IncidentSize, contained, county: p.POOCounty || "",
+              planned, stale, acres: p.IncidentSize, contained, county: p.POOCounty || "",
               found: p.FireDiscoveryDateTime, updated: p.ModifiedOnDateTime_dt, cause: p.FireCauseGeneral || "", behavior: p.FireBehaviorGeneral || "",
               line: `${acresText(p.IncidentSize)}${contained != null && !planned ? ` · ${contained}% contained` : ""}`,
             },
@@ -139,9 +140,10 @@ export function initFires({ map, beforeId, openSheet, onChange }) {
       <p class="fire-kind" style="--c:${p.planned ? FIRE_COLORS.planned : FIRE_COLORS.wild}">${p.planned ? "Planned burn (prescribed fire)" : "Wildfire"}${p.county ? ` · ${esc(p.county)} County` : ""}</p>
       <div class="near-stats">
         <div><span class="st-l">Size</span><span class="st-v fire-v">${p.acres == null ? "—" : Math.round(p.acres).toLocaleString()}<small>acres</small></span></div>
-        <div><span class="st-l">Contained</span><span class="st-v fire-v">${p.contained == null ? "—" : p.contained}<small>${p.contained == null ? "" : "%"}</small></span></div>
-        <div><span class="st-l">Updated</span><span class="st-v fire-v fire-ago">${esc(ago(p.updated) || "—")}</span></div>
+        ${p.planned ? "" : `<div><span class="st-l">Contained</span><span class="st-v fire-v">${p.contained == null ? "—" : p.contained}<small>${p.contained == null ? "" : "%"}</small></span></div>`}
+        <div><span class="st-l">Updated</span><span class="st-v fire-v fire-ago${p.stale ? " fire-stale" : ""}">${esc(ago(p.updated) || "—")}</span></div>
       </div>
+      ${p.stale ? `<p class="near-note">No update from crews in over 3 days, so this may be out of date (often a fire that is out but not yet closed).</p>` : ""}
       <table class="ladder fire-facts"><tbody>
         <tr><th>Found</th><td>${esc(when(p.found))}</td></tr>
         ${p.behavior ? `<tr><th>Fire behavior</th><td>${esc(p.behavior)}</td></tr>` : ""}

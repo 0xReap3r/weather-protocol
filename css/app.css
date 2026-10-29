@@ -1251,3 +1251,4 @@ body { font: 15px/1.45 var(--font-body); font-stretch: 100%; letter-spacing: .00
 .fire-facts { margin-top: 12px; }
 .fire-facts th { color: var(--text-dim); width: 40%; }
 .fire-facts td { color: var(--text); font-family: var(--font-body); }
+.fire-stale { color: var(--warn); }
