@@ -59,7 +59,10 @@ export function initSearch({ map, metro, onPick }) {
     for (const r of metro.regions) { const s = score(r.name); if (s < 9) out.push({ kind: "region", label: r.name, sub: t("Region"), at: r.center, zoom: r.zoom || 8.5, s: s - 0.5, region: r.id }); }
     for (const c of metro.cities) { const s = score(c[0]); if (s < 9) out.push({ kind: "city", label: c[0], sub: `${Number(c[3]).toLocaleString()} ${t("people")}`, at: [c[2], c[1]], zoom: 11.5, s: s - Math.min(0.4, c[3] / 2e6) }); }
     for (const c of counties) { const s = score(`${c.name} County`); const s2 = score(c.name); const b = Math.min(s, s2 + 0.2); if (b < 9) out.push({ kind: "county", label: `${c.name} County`, sub: t("County"), at: c.center, zoom: 9, s: b + 0.1 }); }
-    return out.sort((a, b) => a.s - b.s).slice(0, 8);
+    out.sort((a, b) => a.s - b.s);
+    // Mid-word matches ("Hidalgo" for "dal") only when nothing better turned up.
+    const strong = out.filter((r) => r.s < 2.9);
+    return (strong.length >= 3 ? strong : out).slice(0, 8);
   }
 
   // Smaller towns and Census places (TIGERweb) when the local list is short.
