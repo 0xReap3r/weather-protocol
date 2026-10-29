@@ -923,7 +923,8 @@ near = initNearPanel({
   openAlerts,
   locate: locateMe,
   openAbout,
-  getReportsHTML: (pt) => (tropical?.nearHTML(pt) || "") + (fires?.nearHTML(pt) || "") + rainSoFarHTML(pt) + (reports?.summaryHTML(pt) || "") + stationsHTML(pt),
+  getTopHTML: (pt) => (tropical?.nearHTML(pt) || "") + (fires?.nearHTML(pt) || ""),
+  getReportsHTML: (pt) => rainSoFarHTML(pt) + (reports?.summaryHTML(pt) || "") + stationsHTML(pt),
 });
 
 // Rain that has already fallen at the spot (NOAA MRMS radar estimates), loaded in the background.

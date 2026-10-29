@@ -153,7 +153,7 @@ function rainChart(w) {
 }
 
 /* ---------- Panel ---------- */
-export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, openAlerts, locate, openAbout, getReportsHTML }) {
+export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, openAlerts, locate, openAbout, getReportsHTML, getTopHTML }) {
   let lastPlace = null;
   const panel = document.getElementById("near");
   const body = document.getElementById("near-body");
@@ -302,6 +302,7 @@ export function initNearPanel({ map, metro, getAlertsFC, getGauges, openGauge, o
       <h2 class="near-verdict">${esc(verdict)}</h2>
       ${tone === "none" ? `<p class="near-note">From National Weather Service alerts. Conditions can change fast. Keep Wireless Emergency Alerts on.</p>` : ""}
       ${alertItems ? `<ul class="near-list">${alertItems}</ul>` : ""}
+      ${getTopHTML?.(pt) || ""}
       ${rainCard(rain)}
       ${freezeCard(info?.hourly)}
       <div class="nd-more">
