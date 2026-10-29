@@ -30,7 +30,7 @@ export function t(s, vars) {
     if (core) {
       const hit = lookup(core);
       if (hit != null) out = String(s).replace(core, hit);
-      else misses?.add(core);
+      else if (!/[áéíóúñ¿¡]|\b(de|del|los|las|para|hace)\b/i.test(core)) misses?.add(core);
     }
   }
   if (vars) out = out.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m));
@@ -51,6 +51,13 @@ function lookup(core, deep = true) {
     if (!m) continue;
     const out = typeof rep === "function" ? rep(m) : core.replace(re, rep);
     if (out != null) return out;
+  }
+  // "· warnings, watches" (a source line continuing after a link): translate the rest.
+  if (deep && core.startsWith("· ")) { const r = lookup(core.slice(2), true); return r == null ? null : `· ${r}`; }
+  // "Mostly Cloudy then Showers": each forecast phrase on its own.
+  if (deep && core.includes(" then ")) {
+    const parts = core.split(" then ").map((p) => lookup(p, false) ?? p);
+    return parts.join(", luego ").replace(/, luego ([A-Z])/g, (m, c) => `, luego ${c.toLowerCase()}`);
   }
   // "Austin, TX · Map center", "ERCOT · 8:20 p.m.": translate each piece on its own.
   if (deep && core.includes(" · ")) {
