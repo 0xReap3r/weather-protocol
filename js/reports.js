@@ -51,35 +51,28 @@ export function depthScene(depth) {
   const color = d ? DEPTH_COLOR[depth] : "transparent";
   return `<svg class="depth-scene" viewBox="0 0 ${W} ${H}" role="img" aria-label="${d ? `Water about ${d.inches} inches deep: ${esc(d.label)}` : "No water reported"}">
     <g class="ds-figures">
-      <!-- sedan: cab-forward silhouette with a cut-out window and wheels tucked into their wells -->
+      <!-- sedan: one solid rounded silhouette (flat-icon style), wheels overlapping the bottom edge -->
       <path fill-rule="evenodd" d="
-        M22 ${ground - 6}
-        A14 14 0 0 1 32 ${ground - 20}
-        L46 ${ground - 27}
-        C50 ${ground - 38} 58 ${ground - 44} 70 ${ground - 44}
-        L104 ${ground - 44}
-        C114 ${ground - 44} 122 ${ground - 39} 127 ${ground - 30}
-        L136 ${ground - 24}
-        A14 14 0 0 1 142 ${ground - 12}
-        A14 14 0 0 1 142 ${ground - 6}
-        L136 ${ground - 6}
-        A13 13 0 0 0 114 ${ground - 6}
-        L60 ${ground - 6}
-        A13 13 0 0 0 38 ${ground - 6}
-        Z
-        M58 ${ground - 27} C61 ${ground - 36} 67 ${ground - 41} 74 ${ground - 41}
-        L100 ${ground - 41} C107 ${ground - 41} 113 ${ground - 37} 118 ${ground - 29}
-        L113 ${ground - 27}
-        C109 ${ground - 33} 103 ${ground - 36} 97 ${ground - 36}
-        L78 ${ground - 36}
-        C72 ${ground - 36} 67 ${ground - 33} 63 ${ground - 27}
+        M15 ${ground - 13}
+        C15 ${ground - 21} 19 ${ground - 26} 26 ${ground - 27}
+        C33 ${ground - 50} 51 ${ground - 56} 70 ${ground - 56}
+        C84 ${ground - 56} 94 ${ground - 56} 106 ${ground - 56}
+        C123 ${ground - 56} 132 ${ground - 51} 138 ${ground - 32}
+        C148 ${ground - 31} 155 ${ground - 26} 158 ${ground - 18}
+        C160 ${ground - 14} 158 ${ground - 7} 152 ${ground - 7}
+        L144 ${ground - 7}
+        A14 14 0 0 0 116 ${ground - 7}
+        L60 ${ground - 7}
+        A14 14 0 0 0 32 ${ground - 7}
+        L21 ${ground - 7}
+        C17 ${ground - 7} 15 ${ground - 9} 15 ${ground - 13}
         Z"/>
-      <path fill-rule="evenodd" d="M46 ${ground - 8} m-12,0 a12,12 0 1,0 24,0 a12,12 0 1,0 -24,0 M46 ${ground - 8} m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0"/>
-      <path fill-rule="evenodd" d="M128 ${ground - 8} m-12,0 a12,12 0 1,0 24,0 a12,12 0 1,0 -24,0 M128 ${ground - 8} m-4.5,0 a4.5,4.5 0 1,0 9,0 a4.5,4.5 0 1,0 -9,0"/>
+      <circle cx="46" cy="${ground - 7}" r="13.5"/>
+      <circle cx="130" cy="${ground - 7}" r="13.5"/>
       <!-- adult, about 5 ft 9 in -->
-      ${figure(214, 8, ground - 80, 11, 6, ground - 70, ground, 3)}
+      ${figure(222, 8, ground - 80, 11, 6, ground - 70, ground, 3)}
       <!-- child, about 4 ft -->
-      ${figure(262, 6, ground - 56, 8, 4.5, ground - 48, ground, 2.5)}
+      ${figure(268, 6, ground - 56, 8, 4.5, ground - 48, ground, 2.5)}
     </g>
     <line x1="0" y1="${ground}" x2="${W}" y2="${ground}" class="ds-ground"/>
     ${water ? `<rect x="0" y="${ground - water}" width="${W}" height="${water}" fill="${color}" fill-opacity="0.45"/>
