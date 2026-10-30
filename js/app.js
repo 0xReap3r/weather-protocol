@@ -638,6 +638,8 @@ $("#btn-lang").textContent = isEs ? "English" : "Español";
 $("#btn-lang").lang = isEs ? "en" : "es";
 $("#btn-lang").addEventListener("click", () => setLang(isEs ? "en" : "es"));
 $("#btn-key").addEventListener("click", () => { $("#key-body").innerHTML = renderKey(); openSheet("key", "Map key"); });
+// Donate link: hidden until a real link is set in config.js (APP.donateUrl is a placeholder for now).
+if (APP.donateUrl) $("#btn-donate").href = APP.donateUrl; else $("#btn-donate").hidden = true;
 sheet.querySelector(".sheet-close").addEventListener("click", closeSheet);
 document.addEventListener("keydown", (e) => e.key === "Escape" && !sheet.hidden && closeSheet());
 
