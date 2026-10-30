@@ -47,11 +47,15 @@ export function depthScene(depth) {
       <path d="M18 ${ground - 8} h132 a6 6 0 0 0 6 -6 v-14 a8 8 0 0 0 -7 -8 l-26 -4 l-22 -18 a10 10 0 0 0 -7 -3 h-42 a10 10 0 0 0 -8 4 l-16 20 l-6 2 a6 6 0 0 0 -4 6 v15 a6 6 0 0 0 6 6z"/>
       <circle cx="46" cy="${ground - 8}" r="11"/><circle cx="128" cy="${ground - 8}" r="11"/>
       <!-- adult, about 5 ft 9 in -->
-      <circle cx="214" cy="${ground - 80}" r="7"/>
-      <path d="M206 ${ground - 70} h16 a4 4 0 0 1 4 4 v30 h-5 v36 h-5 v-36 h-4 v36 h-5 v-36 h-5 v-30 a4 4 0 0 1 4 -4z"/>
+      <g transform="translate(-26,0)">
+        <circle cx="214" cy="${ground - 80}" r="7"/>
+        <path d="M206 ${ground - 70} h16 a4 4 0 0 1 4 4 v30 h-5 v36 h-5 v-36 h-4 v36 h-5 v-36 h-5 v-30 a4 4 0 0 1 4 -4z"/>
+      </g>
       <!-- child, about 4 ft -->
-      <circle cx="262" cy="${ground - 55}" r="6"/>
-      <path d="M256 ${ground - 47} h12 a3 3 0 0 1 3 3 v20 h-4 v24 h-4 v-24 h-2 v24 h-4 v-24 h-4 v-20 a3 3 0 0 1 3 -3z"/>
+      <g transform="translate(-42,0)">
+        <circle cx="262" cy="${ground - 55}" r="6"/>
+        <path d="M256 ${ground - 47} h12 a3 3 0 0 1 3 3 v20 h-4 v24 h-4 v-24 h-2 v24 h-4 v-24 h-4 v-20 a3 3 0 0 1 3 -3z"/>
+      </g>
     </g>
     <line x1="0" y1="${ground}" x2="${W}" y2="${ground}" class="ds-ground"/>
     ${water ? `<rect x="0" y="${ground - water}" width="${W}" height="${water}" fill="${color}" fill-opacity="0.45"/>
