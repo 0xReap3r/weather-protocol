@@ -35,18 +35,14 @@ function kindText(c) {
   return c.kind === "power_back" ? "Power back" : "Power out";
 }
 
-/* ---------- "How deep is it?" scene (car, two people — in the style of the Bangkok flood
-   map's own depth reference: flat rounded "kei car" bubble silhouette with a glass line and
-   mirror bump, and lean straight-tapered figures with a faint leg-split line). ---------- */
+/* ---------- "How deep is it?" scene (car, two people; original drawing) ---------- */
 // A standing figure: head circle + one tapered rounded-shoulder body (no separate legs — stays
-// legible at this size and lets the water line read cleanly across it), plus a faint centerline
-// hinting at the leg split, as in the reference figures.
+// legible at this size and lets the water line read cleanly across it).
 function figure(cx, headR, headCY, topHW, botHW, yTop, yBot, r) {
   const x1a = cx - topHW, x1b = cx + topHW, x2a = cx - botHW, x2b = cx + botHW;
   return `<circle cx="${cx}" cy="${headCY}" r="${headR}"/>
     <path d="M${x1a} ${yTop + r} Q${x1a} ${yTop} ${x1a + r} ${yTop} L${x1b - r} ${yTop} Q${x1b} ${yTop} ${x1b} ${yTop + r}
-      L${x2b} ${yBot - r} Q${x2b} ${yBot} ${x2b - r} ${yBot} L${x2a + r} ${yBot} Q${x2a} ${yBot} ${x2a} ${yBot - r} Z"/>
-    <line x1="${cx}" y1="${yBot - 12}" x2="${cx}" y2="${yBot - 1}" stroke="var(--ink-2)" stroke-width="1.5" opacity="0.5"/>`;
+      L${x2b} ${yBot - r} Q${x2b} ${yBot} ${x2b - r} ${yBot} L${x2a + r} ${yBot} Q${x2a} ${yBot} ${x2a} ${yBot - r} Z"/>`;
 }
 export function depthScene(depth) {
   const W = 320, H = 120, ground = 108, pxPerIn = 1.25; // 6 ft person ≈ 90 px
@@ -55,31 +51,28 @@ export function depthScene(depth) {
   const color = d ? DEPTH_COLOR[depth] : "transparent";
   return `<svg class="depth-scene" viewBox="0 0 ${W} ${H}" role="img" aria-label="${d ? `Water about ${d.inches} inches deep: ${esc(d.label)}` : "No water reported"}">
     <g class="ds-figures">
-      <!-- bubble car: one rounded "kei car" silhouette, tall greenhouse, wheels cut from the base -->
+      <!-- sedan: one solid rounded silhouette (flat-icon style), wheels overlapping the bottom edge -->
       <path fill-rule="evenodd" d="
-        M18 ${ground - 15}
-        C18 ${ground - 24} 23 ${ground - 29} 30 ${ground - 30}
-        C36 ${ground - 48} 50 ${ground - 58} 68 ${ground - 58}
-        C84 ${ground - 58} 100 ${ground - 58} 112 ${ground - 56}
-        C128 ${ground - 53} 140 ${ground - 44} 148 ${ground - 30}
-        C154 ${ground - 26} 159 ${ground - 20} 159 ${ground - 14}
-        C159 ${ground - 9} 155 ${ground - 7} 150 ${ground - 7}
+        M15 ${ground - 13}
+        C15 ${ground - 21} 19 ${ground - 26} 26 ${ground - 27}
+        C33 ${ground - 50} 51 ${ground - 56} 70 ${ground - 56}
+        C84 ${ground - 56} 94 ${ground - 56} 106 ${ground - 56}
+        C123 ${ground - 56} 132 ${ground - 51} 138 ${ground - 32}
+        C148 ${ground - 31} 155 ${ground - 26} 158 ${ground - 18}
+        C160 ${ground - 14} 158 ${ground - 7} 152 ${ground - 7}
         L144 ${ground - 7}
         A14 14 0 0 0 116 ${ground - 7}
         L60 ${ground - 7}
         A14 14 0 0 0 32 ${ground - 7}
-        L24 ${ground - 7}
-        C19 ${ground - 7} 18 ${ground - 10} 18 ${ground - 15}
+        L21 ${ground - 7}
+        C17 ${ground - 7} 15 ${ground - 9} 15 ${ground - 13}
         Z"/>
-      <ellipse cx="24" cy="${ground - 36}" rx="4" ry="2.5"/>
-      <circle cx="46" cy="${ground - 7}" r="14"/>
-      <circle cx="130" cy="${ground - 7}" r="14"/>
-      <path d="M34 ${ground - 32} Q58 ${ground - 50} 95 ${ground - 50} Q118 ${ground - 50} 136 ${ground - 36}"
-        fill="none" stroke="var(--ink-2)" stroke-width="2.5" opacity="0.55"/>
+      <circle cx="46" cy="${ground - 7}" r="13.5"/>
+      <circle cx="130" cy="${ground - 7}" r="13.5"/>
       <!-- adult, about 5 ft 9 in -->
-      ${figure(222, 7, ground - 82, 9, 5, ground - 72, ground, 3)}
+      ${figure(222, 8, ground - 80, 11, 6, ground - 70, ground, 3)}
       <!-- child, about 4 ft -->
-      ${figure(268, 5.5, ground - 56, 7, 4, ground - 48, ground, 2.5)}
+      ${figure(268, 6, ground - 56, 8, 4.5, ground - 48, ground, 2.5)}
     </g>
     <line x1="0" y1="${ground}" x2="${W}" y2="${ground}" class="ds-ground"/>
     ${water ? `<rect x="0" y="${ground - water}" width="${W}" height="${water}" fill="${color}" fill-opacity="0.45"/>
