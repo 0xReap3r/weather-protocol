@@ -35,15 +35,7 @@ function kindText(c) {
   return c.kind === "power_back" ? "Power back" : "Power out";
 }
 
-/* ---------- "How deep is it?" scene (car, two people; original drawing) ---------- */
-// A standing figure: head circle + one tapered rounded-shoulder body (no separate legs — stays
-// legible at this size and lets the water line read cleanly across it).
-function figure(cx, headR, headCY, topHW, botHW, yTop, yBot, r) {
-  const x1a = cx - topHW, x1b = cx + topHW, x2a = cx - botHW, x2b = cx + botHW;
-  return `<circle cx="${cx}" cy="${headCY}" r="${headR}"/>
-    <path d="M${x1a} ${yTop + r} Q${x1a} ${yTop} ${x1a + r} ${yTop} L${x1b - r} ${yTop} Q${x1b} ${yTop} ${x1b} ${yTop + r}
-      L${x2b} ${yBot - r} Q${x2b} ${yBot} ${x2b - r} ${yBot} L${x2a + r} ${yBot} Q${x2a} ${yBot} ${x2a} ${yBot - r} Z"/>`;
-}
+/* ---------- "How deep is it?" scene (car, motorbike rider, two people; original drawing) ---------- */
 export function depthScene(depth) {
   const W = 320, H = 120, ground = 108, pxPerIn = 1.25; // 6 ft person ≈ 90 px
   const d = depth ? DEPTHS[depth] : null;
@@ -51,28 +43,15 @@ export function depthScene(depth) {
   const color = d ? DEPTH_COLOR[depth] : "transparent";
   return `<svg class="depth-scene" viewBox="0 0 ${W} ${H}" role="img" aria-label="${d ? `Water about ${d.inches} inches deep: ${esc(d.label)}` : "No water reported"}">
     <g class="ds-figures">
-      <!-- sedan: one solid rounded silhouette (flat-icon style), wheels overlapping the bottom edge -->
-      <path fill-rule="evenodd" d="
-        M15 ${ground - 13}
-        C15 ${ground - 21} 19 ${ground - 26} 26 ${ground - 27}
-        C33 ${ground - 50} 51 ${ground - 56} 70 ${ground - 56}
-        C84 ${ground - 56} 94 ${ground - 56} 106 ${ground - 56}
-        C123 ${ground - 56} 132 ${ground - 51} 138 ${ground - 32}
-        C148 ${ground - 31} 155 ${ground - 26} 158 ${ground - 18}
-        C160 ${ground - 14} 158 ${ground - 7} 152 ${ground - 7}
-        L144 ${ground - 7}
-        A14 14 0 0 0 116 ${ground - 7}
-        L60 ${ground - 7}
-        A14 14 0 0 0 32 ${ground - 7}
-        L21 ${ground - 7}
-        C17 ${ground - 7} 15 ${ground - 9} 15 ${ground - 13}
-        Z"/>
-      <circle cx="46" cy="${ground - 7}" r="13.5"/>
-      <circle cx="130" cy="${ground - 7}" r="13.5"/>
+      <!-- sedan -->
+      <path d="M18 ${ground - 8} h132 a6 6 0 0 0 6 -6 v-14 a8 8 0 0 0 -7 -8 l-26 -4 l-22 -18 a10 10 0 0 0 -7 -3 h-42 a10 10 0 0 0 -8 4 l-16 20 l-6 2 a6 6 0 0 0 -4 6 v15 a6 6 0 0 0 6 6z"/>
+      <circle cx="46" cy="${ground - 8}" r="11"/><circle cx="128" cy="${ground - 8}" r="11"/>
       <!-- adult, about 5 ft 9 in -->
-      ${figure(222, 8, ground - 80, 11, 6, ground - 70, ground, 3)}
+      <circle cx="214" cy="${ground - 80}" r="7"/>
+      <path d="M206 ${ground - 70} h16 a4 4 0 0 1 4 4 v30 h-5 v36 h-5 v-36 h-4 v36 h-5 v-36 h-5 v-30 a4 4 0 0 1 4 -4z"/>
       <!-- child, about 4 ft -->
-      ${figure(268, 6, ground - 56, 8, 4.5, ground - 48, ground, 2.5)}
+      <circle cx="262" cy="${ground - 55}" r="6"/>
+      <path d="M256 ${ground - 47} h12 a3 3 0 0 1 3 3 v20 h-4 v24 h-4 v-24 h-2 v24 h-4 v-24 h-4 v-20 a3 3 0 0 1 3 -3z"/>
     </g>
     <line x1="0" y1="${ground}" x2="${W}" y2="${ground}" class="ds-ground"/>
     ${water ? `<rect x="0" y="${ground - water}" width="${W}" height="${water}" fill="${color}" fill-opacity="0.45"/>
