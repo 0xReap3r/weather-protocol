@@ -82,7 +82,7 @@ export const ES = {
   "Warnings": "Alertas", "Rivers": "Ríos", "Radar": "Radar", "Storms": "Tormentas", "Hurricanes": "Huracanes", "Fires": "Incendios",
   "Lakes": "Lagos", "Flood from space": "Inundación desde el espacio", "Rain totals": "Lluvia acumulada", "Flood zones": "Zonas de inundación",
   "Grid": "Red eléctrica", "Rail": "Tren", "Neighbors": "Vecinos", "soon": "pronto",
-  "Report": "Reportar", "Near me": "Cerca de mí", "Layers": "Capas", "Map key": "Leyenda", "About": "Acerca de", "Install app": "Instalar app",
+  "Report": "Reportar", "Near me": "Cerca de mí", "Layers": "Capas", "Map key": "Leyenda", "About": "Acerca de", "Install app": "Instalar app", "Donate": "Donar",
   "Show my location": "Mostrar mi ubicación", "Layer details": "Detalles de capas",
   "Report a flooded road, iced road, power outage, hail or storm damage": "Reportar una calle inundada, una calle con hielo, un apagón, granizo o daños por tormenta",
   "Not an official warning service. In danger? Call": "No es un servicio oficial de alertas. ¿En peligro? Llame al",

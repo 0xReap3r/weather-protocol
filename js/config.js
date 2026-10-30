@@ -7,6 +7,8 @@ export const APP = {
   tagline: "What's happening on your block",
   disclaimer:
     "Not an official warning service. Information can be wrong or late. Follow National Weather Service warnings and local officials. In danger? Call 911.",
+  // PLACEHOLDER — swap for the real Ko-fi link once the account exists, then this is live.
+  donateUrl: "https://ko-fi.com/stormline",
   // Free basemap. CARTO Dark Matter is free for low-volume / non-commercial use (check terms before scaling).
   // Fully open alternative: "https://tiles.openfreemap.org/styles/liberty"
   basemapStyle: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
