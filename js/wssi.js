@@ -6,6 +6,7 @@
 // (mapservices.weather.noaa.gov, CORS OK, browser-direct — no Worker needed).
 import { contains } from "./near.js";
 import { fetchJSON } from "./data/fetch.js";
+import { STATE } from "./config.js";
 
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -60,8 +61,12 @@ export function initWssi({ map, beforeId, openSheet }) {
   card.hidden = true;
   document.getElementById("legend-dock").append(card);
 
+  // Nationwide service with no state attribute to filter on — a bbox is the only way to keep an
+  // Extreme-impact polygon over, say, Minnesota from being reported as the worst in Texas.
+  const BBOX = STATE.bounds.join(",");
   async function fetchLayer(id) {
-    const url = `${BASE}/${id}/query?where=1%3D1&outFields=impact,valid_time&returnGeometry=true&f=geojson`;
+    const url = `${BASE}/${id}/query?geometry=${encodeURIComponent(BBOX)}&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects`
+      + `&outFields=impact,valid_time&returnGeometry=true&f=geojson`;
     const j = await fetchJSON(url, { timeout: 15000 });
     return (j.features || []).filter((f) => f.geometry && f.properties?.impact);
   }
