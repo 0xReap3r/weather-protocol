@@ -48,13 +48,13 @@ function ago(iso) {
   return h < 48 ? `${h} hr ago` : `${Math.round(h / 24)} days ago`;
 }
 
-/* ---------- Octagon mosaic (ambient grid, Bangkok-style) ---------- */
-// The whole visible map is tiled with small octagon panels, like the reference flood map —
-// not just the alert zones. A panel takes on an alert's real color/rank (so the severity glow
-// still applies) when its center falls inside that alert's actual NWS polygon; every other
-// panel stays a quiet neutral texture. The grid is rebuilt from the current map bounds on
-// "moveend" rather than kept as one static source, since it has to follow the viewport.
-const MOSAIC_AMBIENT_COLOR = "#e9f0f6"; // --text (frost) — chrome stays monochrome, hazard hues are for data only
+/* ---------- Octagon mosaic (alert-zone glow panels, Bangkok-style) ---------- */
+// Alert fills render as a grid of small octagon panels instead of one smooth shape, like the
+// reference flood map. Each panel keeps the parent alert's real color/rank (so the severity
+// glow still applies per panel), and only panels whose center falls inside the alert's actual
+// NWS polygon are kept — a cheap "point in geometry" test, not a true geometric clip, so the
+// mosaic's edge is a staircase of panels rather than a smooth boundary (same effect as the
+// reference). The crisp real boundary line and outer glow still draw from the real geometry.
 function pointInRing(pt, ring) {
   let inside = false;
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
@@ -82,47 +82,31 @@ function octagonAt([lng, lat], rDeg, lngScale) {
   pts.push(pts[0]);
   return [pts];
 }
-function geomBBox(geom) {
+function mosaicForFeature(feature) {
+  const geom = feature.geometry;
   let w = 180, s = 90, e = -180, n = -90;
   const walk = (c) => (typeof c[0] === "number" ? ((w = Math.min(w, c[0])), (e = Math.max(e, c[0])), (s = Math.min(s, c[1])), (n = Math.max(n, c[1]))) : c.forEach(walk));
   if (geom.type === "GeometryCollection") geom.geometries.forEach((x) => walk(x.coordinates));
   else walk(geom.coordinates);
-  return [w, s, e, n];
-}
-function buildViewportMosaic(map, fc) {
-  const b = map.getBounds();
-  const w = b.getWest(), s = b.getSouth(), e = b.getEast(), n = b.getNorth();
-  if (e <= w || n <= s) return { type: "FeatureCollection", features: [] };
-  // Only alerts whose bbox actually overlaps the current view are worth testing per cell.
-  const candidates = fc.features
-    .map((f) => ({ f, box: geomBBox(f.geometry) }))
-    .filter(({ box: [fw, fs, fe, fn] }) => fe >= w && fw <= e && fn >= s && fs <= n);
-  const canvas = map.getCanvas();
-  const pxW = canvas.clientWidth || 800, pxH = canvas.clientHeight || 600;
+  if (e <= w || n <= s) return [];
   const lngScale = Math.max(0.15, Math.cos(((s + n) / 2) * Math.PI / 180));
-  const targetPx = 30; // panel size on screen
-  let cell = Math.max(((e - w) / pxW) * targetPx, ((n - s) / pxH) * targetPx, 1e-6);
-  const cols = Math.ceil((e - w) / cell) + 2, rows = Math.ceil((n - s) / cell) + 2;
-  const MAX_CELLS = 2600; // keeps a statewide zoomed-out view cheap
-  if (cols * rows > MAX_CELLS) cell *= Math.sqrt((cols * rows) / MAX_CELLS);
-  const r = cell * 0.42; // thin gap between panels, like the reference grid
+  const areaDeg2 = Math.max(1e-7, (e - w) * lngScale * (n - s));
+  let cell = Math.sqrt(areaDeg2 / 420); // ~420 panels per alert shape, tuned for a dense but cheap mosaic
+  cell = Math.min(0.09, Math.max(0.012, cell)); // clamp roughly 1.3km .. 10km per panel
+  const r = cell * 0.42; // leaves a thin gap between panels, like the reference grid
   const out = [];
   for (let lat = s - cell; lat <= n + cell; lat += cell) {
     for (let lng = w - cell; lng <= e + cell; lng += cell) {
-      let best = null;
-      for (const { f, box: [fw, fs, fe, fn] } of candidates) {
-        if (lng < fw || lng > fe || lat < fs || lat > fn) continue;
-        if (!pointInGeometry([lng, lat], f.geometry)) continue;
-        if (!best || f.properties.rank > best.properties.rank) best = f;
-      }
-      out.push({
-        type: "Feature",
-        properties: best ? best.properties : { rank: 0, color: MOSAIC_AMBIENT_COLOR, storm: false },
-        geometry: { type: "Polygon", coordinates: octagonAt([lng, lat], r, lngScale) },
-      });
+      if (!pointInGeometry([lng, lat], geom)) continue;
+      out.push({ type: "Feature", properties: feature.properties, geometry: { type: "Polygon", coordinates: octagonAt([lng, lat], r, lngScale) } });
     }
   }
-  return { type: "FeatureCollection", features: out };
+  return out;
+}
+function buildAlertsMosaic(fc) {
+  const features = [];
+  for (const f of fc.features) features.push(...mosaicForFeature(f));
+  return { type: "FeatureCollection", features };
 }
 
 /* ---------- Branding from config (rename in one place) ---------- */
@@ -260,13 +244,12 @@ map.on("load", () => {
   // Glowing severity panel: fill strength and edge glow both scale with the alert's rank (10
   // advisory .. 100 emergency), so a tornado emergency reads as a hot, saturated panel and a
   // dense-fog advisory stays a quiet wash — same per-hazard color legend, just turned up or down.
-  // rank 0 is the ambient (no-alert) panel — a near-invisible frost texture across the rest of the map.
-  const RANK_FILL = ["interpolate", ["linear"], ["get", "rank"], 0, 0.035, 10, 0.22, 20, 0.3, 45, 0.4, 70, 0.52, 85, 0.6, 100, 0.7];
+  const RANK_FILL = ["interpolate", ["linear"], ["get", "rank"], 10, 0.22, 20, 0.3, 45, 0.4, 70, 0.52, 85, 0.6, 100, 0.7];
   const RANK_GLOW_MUL = ["interpolate", ["linear"], ["get", "rank"], 10, 0.6, 45, 1, 100, 1.8];
   const RANK_GLOW_OPACITY = ["interpolate", ["linear"], ["get", "rank"], 10, 0.18, 20, 0.22, 45, 0.32, 70, 0.42, 85, 0.5, 100, 0.62];
-  map.addSource("alerts-mosaic", { type: "geojson", data: buildViewportMosaic(map, alertsFC) });
-  // The fill tiles the whole visible map in small octagon panels (Bangkok-style); a panel only
-  // picks up an alert's color/rank when it falls inside that alert, see buildViewportMosaic above.
+  map.addSource("alerts-mosaic", { type: "geojson", data: buildAlertsMosaic(alertsFC) });
+  // The fill is a grid of small octagon panels (Bangkok-style) rather than one smooth shape —
+  // see buildAlertsMosaic above. Each panel still gets its own rank-driven opacity.
   map.addLayer({
     id: "alerts-mosaic-fill",
     type: "fill",
@@ -278,7 +261,7 @@ map.on("load", () => {
     id: "alerts-mosaic-line",
     type: "line",
     source: "alerts-mosaic",
-    paint: { "line-color": ["get", "color"], "line-width": 0.6, "line-opacity": ["interpolate", ["linear"], ["get", "rank"], 0, 0.1, 10, 0.35, 100, 0.85] },
+    paint: { "line-color": ["get", "color"], "line-width": 0.6, "line-opacity": ["interpolate", ["linear"], ["get", "rank"], 10, 0.35, 100, 0.85] },
   });
   // Soft glow just outside each warning's real edge, brighter and wider the more severe the alert.
   map.addLayer({
@@ -461,10 +444,6 @@ map.on("load", () => {
     near?.setPin(e.lngLat.toArray());
   });
 
-  // The octagon mosaic tiles the current viewport, so it has to be rebuilt whenever the view
-  // settles after a pan or zoom.
-  map.on("moveend", () => map.getSource("alerts-mosaic")?.setData(buildViewportMosaic(map, alertsFC)));
-
 });
 
 
@@ -548,7 +527,7 @@ async function refreshAlerts() {
     alertBoxes = alertsFC.features.map((f) => [f.properties.id, geomBox(f.geometry)]);
     alertList = regionAlerts();
     map.getSource("alerts")?.setData(alertsFC);
-    map.getSource("alerts-mosaic")?.setData(buildViewportMosaic(map, alertsFC));
+    map.getSource("alerts-mosaic")?.setData(buildAlertsMosaic(alertsFC));
     tagGaugeWarn();
     map.getSource("gauges")?.setData(gaugesFC);
     crossings?.refresh(); // recolor crossings inside flood warnings
@@ -1283,7 +1262,7 @@ window.stormlineDemo = (kind = "flood") => {
   tagGaugeWarn();
   map.getSource("gauges")?.setData(gaugesFC);
   map.getSource("alerts")?.setData(alertsFC);
-  map.getSource("alerts-mosaic")?.setData(buildViewportMosaic(map, alertsFC));
+  map.getSource("alerts-mosaic")?.setData(buildAlertsMosaic(alertsFC));
   if (tornado && !meAt) { meAt = [lng, lat]; meAtTime = Date.now(); } // demo puts "you" at the map center
   startPulse(); near?.render(); transit?.refresh(); crossings?.refresh(); checkDanger();
   return "Demo on — reload the page to clear it";
