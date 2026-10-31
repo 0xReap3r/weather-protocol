@@ -17,6 +17,7 @@ import { initTropical } from "./tropical.js";
 import { initLakes } from "./lakes.js";
 import { initShelters } from "./shelters.js";
 import { initMesoDiscussion } from "./mesodiscussion.js";
+import { initSuggest } from "./suggest.js";
 import { initCrossings } from "./crossings.js";
 import { initMenu } from "./menu.js";
 import { initSearch } from "./search.js";
@@ -103,6 +104,8 @@ const MAP_LAYERS = {
 };
 let radar = null;
 let reports = null; // neighbor reports, created once the map is ready
+const suggest = initSuggest({ openSheet, closeSheet, toast }); // no map needed; ready immediately
+window.stormlineSuggest = suggest; // debugging aid
 let transit = null; // DART rail, created once the map is ready
 let storms = null; // SPC outlook, created once the map is ready
 let fires = null, tropical = null, lakes = null, crossings = null; // NIFC wildfires and NHC tropical storms
@@ -1198,6 +1201,7 @@ const menu = initMenu({
     avoid: () => reports?.openAvoid(),
     rail: () => { if (!layerState.transit) toggleLayer("transit"); toast("Rail is on. Tap a station for details."); },
     report: () => reports?.openReport(),
+    suggest: () => suggest.open(),
     locate: () => locateMe(),
     share: () => {
       const [lng, lat] = near.getSpot().at;

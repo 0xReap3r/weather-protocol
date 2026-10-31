@@ -18,6 +18,13 @@ Decision Oct 28: Texas only. DFW pilot → all of Texas (Phase 9, done) → go d
 expansion planned, but keep the code national-ready: statewide settings live in `STATE`, named
 areas in `REGIONS` (config.js); prefer national feeds so a neighbor state would be config, not rewrites.
 
+Decision Oct 31: deploying via Netlify (its built-in Forms feature powers the suggestion box below —
+no backend of our own to run). The Cloudflare Worker (`weather-protocol.protocolxv-dev.workers.dev`)
+keeps serving `/api/*` either way — `APP.apiBase` in `js/config.js` is always an absolute URL, so the
+static front-end can move to Netlify while the Worker keeps being the API backend, or the two can run
+side by side during the switch. Not yet done: actually pointing a deploy at Netlify, and the custom
+domain / GitHub repo rename flagged earlier — revisit together when the user is ready to deploy.
+
 ## Ground rules
 - Free, public data only for v1. No secret keys in the repo. The Supabase publishable (anon) key is the one exception: it is public by design; row-level security in `supabase/schema.sql` controls access.
 - Official data first; neighbor reports fill gaps. Never label a place or road "safe".
@@ -107,6 +114,7 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - Rain totals chip also draws TexMesonet stations (24 h / 3 day measured rain; hidden for 1 h) with a station sheet; Fires chip also draws county burn bans, and the area panel names a burn ban for the spot's county
 - `js/mesodiscussion.js` — Mesoscale discussions chip (Phase 15): SPC short-fuse discussions as a purple glowing polygon + label; filters out the `"NoArea"` placeholder; card + sheet link to the full SPC text
 - `js/shelters.js` / `js/data/shelters.js` — Shelters chip (Phase 15): year-round HIFLD sites (quiet frost dots, loaded lazily on first toggle-on) + FEMA's live "open now" list (bright highlighted ring, polled every 10 min) from the new `/api/tx/shelters` Worker route. Auto-enabled once by `maybeAutoShelters()` in `app.js` the first time a take-cover alert (the same `DANGER` list the danger bar uses — tornado, severe t-storm, extreme wind, flash flood) covers the viewed region; keyed per alert id in `autoSheltersSeen` so turning the chip back off by hand sticks for that alert
+- `js/suggest.js` — Suggestion box (menu, Neighbors): category + message + optional email, posts to Netlify Forms over `fetch`. No server of our own — needs a static, hidden duplicate `<form data-netlify="true" name="suggestions">` in `index.html` so Netlify's build-time bot can detect the form (it can't see one JS builds at runtime); only actually delivers once the site is served by Netlify, so local dev and the current Workers deployment show a "couldn't send" message instead
 - `js/crossings.js` — Phase 14c: statewide low-water crossing inventory (8,339 points) from TxGIO `feature.geographic.texas.gov/arcgis/rest/services/Basemap/Low_Water_Crossing/MapServer/0` (CORS OK, max 2,000 per query), loaded in 0.25° cells; drawn with the Rivers chip from zoom 10 as yellow diamond signs, red + glow inside a Flood/Flash Flood warning or emergency; area panel lists crossings within 2 mi (moves under the verdict when one is inside a flood warning). Locations only: never show "open"/"safe"
 - Map `maxBounds` (config `STATE`) is wide on purpose ([-124, 10, -76, 39]) so Gulf and eastern Pacific storms can be followed
 - `js/app.js` also: fast alert polling (60 s during active weather), "you're inside the warning" bar (`#danger-bar`) from the Near me location

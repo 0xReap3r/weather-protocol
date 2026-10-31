@@ -665,6 +665,22 @@ body.near-me-mode .crosshair { display: none; }
 }
 .rp-send:disabled { background: var(--ink-2); color: var(--text-dim); cursor: not-allowed; border: 1px solid var(--line); }
 
+/* Suggestion box */
+.sg-cats { display: flex; flex-wrap: wrap; gap: 8px; }
+.sg-cat {
+  padding: 10px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--ink-2);
+  color: var(--text); font: inherit; font-size: 13.5px; cursor: pointer;
+}
+.sg-cat[aria-pressed="true"] { border-color: var(--signal); background: rgba(233,240,246,.12); }
+.sg-textarea {
+  display: block; width: 100%; min-height: 120px; margin-top: 2px; padding: 12px 14px; border-radius: 14px;
+  border: 1px solid var(--line); background: var(--ink-1); color: var(--text); font: inherit; font-size: 15px;
+  line-height: 1.4; resize: vertical;
+}
+.sg-textarea:focus { outline: none; border-color: var(--signal); }
+.sg-contact { width: 100%; margin-top: 2px; }
+.sg-optional { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text-dim); }
+
 /* area panel: depth scene + report rows */
 .depth-wrap { padding: 10px 10px 4px; border-radius: 14px; border: 1px solid var(--line); background: var(--ink-0); }
 .depth-scene { width: 100%; height: auto; display: block; }
@@ -1193,6 +1209,8 @@ body { font: 15px/1.45 var(--font-body); font-stretch: 100%; letter-spacing: .00
 /* .rp-open is almost always the only (first-child) button in its row, so it must reset the
    filled-white .near-btn:first-child background too — otherwise frost-on-frost disappears. */
 .rp-open { background: var(--ink-2) !important; border-color: var(--text) !important; color: var(--text) !important; }
+.sg-cat[aria-pressed="true"] { border-color: var(--text); background: rgba(233,240,246,.07); }
+.sg-textarea:focus { border-color: var(--text); }
 
 /* ---------- Menu ---------- */
 .menu { background: radial-gradient(90% 40% at 0% 0%, rgba(74,97,120,.18), transparent 70%), var(--ink-0); }
