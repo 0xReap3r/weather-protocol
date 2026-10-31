@@ -29,6 +29,7 @@ const MODES = [
 
 // Newest first. Keep entries short and in plain words.
 const CHANGES = [
+  ["Oct 31, 2026", "Suggestion box: tell us what's missing, what's wrong, or what would help — in Neighbors on the menu."],
   ["Oct 31, 2026", "Shelters turns itself on when a tornado, severe thunderstorm, extreme wind or flash flood warning covers the area you're viewing, so nearby shelters are already on the map. Turn it back off any time — it won't force it back on for that same warning."],
   ["Oct 31, 2026", "New name: StormFront."],
   ["Oct 31, 2026", "Storm chasing preset (Warnings, Storms, Radar, Mesoscale discussions, Shelters) with storm motion arrows and SPC mesoscale discussions, plus a Shelters layer."],
@@ -68,6 +69,7 @@ const ICON = {
   guide: '<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5"/>',
   news: '<path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/>',
   phone: '<path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2z"/>',
+  suggest: '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3 11.2c.45.3.7.85.7 1.4V17h4.6v-1.4c0-.55.25-1.1.7-1.4A6 6 0 0 0 12 3z"/>',
 };
 const icon = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg>`;
 
@@ -120,6 +122,7 @@ export function initMenu({ appName, getLayerState, applyPreset, actions, getFeed
           <ul class="mn-list">
             ${item("report", "report", "Send a report")}
             ${item("reports", "rivers", "Reports near here")}
+            ${item("suggest", "suggest", "Suggestion box")}
           </ul>
           <h3 class="mn-h">Tools</h3>
           <ul class="mn-list">

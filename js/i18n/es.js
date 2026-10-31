@@ -377,6 +377,20 @@ export const ES = {
   "Call 911. This map doesn't reach emergency services and can lag behind official warnings.": "Llame al 911. Este mapa no llega a los servicios de emergencia y puede ir atrasado respecto a las alertas oficiales.",
   "Reports near here": "Reportes cerca de aquí", "No reports nearby yet.": "Todavía no hay reportes cerca.", "Report here": "Reportar aquí", "Report a road": "Reportar una calle",
   "Report what you see.": "Reporte lo que ve.",
+
+  // ---------- Suggestion box ----------
+  "Suggestion box": "Buzón de sugerencias",
+  "StormFront is built for Texans, by neighbors. Tell us what's missing, what's wrong, or what would help — we read every one.":
+    "StormFront está hecho por y para los vecinos de Texas. Dígannos qué falta, qué está mal o qué ayudaría — leemos todas.",
+  "What's this about?": "¿De qué se trata?",
+  "Feature idea": "Idea para el mapa", "Something's wrong": "Algo no funciona", "A data source or reading looks off": "Un dato o lectura se ve mal", "Something else": "Algo más",
+  "Your suggestion": "Su sugerencia", "What would make this map better for you?": "¿Qué haría mejor este mapa para usted?",
+  "optional, if you'd like a reply": "opcional, si quiere una respuesta", "Your email, optional": "Su correo, opcional",
+  "Send suggestion": "Enviar sugerencia", "Sending…": "Enviando…",
+  "Goes straight to the people who run StormFront. We won't share it or use your email for anything else.":
+    "Llega directo a quienes manejan StormFront. No lo compartimos ni usamos su correo para nada más.",
+  "Thanks — your suggestion is on its way.": "Gracias — su sugerencia va en camino.",
+  "Couldn't send that. Check your connection and try again.": "No se pudo enviar. Revise su conexión e intente de nuevo.",
   "No neighbor has reported water within half a mile. That doesn't mean roads are clear.": "Ningún vecino ha reportado agua a menos de media milla. Eso no significa que las calles estén despejadas.",
   "Neighbors confirm a flooded road within a few blocks.": "Vecinos confirman una calle inundada a pocas cuadras.",
   "Roads to avoid": "Calles que debe evitar", "None reported in Texas": "Ninguna reportada en Texas",
