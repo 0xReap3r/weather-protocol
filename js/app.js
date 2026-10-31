@@ -18,6 +18,7 @@ import { initLakes } from "./lakes.js";
 import { initShelters } from "./shelters.js";
 import { initMesoDiscussion } from "./mesodiscussion.js";
 import { initSuggest } from "./suggest.js";
+import { initWssi } from "./wssi.js";
 import { initCrossings } from "./crossings.js";
 import { initMenu } from "./menu.js";
 import { initSearch } from "./search.js";
@@ -109,7 +110,7 @@ window.stormlineSuggest = suggest; // debugging aid
 let transit = null; // DART rail, created once the map is ready
 let storms = null; // SPC outlook, created once the map is ready
 let fires = null, tropical = null, lakes = null, crossings = null; // NIFC wildfires and NHC tropical storms
-let shelters = null, meso = null; // FEMA/HIFLD shelters and SPC mesoscale discussions
+let shelters = null, meso = null, wssi = null; // FEMA/HIFLD shelters, SPC mesoscale discussions, WPC winter severity
 let satellite = null, rainTotals = null; // NASA flood map and NOAA rain totals
 let feed = null, places = null, route = null, push = null; // What's happened, My places, Check a route, alerts
 const LABEL_FONT = ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"]; // must exist in the basemap's glyphs
@@ -172,8 +173,10 @@ map.on("load", () => {
   MAP_LAYERS.mesodiscussion = meso.layerIds;
   shelters = initShelters({ map, beforeId: firstLabel, openSheet });
   MAP_LAYERS.shelters = shelters.layerIds;
+  wssi = initWssi({ map, beforeId: firstLabel, openSheet });
+  MAP_LAYERS.wssi = wssi.layerIds;
   window.stormlineTropical = tropical; window.stormlineFires = fires; window.stormlineLakes = lakes; // debugging aids
-  window.stormlineMeso = meso; window.stormlineShelters = shelters; // debugging aids
+  window.stormlineMeso = meso; window.stormlineShelters = shelters; window.stormlineWssi = wssi; // debugging aids
 
   // Rain totals (NOAA MRMS) and flood from space (NASA), under the radar drops.
   rainTotals = initRainTotals({ map, metro, beforeId: firstLabel, openSheet });
@@ -653,6 +656,7 @@ function applyLayerVisibility() {
   lakes?.onToggle(!!layerState.lakes);
   meso?.onToggle(!!layerState.mesodiscussion);
   shelters?.onToggle(!!layerState.shelters);
+  wssi?.onToggle(!!layerState.wssi);
   grid?.render();
   satellite?.onToggle(!!layerState.satflood);
   rainTotals?.onToggle(!!layerState.raintotal);
@@ -1070,7 +1074,7 @@ near = initNearPanel({
     crossings?.prepNear(pt).then((changed) => changed && near?.render());
     return (tropical?.nearHTML(pt) || "") + (crossings?.nearHTML(pt, "top") || "") + (fires?.nearHTML(pt) || "");
   },
-  getQuietHTML: (pt) => (crossings?.nearHTML(pt, "list") || "") + (fires?.banLine(pt) || ""),
+  getQuietHTML: (pt) => (crossings?.nearHTML(pt, "list") || "") + (fires?.banLine(pt) || "") + (wssi?.nearHTML(pt) || ""),
   getReportsHTML: (pt) => rainSoFarHTML(pt) + (reports?.summaryHTML(pt) || "") + stationsHTML(pt),
 });
 

@@ -437,6 +437,8 @@ body.near-me-mode .crosshair { display: none; }
 .rain-card[data-level="moderate"] { --rc: #7cc0ea; }
 .rain-card[data-level="heavy"] { --rc: var(--signal); }
 .rain-card[data-level="extreme"] { --rc: var(--danger); }
+.rain-card[data-ptype="snow"] { --rc: #c9f1ff; }
+.rain-card[data-ptype="freezing"] { --rc: var(--danger); }
 .rc-head { display: flex; justify-content: space-between; margin: 0; font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim); }
 .rc-head span:last-child { font-family: var(--font-data); letter-spacing: 0; text-transform: none; }
 .rc-title { display: flex; align-items: center; gap: 10px; margin: 10px 0 10px; font-size: 26px; font-weight: 300; color: var(--rc); line-height: 1.15; }

@@ -15,7 +15,7 @@ export const PRESETS = [
   { id: "storms", label: "Tornadoes and storms", note: "Warnings, storm outlook, radar, hail and damage reports", layers: ["alerts", "storms", "rain", "reports"] },
   { id: "hurricane", label: "Hurricanes", note: "Storm cone, coastal warnings, evacuation routes, rivers, radar", layers: ["alerts", "tropical", "rivers", "rain", "reports", "lakes"] },
   { id: "fire", label: "Wildfires", note: "Active fires, red flag warnings, neighbor reports", layers: ["alerts", "fires", "reports"] },
-  { id: "winter", label: "Winter and ice", note: "Warnings, iced-road and power reports, rail", layers: ["alerts", "rain", "reports", "transit"] },
+  { id: "winter", label: "Winter and ice", note: "Warnings, winter severity, iced-road and power reports, rail", layers: ["alerts", "rain", "reports", "transit", "wssi"] },
   { id: "power", label: "Power outages", note: "Warnings and neighbor power reports", layers: ["alerts", "reports"] },
   { id: "travel", label: "Getting around", note: "Warnings, radar, roads to avoid, rail", layers: ["alerts", "rain", "reports", "transit"] },
   { id: "chaser", label: "Storm chasing", note: "Warnings, storm outlook, radar, mesoscale discussions, shelters", layers: ["alerts", "storms", "rain", "mesodiscussion", "shelters"] },
@@ -29,6 +29,7 @@ const MODES = [
 
 // Newest first. Keep entries short and in plain words.
 const CHANGES = [
+  ["Oct 31, 2026", "Winter severity layer: NOAA's 3-day Winter Storm Severity Index (ice, snow, blowing snow), plus rain now telling you when it's actually snow or freezing rain."],
   ["Oct 31, 2026", "Suggestion box: tell us what's missing, what's wrong, or what would help — in Neighbors on the menu."],
   ["Oct 31, 2026", "Shelters turns itself on when a tornado, severe thunderstorm, extreme wind or flash flood warning covers the area you're viewing, so nearby shelters are already on the map. Turn it back off any time — it won't force it back on for that same warning."],
   ["Oct 31, 2026", "New name: StormFront."],
@@ -87,7 +88,7 @@ export function initMenu({ appName, getLayerState, applyPreset, actions, getFeed
 
   function activePreset() {
     const st = getLayerState();
-    return PRESETS.find((p) => ["alerts", "rivers", "rain", "storms", "zones", "transit", "reports", "satflood", "raintotal", "tropical", "fires", "lakes", "mesodiscussion", "shelters"].every((id) => !!st[id] === p.layers.includes(id)))?.id || null;
+    return PRESETS.find((p) => ["alerts", "rivers", "rain", "storms", "zones", "transit", "reports", "satflood", "raintotal", "tropical", "fires", "lakes", "mesodiscussion", "shelters", "wssi"].every((id) => !!st[id] === p.layers.includes(id)))?.id || null;
   }
 
   function render() {
