@@ -5,7 +5,7 @@
 //  - Shelters FEMA currently lists as OPEN, pulled from the live ESF#6 Shelter System through our
 //    Worker. Usually empty — it only fills while a shelter is actually activated for a disaster.
 //    These get a bright highlighted ring and sort above the quiet sites.
-import { badge, ICON_SIZE } from "./markers.js";
+import { badge } from "./markers.js";
 import { loadShelterSites, loadOpenShelters } from "./data/shelters.js";
 
 const esc = (s) =>
@@ -14,6 +14,17 @@ const esc = (s) =>
 export const SHELTER_COLORS = { site: "#c9d3dc", open: "#35d488" };
 const SITES_TTL = 24 * 60 * 60 * 1000; // year-round list: once a day is plenty
 const OPEN_TTL = 10 * 60 * 1000; // live status: match the Worker's own cache
+
+// A style expression can only use "zoom" once, as the input to a single top-level interpolate —
+// so an "open shelter runs bigger" size can't multiply markers.js's own zoom-based ICON_SIZE
+// (that would nest a second zoom expression). Instead: one interpolate, with the per-stop value
+// itself picked by a (non-zoom) "case" on `open` — same stops as ICON_SIZE, open ones × 1.15.
+const SHELTER_ICON_SIZE = ["interpolate", ["linear"], ["zoom"],
+  5, ["case", ["get", "open"], 0.828, 0.72],
+  9, ["case", ["get", "open"], 1.0925, 0.95],
+  13, ["case", ["get", "open"], 1.3225, 1.15],
+  17, ["case", ["get", "open"], 1.518, 1.32],
+];
 
 export function initShelters({ map, beforeId, openSheet }) {
   let on = false, sites = [], open = [], loadedSitesAt = null, loadedOpenAt = null, siteErr = null, openErr = null;
@@ -25,7 +36,7 @@ export function initShelters({ map, beforeId, openSheet }) {
     id: "shelters-dot", type: "symbol", source: "shelters",
     layout: {
       "icon-image": ["case", ["get", "open"], "mk-shelter-open", "mk-shelter-site"],
-      "icon-size": ["case", ["get", "open"], ["*", ICON_SIZE, 1.15], ICON_SIZE],
+      "icon-size": SHELTER_ICON_SIZE,
       "icon-allow-overlap": true, "symbol-sort-key": ["case", ["get", "open"], -1, 0],
     },
     paint: { "icon-opacity": ["case", ["get", "open"], 1, 0.75] },
@@ -72,7 +83,7 @@ export function initShelters({ map, beforeId, openSheet }) {
     if (!on) return;
     card.innerHTML = `
       <div class="rl-head"><span class="rl-title">Shelters</span><span class="rl-time">${loadedSitesAt ? "HIFLD" : siteErr ? "unavailable" : "loading…"}</span></div>
-      <p class="fc-head">${!loadedOpenAt ? "Checking for shelters open right now…" :
+      <p class="fc-head">${openErr && !loadedOpenAt ? "Can't check which shelters are open right now." : !loadedOpenAt ? "Checking for shelters open right now…" :
         open.length ? `${open.length} shelter${open.length === 1 ? "" : "s"} open right now in Texas` : "No shelter is listed as open right now"}</p>
       ${open.length ? `<ul class="fc-list">${open.slice(0, 6).map((s) => `<li><button type="button" class="fc-row" data-open="${open.indexOf(s)}" style="--c:${SHELTER_COLORS.open}">
         <span class="fc-dot" aria-hidden="true"></span><span class="fc-name">${esc(s.name)}</span><span class="fc-meta">${esc(s.city || "")}</span></button></li>`).join("")}</ul>` : ""}
