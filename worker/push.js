@@ -8,7 +8,7 @@
 import { recordHealth } from "./health.js";
 
 const NWS = "https://api.weather.gov/alerts/active";
-const UA = "Stormline/1.0 (public severe-weather map; https://weather-protocol.protocolxv-dev.workers.dev)";
+const UA = "StormFront/1.0 (public severe-weather map; https://weather-protocol.protocolxv-dev.workers.dev)";
 const MAX_PUSHES_PER_RUN = 35;   // free plan allows 50 subrequests per invocation
 const MAX_PLACES = 10;
 
@@ -162,8 +162,8 @@ export async function handlePush(req, env, url, json) {
       env.DB.prepare("UPDATE subs SET tests = ? WHERE id = ?").bind(JSON.stringify([...recent, now]), id),
       env.DB.prepare("INSERT INTO inbox (sub_id, title, body, url, tag, created, pushed) VALUES (?, ?, ?, ?, ?, ?, 1)")
         .bind(id, ...(sub.lang === "es"
-          ? ["Alerta de prueba de Stormline", "Las alertas funcionan. Le avisaremos cuando una alerta cubra uno de sus lugares."]
-          : ["Stormline test alert", "Alerts are working. You'll hear from us when a warning covers one of your places."]), "/", "test", now),
+          ? ["Alerta de prueba de StormFront", "Las alertas funcionan. Le avisaremos cuando una alerta cubra uno de sus lugares."]
+          : ["StormFront test alert", "Alerts are working. You'll hear from us when a warning covers one of your places."]), "/", "test", now),
     ]);
     const r = await sendPush(env, endpoint);
     return r === "ok" ? json({ ok: true }) : json({ error: `The push service said no (${r}).` }, 502);

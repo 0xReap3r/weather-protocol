@@ -1,6 +1,6 @@
 // Service worker: caches the app shell so it opens instantly and survives a dropped connection.
 // Live data (added in Phase 2) is always fetched fresh — never served stale from this cache.
-const VERSION = "shell-v59";
+const VERSION = "shell-v60";
 const SHELL = [
   "./",
   "./index.html",
@@ -92,7 +92,7 @@ self.addEventListener("push", (e) => {
       const r = await fetch(`${API}/inbox?endpoint=${encodeURIComponent(sub.endpoint)}`, { cache: "no-store" });
       msgs = (await r.json()).messages || [];
     } catch (_) { /* fall through to a generic notice */ }
-    if (!msgs.length) msgs = [{ title: "Stormline", body: "New weather alert for one of your places. Open the map for details.", url: "/" }];
+    if (!msgs.length) msgs = [{ title: "StormFront", body: "New weather alert for one of your places. Open the map for details.", url: "/" }];
     for (const m of msgs.slice(0, 3)) {
       await self.registration.showNotification(m.title, {
         body: m.body,

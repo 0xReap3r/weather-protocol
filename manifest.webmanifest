@@ -1,6 +1,6 @@
 {
-  "name": "Stormline",
-  "short_name": "Stormline",
+  "name": "StormFront",
+  "short_name": "StormFront",
   "description": "Live severe-weather map for Texas. Official data first.",
   "start_url": "./",
   "scope": "./",

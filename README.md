@@ -1,8 +1,9 @@
-# Stormline (working name)
+# StormFront
 
-Live severe-weather situational map for Dallas–Fort Worth. Official data first, neighbor reports fill the gaps.
-
-**Status: Phase 2 done.** Live NWS warnings (pulsing when active), 9 DFW river and lake gauges colored by flood stage with 48-hour trends, a "Near you" area panel (verdict, rain now, 12-hour rain chance, nearest gauges, directions, shareable links), installable app. Radar, inundation and flood zones come in Phase 3.
+A free, live severe-weather situational map for Texas — official data first, neighbor reports fill the
+gaps. Built as a community page for Texans: no accounts, no paywall, funded by voluntary donations.
+Started as a Dallas–Fort Worth pilot; now covers the whole state. See `CLAUDE.md` for the maintained,
+up-to-date project notes — this file covers only the basics of running and deploying it.
 
 ## Run it locally
 

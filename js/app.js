@@ -510,6 +510,7 @@ async function refreshAlerts() {
   near?.render();
   transit?.refresh();
   checkDanger();
+  maybeAutoShelters();
   startPulse();
   updateStatus();
   scheduleAlerts();
@@ -943,6 +944,7 @@ const DANGER = [
   { re: /Severe Thunderstorm Warning/, level: "severe", act: "Get indoors and away from windows. Damaging wind or large hail is possible." },
 ];
 let meAt = null, meAtTime = 0, lastDangerKey = "";
+const autoSheltersSeen = new Set(); // alert ids already handled, so a manual chip-off isn't fought
 const dangerBar = $("#danger-bar");
 function checkDanger() {
   let hit = null, nearHit = null;
@@ -995,6 +997,21 @@ setInterval(() => {
     checkDanger();
   }, () => {}, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
 }, 2 * 60 * 1000);
+
+// Turn the Shelters layer on by itself the first time a DANGER-level, take-cover alert (tornado,
+// severe thunderstorm, extreme wind, flash flood — the same list the danger bar uses) covers the
+// area currently on screen, so nearby shelters are already there without digging through layers.
+// Scoped to alertsFC, which loadAlerts() already bounds to the region in view — no location needed.
+// Keyed per alert id: turning the chip back off by hand sticks for that alert, and a later, different
+// alert can still turn it on again.
+function maybeAutoShelters() {
+  const hit = alertsFC.features.find((f) => DANGER.some((r) => r.re.test(f.properties.event || "")));
+  if (!hit || autoSheltersSeen.has(hit.properties.id)) return;
+  autoSheltersSeen.add(hit.properties.id);
+  if (layerState.shelters) return;
+  toggleLayer("shelters");
+  toast(`Shelters turned on — ${hit.properties.event} is in effect for this area.`);
+}
 
 /* ---------- Toast ---------- */
 let toastTimer;
@@ -1238,7 +1255,7 @@ window.stormlineDemo = (kind = "flood") => {
   map.getSource("gauges")?.setData(gaugesFC);
   map.getSource("alerts")?.setData(alertsFC);
   if (tornado && !meAt) { meAt = [lng, lat]; meAtTime = Date.now(); } // demo puts "you" at the map center
-  startPulse(); near?.render(); transit?.refresh(); crossings?.refresh(); checkDanger();
+  startPulse(); near?.render(); transit?.refresh(); crossings?.refresh(); checkDanger(); maybeAutoShelters();
   return "Demo on — reload the page to clear it";
 };
 

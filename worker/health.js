@@ -4,7 +4,7 @@
 
 import { getGrid } from "./grid.js";
 
-const UA = "Stormline/1.0 (public severe-weather map; https://weather-protocol.protocolxv-dev.workers.dev)";
+const UA = "StormFront/1.0 (public severe-weather map; https://weather-protocol.protocolxv-dev.workers.dev)";
 const today = () => new Date(Date.now() - 864e5).toISOString().slice(0, 10);
 
 // name, what it powers, url, and an optional check on the body.
@@ -34,7 +34,7 @@ async function probe([name, powers, url, check]) {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 10000);
     // ERCOT rejects some user agents; it accepts the same plain one /api/grid uses.
-    const ua = name.startsWith("ERCOT") ? "Stormline/1.0 (public severe-weather map)" : UA;
+    const ua = name.startsWith("ERCOT") ? "StormFront/1.0 (public severe-weather map)" : UA;
     const r = await fetch(url(), { headers: { "User-Agent": ua, Accept: check ? "application/json" : "*/*" }, signal: ctrl.signal });
     clearTimeout(timer);
     if (!r.ok) return { name, powers, ok: false, detail: `HTTP ${r.status}`, ms: Date.now() - t0 };

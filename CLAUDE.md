@@ -1,8 +1,17 @@
-# Stormline (weather-protocol) — project notes
+# StormFront (weather-protocol) — project notes
 
 Live severe-weather situational map for Texas (started as a Dallas–Fort Worth pilot), inspired by the Bangkok flood map
-(situational-bangkok-flood.web.app). Working name "Stormline"; the name lives in `js/config.js`,
-`manifest.webmanifest` and `<title>` in `index.html`.
+(situational-bangkok-flood.web.app). Final name "StormFront" (decided Oct 31, 2026) — it lives in
+`js/config.js` (`APP.name`), `manifest.webmanifest` and `<title>` in `index.html`; also hardcoded into
+the legal pages, push-notification text and each Worker's User-Agent string, all updated together when
+the name changed. Internal namespacing (the `stormline.*` localStorage keys, `window.stormline*` debug
+globals in app.js's own modules) deliberately keeps its old lowercase prefix — renaming it would wipe
+every existing visitor's saved places/settings for no user-facing benefit, so leave it alone.
+
+Decision Oct 31: StormFront is meant to be a free community page for Texans — everyone gets full
+access, no accounts or paywall, funded by voluntary donations (`APP.donateUrl`, still a placeholder
+Ko-fi link). Keep that framing in mind for anything gated, paid, or account-only: it doesn't fit here
+unless the user says otherwise.
 
 Decision Oct 28: Texas only. DFW pilot → all of Texas (Phase 9, done) → go deeper in Texas
 (Texas-only data, Spanish, hurricane and wildfire seasons, Texas partners). No state-by-state
@@ -97,7 +106,7 @@ Run locally: `npx serve .` then open http://localhost:3000.
 - `js/lakes.js` — Lakes chip: reservoirs colored by % full; "above full" (elevation over conservation pool) glows cyan; flood-control-only reservoirs (no %) are never flagged
 - Rain totals chip also draws TexMesonet stations (24 h / 3 day measured rain; hidden for 1 h) with a station sheet; Fires chip also draws county burn bans, and the area panel names a burn ban for the spot's county
 - `js/mesodiscussion.js` — Mesoscale discussions chip (Phase 15): SPC short-fuse discussions as a purple glowing polygon + label; filters out the `"NoArea"` placeholder; card + sheet link to the full SPC text
-- `js/shelters.js` / `js/data/shelters.js` — Shelters chip (Phase 15): year-round HIFLD sites (quiet frost dots, loaded lazily on first toggle-on) + FEMA's live "open now" list (bright highlighted ring, polled every 10 min) from the new `/api/tx/shelters` Worker route
+- `js/shelters.js` / `js/data/shelters.js` — Shelters chip (Phase 15): year-round HIFLD sites (quiet frost dots, loaded lazily on first toggle-on) + FEMA's live "open now" list (bright highlighted ring, polled every 10 min) from the new `/api/tx/shelters` Worker route. Auto-enabled once by `maybeAutoShelters()` in `app.js` the first time a take-cover alert (the same `DANGER` list the danger bar uses — tornado, severe t-storm, extreme wind, flash flood) covers the viewed region; keyed per alert id in `autoSheltersSeen` so turning the chip back off by hand sticks for that alert
 - `js/crossings.js` — Phase 14c: statewide low-water crossing inventory (8,339 points) from TxGIO `feature.geographic.texas.gov/arcgis/rest/services/Basemap/Low_Water_Crossing/MapServer/0` (CORS OK, max 2,000 per query), loaded in 0.25° cells; drawn with the Rivers chip from zoom 10 as yellow diamond signs, red + glow inside a Flood/Flash Flood warning or emergency; area panel lists crossings within 2 mi (moves under the verdict when one is inside a flood warning). Locations only: never show "open"/"safe"
 - Map `maxBounds` (config `STATE`) is wide on purpose ([-124, 10, -76, 39]) so Gulf and eastern Pacific storms can be followed
 - `js/app.js` also: fast alert polling (60 s during active weather), "you're inside the warning" bar (`#danger-bar`) from the Near me location
@@ -113,4 +122,4 @@ In the browser console: `stormlineMap`, `stormlineNear`, `stormlineDemo()` / `st
 - No free feed yet: TEXRail / Trinity Metro lines, low-water crossings (Fort Worth HWWS is on OneRain), TxDOT closures (DriveTexas), DART live service alerts, Oncor outages. Don't scrape; outreach is deferred.
 - Report photos/moderation history not built. Push: free plan caps ~35 pushes per minute-run (50 subrequests); fine for the pilot, revisit if subscribers grow.
 - Mobile pass 1 done Oct 25 (`js/legends.js` folds legend cards, folded by default < 720 px; status row; icon-only FABs). Real-phone use confirmed by the owner (Oct 28, a week of daily use).
-- Housekeeping: final name; lawyer review of privacy.html/terms.html. (Report cleanup + Supabase keep-alive now run from the Worker every 10 min.)
+- Housekeeping: final name decided (StormFront, Oct 31); lawyer review of privacy.html/terms.html still open. (Report cleanup + Supabase keep-alive now run from the Worker every 10 min.)
