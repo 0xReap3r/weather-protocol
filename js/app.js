@@ -176,22 +176,28 @@ map.on("load", () => {
 
   // Warnings
   map.addSource("alerts", { type: "geojson", data: alertsFC });
+  // Glowing severity panel: fill strength and edge glow both scale with the alert's rank (10
+  // advisory .. 100 emergency), so a tornado emergency reads as a hot, saturated panel and a
+  // dense-fog advisory stays a quiet wash — same per-hazard color legend, just turned up or down.
+  const RANK_FILL = ["interpolate", ["linear"], ["get", "rank"], 10, 0.1, 20, 0.14, 45, 0.2, 70, 0.28, 85, 0.34, 100, 0.4];
+  const RANK_GLOW_MUL = ["interpolate", ["linear"], ["get", "rank"], 10, 0.6, 45, 1, 100, 1.8];
+  const RANK_GLOW_OPACITY = ["interpolate", ["linear"], ["get", "rank"], 10, 0.18, 20, 0.22, 45, 0.32, 70, 0.42, 85, 0.5, 100, 0.62];
   map.addLayer({
     id: "alerts-fill",
     type: "fill",
     source: "alerts",
-    paint: { "fill-color": ["get", "color"], "fill-opacity": ["case", ["get", "storm"], 0.2, 0.1] },
+    paint: { "fill-color": ["get", "color"], "fill-opacity": RANK_FILL },
   });
-  // Soft glow just outside each warning edge (same treatment as the storm outlook contours).
+  // Soft glow just outside each warning edge, brighter and wider the more severe the alert.
   map.addLayer({
     id: "alerts-glow",
     type: "line",
     source: "alerts",
     paint: {
       "line-color": ["get", "color"],
-      "line-width": ["interpolate", ["linear"], ["zoom"], 5, ["case", ["get", "storm"], 6, 3], 10, ["case", ["get", "storm"], 14, 7]],
-      "line-blur": ["interpolate", ["linear"], ["zoom"], 5, 4, 10, 10],
-      "line-opacity": ["case", ["get", "storm"], 0.45, 0.25],
+      "line-width": ["*", ["interpolate", ["linear"], ["zoom"], 5, 3, 10, 7], RANK_GLOW_MUL],
+      "line-blur": ["*", ["interpolate", ["linear"], ["zoom"], 5, 4, 10, 10], RANK_GLOW_MUL],
+      "line-opacity": RANK_GLOW_OPACITY,
     },
   });
   map.addLayer({
