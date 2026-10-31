@@ -48,6 +48,67 @@ function ago(iso) {
   return h < 48 ? `${h} hr ago` : `${Math.round(h / 24)} days ago`;
 }
 
+/* ---------- Octagon mosaic (alert-zone glow panels, Bangkok-style) ---------- */
+// Alert fills render as a grid of small octagon panels instead of one smooth shape, like the
+// reference flood map. Each panel keeps the parent alert's real color/rank (so the severity
+// glow still applies per panel), and only panels whose center falls inside the alert's actual
+// NWS polygon are kept — a cheap "point in geometry" test, not a true geometric clip, so the
+// mosaic's edge is a staircase of panels rather than a smooth boundary (same effect as the
+// reference). The crisp real boundary line and outer glow still draw from the real geometry.
+function pointInRing(pt, ring) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i], [xj, yj] = ring[j];
+    if (yi > pt[1] !== yj > pt[1] && pt[0] < ((xj - xi) * (pt[1] - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+function pointInGeometry(pt, geom) {
+  const inPoly = (rings) => {
+    if (!pointInRing(pt, rings[0])) return false;
+    for (let i = 1; i < rings.length; i++) if (pointInRing(pt, rings[i])) return false; // holes
+    return true;
+  };
+  if (geom.type === "Polygon") return inPoly(geom.coordinates);
+  if (geom.type === "MultiPolygon") return geom.coordinates.some(inPoly);
+  return false;
+}
+function octagonAt([lng, lat], rDeg, lngScale) {
+  const pts = [];
+  for (let k = 0; k < 8; k++) {
+    const a = Math.PI / 8 + (k * Math.PI) / 4; // flat sides facing N/S/E/W
+    pts.push([lng + (Math.cos(a) * rDeg) / lngScale, lat + Math.sin(a) * rDeg]);
+  }
+  pts.push(pts[0]);
+  return [pts];
+}
+function mosaicForFeature(feature) {
+  const geom = feature.geometry;
+  let w = 180, s = 90, e = -180, n = -90;
+  const walk = (c) => (typeof c[0] === "number" ? ((w = Math.min(w, c[0])), (e = Math.max(e, c[0])), (s = Math.min(s, c[1])), (n = Math.max(n, c[1]))) : c.forEach(walk));
+  if (geom.type === "GeometryCollection") geom.geometries.forEach((x) => walk(x.coordinates));
+  else walk(geom.coordinates);
+  if (e <= w || n <= s) return [];
+  const lngScale = Math.max(0.15, Math.cos(((s + n) / 2) * Math.PI / 180));
+  const areaDeg2 = Math.max(1e-7, (e - w) * lngScale * (n - s));
+  let cell = Math.sqrt(areaDeg2 / 420); // ~420 panels per alert shape, tuned for a dense but cheap mosaic
+  cell = Math.min(0.09, Math.max(0.012, cell)); // clamp roughly 1.3km .. 10km per panel
+  const r = cell * 0.42; // leaves a thin gap between panels, like the reference grid
+  const out = [];
+  for (let lat = s - cell; lat <= n + cell; lat += cell) {
+    for (let lng = w - cell; lng <= e + cell; lng += cell) {
+      if (!pointInGeometry([lng, lat], geom)) continue;
+      out.push({ type: "Feature", properties: feature.properties, geometry: { type: "Polygon", coordinates: octagonAt([lng, lat], r, lngScale) } });
+    }
+  }
+  return out;
+}
+function buildAlertsMosaic(fc) {
+  const features = [];
+  for (const f of fc.features) features.push(...mosaicForFeature(f));
+  return { type: "FeatureCollection", features };
+}
+
 /* ---------- Branding from config (rename in one place) ---------- */
 document.title = APP.name;
 $("#app-name").textContent = APP.name;
@@ -83,7 +144,7 @@ window.addEventListener("pageshow", resizeMap);
 
 // Map layer ids behind each chip. Chips without data yet map to nothing.
 const MAP_LAYERS = {
-  alerts: ["alerts-fill", "alerts-glow", "alerts-line", "alerts-pulse", "alerts-label"],
+  alerts: ["alerts-hit", "alerts-mosaic-fill", "alerts-mosaic-line", "alerts-glow", "alerts-line", "alerts-pulse", "alerts-label"],
   rivers: ["gauges-pulse", "gauges-dot", "gauges-quiet", "gauges-circle", "gauges-label"],
   rain: [], // filled in once the radar frames are added
   zones: ["fema-zones"],
@@ -176,19 +237,33 @@ map.on("load", () => {
 
   // Warnings
   map.addSource("alerts", { type: "geojson", data: alertsFC });
+  // Invisible copy of the real (smooth) zone shapes, kept only for click/hover hit-testing —
+  // the visible fill below is a mosaic of small panels with gaps, which would otherwise miss
+  // clicks between them.
+  map.addLayer({ id: "alerts-hit", type: "fill", source: "alerts", paint: { "fill-color": "#000", "fill-opacity": 0 } });
   // Glowing severity panel: fill strength and edge glow both scale with the alert's rank (10
   // advisory .. 100 emergency), so a tornado emergency reads as a hot, saturated panel and a
   // dense-fog advisory stays a quiet wash — same per-hazard color legend, just turned up or down.
-  const RANK_FILL = ["interpolate", ["linear"], ["get", "rank"], 10, 0.1, 20, 0.14, 45, 0.2, 70, 0.28, 85, 0.34, 100, 0.4];
+  const RANK_FILL = ["interpolate", ["linear"], ["get", "rank"], 10, 0.22, 20, 0.3, 45, 0.4, 70, 0.52, 85, 0.6, 100, 0.7];
   const RANK_GLOW_MUL = ["interpolate", ["linear"], ["get", "rank"], 10, 0.6, 45, 1, 100, 1.8];
   const RANK_GLOW_OPACITY = ["interpolate", ["linear"], ["get", "rank"], 10, 0.18, 20, 0.22, 45, 0.32, 70, 0.42, 85, 0.5, 100, 0.62];
+  map.addSource("alerts-mosaic", { type: "geojson", data: buildAlertsMosaic(alertsFC) });
+  // The fill is a grid of small octagon panels (Bangkok-style) rather than one smooth shape —
+  // see buildAlertsMosaic above. Each panel still gets its own rank-driven opacity.
   map.addLayer({
-    id: "alerts-fill",
+    id: "alerts-mosaic-fill",
     type: "fill",
-    source: "alerts",
+    source: "alerts-mosaic",
     paint: { "fill-color": ["get", "color"], "fill-opacity": RANK_FILL },
   });
-  // Soft glow just outside each warning edge, brighter and wider the more severe the alert.
+  // Thin per-panel edge so individual octagons read clearly, like the reference grid lines.
+  map.addLayer({
+    id: "alerts-mosaic-line",
+    type: "line",
+    source: "alerts-mosaic",
+    paint: { "line-color": ["get", "color"], "line-width": 0.6, "line-opacity": ["interpolate", ["linear"], ["get", "rank"], 10, 0.35, 100, 0.85] },
+  });
+  // Soft glow just outside each warning's real edge, brighter and wider the more severe the alert.
   map.addLayer({
     id: "alerts-glow",
     type: "line",
@@ -348,13 +423,13 @@ map.on("load", () => {
   reports.refresh();
   startPulse();
 
-  for (const id of ["gauges-circle", "gauges-quiet", "alerts-fill", "reports-road"]) {
+  for (const id of ["gauges-circle", "gauges-quiet", "alerts-hit", "reports-road"]) {
     map.on("mouseenter", id, () => (map.getCanvas().style.cursor = "pointer"));
     map.on("mouseleave", id, () => (map.getCanvas().style.cursor = ""));
   }
   map.on("click", (e) => {
     if (route?.takeClick(e.lngLat.toArray())) return; // choosing a route destination
-    const hit = map.queryRenderedFeatures(e.point, { layers: ["gauges-circle", "gauges-quiet", "transit-station", "alerts-fill"].filter((l) => map.getLayer(l)) });
+    const hit = map.queryRenderedFeatures(e.point, { layers: ["gauges-circle", "gauges-quiet", "transit-station", "alerts-hit"].filter((l) => map.getLayer(l)) });
     const gauge = hit.find((f) => f.layer.id === "gauges-circle" || f.layer.id === "gauges-quiet");
     if (gauge) return openGauge(gauge.properties.lid);
     const lake = layerState.lakes && map.getLayer("lakes-dot") && map.queryRenderedFeatures(e.point, { layers: ["lakes-dot"] })[0];
@@ -452,6 +527,7 @@ async function refreshAlerts() {
     alertBoxes = alertsFC.features.map((f) => [f.properties.id, geomBox(f.geometry)]);
     alertList = regionAlerts();
     map.getSource("alerts")?.setData(alertsFC);
+    map.getSource("alerts-mosaic")?.setData(buildAlertsMosaic(alertsFC));
     tagGaugeWarn();
     map.getSource("gauges")?.setData(gaugesFC);
     crossings?.refresh(); // recolor crossings inside flood warnings
@@ -822,7 +898,7 @@ async function showInundation(g, level) {
       tileSize: 256,
       attribution: "Flood maps: NOAA NWS (modeled)",
     });
-    map.addLayer({ id: "inundation", type: "raster", source: "inundation", paint: { "raster-opacity": 0.75 } }, "alerts-fill");
+    map.addLayer({ id: "inundation", type: "raster", source: "inundation", paint: { "raster-opacity": 0.75 } }, "alerts-hit");
     inundationFor = g.lid;
     const stage = g.stages[level];
     note.textContent = `Showing ${level} flooding${stage != null ? ` (river at ${stage.toFixed(0)} ft)` : ""}. Today's reading: ${g.stage != null ? g.stage.toFixed(1) + " ft" : "unknown"}.`;
@@ -1186,6 +1262,7 @@ window.stormlineDemo = (kind = "flood") => {
   tagGaugeWarn();
   map.getSource("gauges")?.setData(gaugesFC);
   map.getSource("alerts")?.setData(alertsFC);
+  map.getSource("alerts-mosaic")?.setData(buildAlertsMosaic(alertsFC));
   if (tornado && !meAt) { meAt = [lng, lat]; meAtTime = Date.now(); } // demo puts "you" at the map center
   startPulse(); near?.render(); transit?.refresh(); crossings?.refresh(); checkDanger();
   return "Demo on — reload the page to clear it";
