@@ -15,6 +15,8 @@ import { initStorms } from "./storms.js";
 import { initFires } from "./fires.js";
 import { initTropical } from "./tropical.js";
 import { initLakes } from "./lakes.js";
+import { initShelters } from "./shelters.js";
+import { initMesoDiscussion } from "./mesodiscussion.js";
 import { initCrossings } from "./crossings.js";
 import { initMenu } from "./menu.js";
 import { initSearch } from "./search.js";
@@ -83,7 +85,7 @@ window.addEventListener("pageshow", resizeMap);
 
 // Map layer ids behind each chip. Chips without data yet map to nothing.
 const MAP_LAYERS = {
-  alerts: ["alerts-fill", "alerts-glow", "alerts-line", "alerts-pulse", "alerts-label"],
+  alerts: ["alerts-fill", "alerts-glow", "alerts-line", "alerts-pulse", "alerts-label", "alerts-motion"],
   rivers: ["gauges-pulse", "gauges-dot", "gauges-quiet", "gauges-circle", "gauges-label"],
   rain: [], // filled in once the radar frames are added
   zones: ["fema-zones"],
@@ -92,6 +94,8 @@ const MAP_LAYERS = {
   tropical: [], // filled in once the map is ready
   fires: [], // filled in once the map is ready
   lakes: [], // filled in once the map is ready
+  mesodiscussion: [], // filled in once the map is ready
+  shelters: [], // filled in once the map is ready
   satflood: [], // filled in once the map is ready
   raintotal: [], // filled in once the map is ready
   grid: [], // not a map layer: the chip shows or hides the Texas grid pill
@@ -102,6 +106,7 @@ let reports = null; // neighbor reports, created once the map is ready
 let transit = null; // DART rail, created once the map is ready
 let storms = null; // SPC outlook, created once the map is ready
 let fires = null, tropical = null, lakes = null, crossings = null; // NIFC wildfires and NHC tropical storms
+let shelters = null, meso = null; // FEMA/HIFLD shelters and SPC mesoscale discussions
 let satellite = null, rainTotals = null; // NASA flood map and NOAA rain totals
 let feed = null, places = null, route = null, push = null; // What's happened, My places, Check a route, alerts
 const LABEL_FONT = ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"]; // must exist in the basemap's glyphs
@@ -160,7 +165,12 @@ map.on("load", () => {
   MAP_LAYERS.fires = fires.layerIds;
   lakes = initLakes({ map, beforeId: firstLabel, openSheet });
   MAP_LAYERS.lakes = lakes.layerIds;
+  meso = initMesoDiscussion({ map, beforeId: firstLabel, openSheet });
+  MAP_LAYERS.mesodiscussion = meso.layerIds;
+  shelters = initShelters({ map, beforeId: firstLabel, openSheet });
+  MAP_LAYERS.shelters = shelters.layerIds;
   window.stormlineTropical = tropical; window.stormlineFires = fires; window.stormlineLakes = lakes; // debugging aids
+  window.stormlineMeso = meso; window.stormlineShelters = shelters; // debugging aids
 
   // Rain totals (NOAA MRMS) and flood from space (NASA), under the radar drops.
   rainTotals = initRainTotals({ map, metro, beforeId: firstLabel, openSheet });
@@ -219,6 +229,7 @@ map.on("load", () => {
     id: "alerts-label",
     type: "symbol",
     source: "alerts",
+    filter: ["has", "event"],
     layout: {
       "text-field": ["upcase", ["coalesce", ["get", "label"], ["get", "event"]]],
       "text-font": LABEL_FONT,
@@ -229,6 +240,40 @@ map.on("load", () => {
       "text-allow-overlap": false,
     },
     paint: { "text-color": ["get", "color"], "text-halo-color": "#0a1119", "text-halo-width": 2 },
+  });
+
+  // Storm motion arrow: storm-based warnings (tornado, severe thunderstorm) carry a
+  // "TIME...MOT...LOC" line in their text giving heading and speed; drawn as a small arrow at the
+  // storm's reported center, pointing the direction it's moving. Zone-based products never have one.
+  {
+    const ARROW = "M12 2 L19 15 L12 11.5 L5 15 Z";
+    const c = document.createElement("canvas");
+    c.width = c.height = 32;
+    const g = c.getContext("2d");
+    g.translate(16, 16); g.scale(32 / 24, 32 / 24); g.translate(-12, -12);
+    g.fillStyle = "#ffffff"; g.shadowColor = "rgba(0,0,0,.6)"; g.shadowBlur = 3;
+    g.fill(new Path2D(ARROW));
+    map.addImage("mk-motion-arrow", g.getImageData(0, 0, 32, 32), { pixelRatio: 2 });
+  }
+  map.addLayer({
+    id: "alerts-motion",
+    type: "symbol",
+    source: "alerts",
+    filter: ["has", "motionDeg"],
+    layout: {
+      "icon-image": "mk-motion-arrow",
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 5, 0.55, 10, 0.85],
+      "icon-rotate": ["get", "motionDeg"],
+      "icon-rotation-alignment": "map",
+      "icon-allow-overlap": true,
+      "text-field": ["concat", ["get", "motionKt"], " kt"],
+      "text-font": LABEL_FONT,
+      "text-size": 10,
+      "text-offset": [0, 1.1],
+      "text-anchor": "top",
+      "text-optional": true,
+    },
+    paint: { "icon-opacity": 0.95, "text-color": "#f2f6fa", "text-halo-color": "#0a1119", "text-halo-width": 1.4 },
   });
 
   // Gauges
@@ -602,6 +647,8 @@ function applyLayerVisibility() {
   tropical?.onToggle(!!layerState.tropical);
   fires?.onToggle(!!layerState.fires);
   lakes?.onToggle(!!layerState.lakes);
+  meso?.onToggle(!!layerState.mesodiscussion);
+  shelters?.onToggle(!!layerState.shelters);
   grid?.render();
   satellite?.onToggle(!!layerState.satflood);
   rainTotals?.onToggle(!!layerState.raintotal);
@@ -1180,9 +1227,13 @@ window.stormlineDemo = (kind = "flood") => {
   const g = gaugesFC.features[0];
   // Move the gauge into the fake warning so you can see the white storm pulse right away.
   if (g) { g.geometry.coordinates = [lng, lat]; g.properties = { ...g.properties, rank: 3, color: CATEGORY.minor.color, label: "31.2 ft · flood 30" }; }
-  alertsFC = { type: "FeatureCollection", features: [...alertsFC.features, { type: "Feature",
-    geometry: { type: "Polygon", coordinates: [[[lng - d, lat - d], [lng + d, lat - d], [lng + d, lat + d], [lng - d, lat + d], [lng - d, lat - d]]] },
-    properties: { id: "demo", event: tornado ? "Tornado Warning (demo)" : "Flash Flood Warning (demo)", color: tornado ? "#ff00ff" : "#e0352b", rank: tornado ? 95 : 85, storm: true, headline: "Demo", areaDesc: "Demo area", expires: new Date(Date.now() + 3600e3).toISOString(), sent: new Date().toISOString(), description: "Demo only.", instruction: "" } }] };
+  alertsFC = { type: "FeatureCollection", features: [...alertsFC.features,
+    { type: "Feature",
+      geometry: { type: "Polygon", coordinates: [[[lng - d, lat - d], [lng + d, lat - d], [lng + d, lat + d], [lng - d, lat + d], [lng - d, lat - d]]] },
+      properties: { id: "demo", event: tornado ? "Tornado Warning (demo)" : "Flash Flood Warning (demo)", color: tornado ? "#ff00ff" : "#e0352b", rank: tornado ? 95 : 85, storm: true, headline: "Demo", areaDesc: "Demo area", expires: new Date(Date.now() + 3600e3).toISOString(), sent: new Date().toISOString(), description: "Demo only.", instruction: "" } },
+    ...(tornado ? [{ type: "Feature", geometry: { type: "Point", coordinates: [lng, lat] },
+      properties: { id: "demo", motionDeg: 45, motionKt: 35, color: "#ff00ff", rank: 95 } }] : []),
+  ] };
   tagGaugeWarn();
   map.getSource("gauges")?.setData(gaugesFC);
   map.getSource("alerts")?.setData(alertsFC);

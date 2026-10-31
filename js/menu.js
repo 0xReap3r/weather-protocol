@@ -18,6 +18,7 @@ export const PRESETS = [
   { id: "winter", label: "Winter and ice", note: "Warnings, iced-road and power reports, rail", layers: ["alerts", "rain", "reports", "transit"] },
   { id: "power", label: "Power outages", note: "Warnings and neighbor power reports", layers: ["alerts", "reports"] },
   { id: "travel", label: "Getting around", note: "Warnings, radar, roads to avoid, rail", layers: ["alerts", "rain", "reports", "transit"] },
+  { id: "chaser", label: "Storm chasing", note: "Warnings, storm outlook, radar, mesoscale discussions, shelters", layers: ["alerts", "storms", "rain", "mesodiscussion", "shelters"] },
 ];
 
 const MODES = [
@@ -28,6 +29,7 @@ const MODES = [
 
 // Newest first. Keep entries short and in plain words.
 const CHANGES = [
+  ["Oct 31, 2026", "Storm chasing preset (Warnings, Storms, Radar, Mesoscale discussions, Shelters) with storm motion arrows and SPC mesoscale discussions, plus a Shelters layer."],
   ["Oct 28, 2026", "Spanish: the whole app in Spanish, switch in the menu or footer."],
   ["Oct 28, 2026", "Hurricanes, Fires, Lakes, rain gauges, burn bans and low-water crossings: Texas-only layers."],
   ["Oct 28, 2026", "A new look for the whole map, with the storm line that changes color with the most serious alert."],
@@ -81,7 +83,7 @@ export function initMenu({ appName, getLayerState, applyPreset, actions, getFeed
 
   function activePreset() {
     const st = getLayerState();
-    return PRESETS.find((p) => ["alerts", "rivers", "rain", "storms", "zones", "transit", "reports", "satflood", "raintotal", "tropical", "fires", "lakes"].every((id) => !!st[id] === p.layers.includes(id)))?.id || null;
+    return PRESETS.find((p) => ["alerts", "rivers", "rain", "storms", "zones", "transit", "reports", "satflood", "raintotal", "tropical", "fires", "lakes", "mesodiscussion", "shelters"].every((id) => !!st[id] === p.layers.includes(id)))?.id || null;
   }
 
   function render() {

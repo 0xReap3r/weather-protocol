@@ -30,6 +30,18 @@ export function alertStyle(event) {
   return STYLE.find((s) => s.match.test(event || "")) || STYLE[STYLE.length - 1];
 }
 
+// Storm-based warnings carry a free-text "TIME...MOT...LOC <HHMM>Z <DDD>DEG <SS>KT <lat*100> <lon*100>"
+// line in their description (not a structured field). <DDD> is the compass heading the storm is
+// COMING FROM, same convention as wind direction, so the arrow drawn on the map points the
+// opposite way (+180) to show where the storm is actually headed.
+function parseMotion(desc) {
+  const m = /TIME\.\.\.MOT\.\.\.LOC\s+\d{3,4}Z\s+(\d{1,3})DEG\s+(\d{1,3})KT\s+(\d{3,4})\s+(\d{3,5})/.exec(desc || "");
+  if (!m) return null;
+  const from = Number(m[1]), kt = Number(m[2]), lat = Number(m[3]) / 100, lon = -(Number(m[4]) / 100);
+  if (![from, kt, lat, lon].every(Number.isFinite)) return null;
+  return { deg: (from + 180) % 360, kt, at: [lon, lat] };
+}
+
 const zoneCache = new Map(); // zone URL -> geometry | null
 
 async function zoneGeometry(url) {
@@ -107,6 +119,16 @@ export async function loadAlerts(metro) {
       storm: !!f.geometry, // true = storm-based polygon
     };
     for (const g of geometries) out.push({ type: "Feature", geometry: g, properties: props });
+
+    // Storm motion arrow: a separate point feature in the same source, independent of the
+    // warning polygon's shape, so the arrow sits where the storm itself was actually reported.
+    if (f.geometry) {
+      const mot = parseMotion(p.description);
+      if (mot) out.push({
+        type: "Feature", geometry: { type: "Point", coordinates: mot.at },
+        properties: { id: p.id, motionDeg: mot.deg, motionKt: mot.kt, color: st.color, rank: st.rank },
+      });
+    }
   }
 
   // Lower rank first so higher-rank polygons draw on top.

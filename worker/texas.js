@@ -4,6 +4,8 @@
 //   GET /api/tx/mesonet    TexMesonet (TWDB) weather stations: latest rain 24/48/72 hr, wind, soil water (5 min)
 //   GET /api/tx/burnbans   Texas A&M Forest Service county burn bans (1 hr), if its map service answers
 //   GET /api/tx/geocode?q= street address -> point, from the U.S. Census Bureau geocoder (Texas only, 1 day)
+//   GET /api/tx/shelters   FEMA ESF#6 Shelter System "Open Shelters", Texas only (10 min). Empty most
+//                          days — it only fills while a shelter is actually activated for a disaster.
 import { cached } from "./geo.js";
 
 const UA = "Stormline/1.0 (public severe-weather map; https://weather-protocol.protocolxv-dev.workers.dev)";
@@ -73,6 +75,25 @@ async function geocode(q) {
   };
 }
 
+async function shelters() {
+  const fields = "shelter_name,address_1,city,county_parish,evacuation_capacity,org_organization_name,pet_accommodations_desc,shelter_open_date,latitude,longitude";
+  const q = `https://gis.fema.gov/arcgis/rest/services/NSS/FEMA_NSS/FeatureServer/0/query?where=state%3D%27TX%27&outFields=${fields}&returnGeometry=false&f=json`;
+  const r = await fetch(q, { headers: { "User-Agent": UA } });
+  if (!r.ok) throw new Error(`FEMA NSS ${r.status}`);
+  const j = await r.json();
+  if (j.error) throw new Error("FEMA NSS service error");
+  const feats = j.features || [];
+  // Rows: [name, address, city, county, lng, lat, evacCap, org, petsDesc, openedDate]
+  return {
+    at: new Date().toISOString(),
+    open: feats.filter((f) => Number.isFinite(f.attributes?.longitude) && Number.isFinite(f.attributes?.latitude)).map(({ attributes: a }) => [
+      a.shelter_name, a.address_1, a.city, a.county_parish, n(a.longitude, 4), n(a.latitude, 4),
+      a.evacuation_capacity ?? null, a.org_organization_name || null, a.pet_accommodations_desc || null,
+      a.shelter_open_date ? new Date(a.shelter_open_date).toISOString() : null,
+    ]),
+  };
+}
+
 export async function handleTexas(req, env, ctx, url, json) {
   const p = url.pathname;
   if (p === "/api/tx/geocode") {
@@ -92,5 +113,6 @@ export async function handleTexas(req, env, ctx, url, json) {
   if (p === "/api/tx/lakes") return (await cached(env, ctx, req, "tx-lakes", 3600, lakes)) || json({ error: "Lake levels are unavailable right now." }, 502);
   if (p === "/api/tx/mesonet") return (await cached(env, ctx, req, "tx-mesonet", 300, mesonet)) || json({ error: "TexMesonet is unavailable right now." }, 502);
   if (p === "/api/tx/burnbans") return (await cached(env, ctx, req, "tx-burnbans-v2", 3600, burnbans)) || json({ error: "Burn bans are unavailable right now." }, 502);
+  if (p === "/api/tx/shelters") return (await cached(env, ctx, req, "tx-shelters", 600, shelters)) || json({ error: "Shelter status is unavailable right now." }, 502);
   return json({ error: "Not found" }, 404);
 }
