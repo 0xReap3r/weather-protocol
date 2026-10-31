@@ -8,7 +8,7 @@
 //                          days — it only fills while a shelter is actually activated for a disaster.
 import { cached } from "./geo.js";
 
-const UA = "Stormline/1.0 (public severe-weather map; https://weather-protocol.protocolxv-dev.workers.dev)";
+const UA = "StormFront/1.0 (public severe-weather map; https://weather-protocol.protocolxv-dev.workers.dev)";
 const n = (v, d = 2) => {
   const x = typeof v === "string" ? Number(v) : v;
   return Number.isFinite(x) && x > -900 ? Number(x.toFixed(d)) : null;

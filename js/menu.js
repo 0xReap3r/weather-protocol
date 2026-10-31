@@ -29,6 +29,8 @@ const MODES = [
 
 // Newest first. Keep entries short and in plain words.
 const CHANGES = [
+  ["Oct 31, 2026", "Shelters turns itself on when a tornado, severe thunderstorm, extreme wind or flash flood warning covers the area you're viewing, so nearby shelters are already on the map. Turn it back off any time — it won't force it back on for that same warning."],
+  ["Oct 31, 2026", "New name: StormFront."],
   ["Oct 31, 2026", "Storm chasing preset (Warnings, Storms, Radar, Mesoscale discussions, Shelters) with storm motion arrows and SPC mesoscale discussions, plus a Shelters layer."],
   ["Oct 28, 2026", "Spanish: the whole app in Spanish, switch in the menu or footer."],
   ["Oct 28, 2026", "Hurricanes, Fires, Lakes, rain gauges, burn bans and low-water crossings: Texas-only layers."],

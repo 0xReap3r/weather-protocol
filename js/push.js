@@ -98,7 +98,7 @@ export function initPush({ metro, getPlaces, toast }) {
     const n = getPlaces().length;
     if (!supported) {
       root.innerHTML = `<h3 class="near-h">Alerts on this device</h3>
-        <p class="near-note">${isIOS && !standalone ? "On iPhone, alerts need the app on your Home Screen: tap Share, then Add to Home Screen, then open Stormline from there." : "This browser can't get push alerts. Try Chrome, Edge, Firefox or Safari."}</p>`;
+        <p class="near-note">${isIOS && !standalone ? "On iPhone, alerts need the app on your Home Screen: tap Share, then Add to Home Screen, then open StormFront from there." : "This browser can't get push alerts. Try Chrome, Edge, Firefox or Safari."}</p>`;
       return;
     }
     const denied = Notification.permission === "denied";
@@ -113,7 +113,7 @@ export function initPush({ metro, getPlaces, toast }) {
       </div>
       ${denied ? `<p class="near-note">Notifications are blocked for this site. Allow them in your browser or phone settings, then come back.</p>` : ""}
       ${note ? `<p class="near-note">${esc(note)}</p>` : ""}
-      <p class="sheet-small">Your saved places are stored on our server, rounded to about a block, only to match warnings. Turning alerts off deletes them. Alerts can be late or fail: keep Wireless Emergency Alerts on.${isIOS ? " On iPhone, add Stormline to your Home Screen first." : ""}</p>`;
+      <p class="sheet-small">Your saved places are stored on our server, rounded to about a block, only to match warnings. Turning alerts off deletes them. Alerts can be late or fail: keep Wireless Emergency Alerts on.${isIOS ? " On iPhone, add StormFront to your Home Screen first." : ""}</p>`;
   }
 
   document.addEventListener("click", (e) => {

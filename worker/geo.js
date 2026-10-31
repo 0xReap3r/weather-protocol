@@ -4,7 +4,7 @@
 //   GET /api/geo/cities?state=48    towns and cities with 2,500+ people, from the 2020 Census (7 days)
 // Each keeps its last good copy in D1 `kv`, so a source outage serves the previous data instead of nothing.
 
-const UA = "Stormline/1.0 (public severe-weather map; https://weather-protocol.protocolxv-dev.workers.dev)";
+const UA = "StormFront/1.0 (public severe-weather map; https://weather-protocol.protocolxv-dev.workers.dev)";
 const TIGER = "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb";
 // State bounding boxes for gauge queries (add states here when expanding).
 const BBOX = { TX: [-106.7, 25.8, -93.5, 36.6] };

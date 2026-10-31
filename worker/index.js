@@ -1,4 +1,4 @@
-// Stormline Worker: serves the static site, plus a tiny /api for data browsers can't fetch directly.
+// StormFront Worker: serves the static site, plus a tiny /api for data browsers can't fetch directly.
 //   GET /api/grid → ERCOT grid condition (normal … EEA 3), trimmed, cached 60 s at the edge.
 // ERCOT's dashboard JSON has no CORS headers, so the browser can't read it; this route can.
 // Keep it read-only and keyless (CLAUDE.md ground rules).

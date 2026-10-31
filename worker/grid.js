@@ -3,7 +3,7 @@
 // good reading is kept in D1 and served (marked stale) for up to 30 minutes when that happens.
 
 const ERCOT = "https://www.ercot.com/api/1/services/read/dashboards/daily-prc.json";
-const UA = "Stormline/1.0 (public severe-weather map)";
+const UA = "StormFront/1.0 (public severe-weather map)";
 const STALE_OK_MS = 30 * 60e3;
 
 let ready = false;
