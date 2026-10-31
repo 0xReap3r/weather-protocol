@@ -87,23 +87,30 @@ const clockTime = (local) => {
   const [h, m] = local.slice(11, 16).split(":").map(Number);
   return `${((h + 11) % 12) + 1}:${String(m).padStart(2, "0")} ${h < 12 ? "am" : "pm"}`;
 };
+const PTYPE_WORD = { snow: "Snow", freezing: "Freezing rain" };
+const PTYPE_ADVICE = {
+  snow: "Texas roads ice over fast under snow. Slow down, leave extra room, and watch for black ice as it melts and refreezes.",
+  freezing: "Freezing rain coats roads and power lines in ice on contact — dangerous even when light. Stay off the roads if you can.",
+};
 function rainCard(rain) {
   if (!rain) return `<p class="near-note rain-line">Checking for rain…</p>`;
   if (rain.failed) return `<p class="near-note rain-line">Rain-now data is unavailable right now.</p>`;
   if (!rain.level) {
-    const soon = rain.startsAt
-      ? ` ${rain.peakLevel ? rain.peakLevel.label : "Light"} rain may start around ${clockTime(rain.startsAt)}.`
-      : " None expected in the next 2 hours.";
-    return `<p class="near-note rain-line"><span class="rain-dot"></span>No rain falling here now.${soon}</p>`;
+    const word = rain.startPtype && PTYPE_WORD[rain.startPtype] ? PTYPE_WORD[rain.startPtype] : (rain.peakLevel ? rain.peakLevel.label : "Light") + " rain";
+    const soon = rain.startsAt ? ` ${word} may start around ${clockTime(rain.startsAt)}.` : " None expected in the next 2 hours.";
+    return `<p class="near-note rain-line"><span class="rain-dot"></span>Nothing falling here now.${soon}</p>`;
   }
   const l = rain.level;
+  const ptype = rain.ptype && PTYPE_WORD[rain.ptype] ? rain.ptype : "rain";
+  const title = ptype === "rain" ? `${esc(l.label)} rain over you` : `${esc(PTYPE_WORD[ptype])} over you`;
+  const advice = PTYPE_ADVICE[ptype] || l.advice;
   const segs = [1, 2, 3, 4].map((n) => `<span class="${n <= l.bars ? "on" : ""}"></span>`).join("");
-  return `<section class="rain-card" data-level="${l.key}">
-      <p class="rc-head"><span>Rain now</span><span>${esc(rain.rate.toFixed(2))} in/hr</span></p>
-      <h3 class="rc-title"><span class="rc-icon" aria-hidden="true"></span>${esc(l.label)} rain over you</h3>
+  return `<section class="rain-card" data-level="${l.key}" data-ptype="${ptype}">
+      <p class="rc-head"><span>${ptype === "rain" ? "Rain" : esc(PTYPE_WORD[ptype])} now</span><span>${esc(rain.rate.toFixed(2))} in/hr${ptype !== "rain" ? " liquid" : ""}</span></p>
+      <h3 class="rc-title"><span class="rc-icon" aria-hidden="true"></span>${title}</h3>
       <div class="rc-bar" aria-hidden="true">${segs}</div>
-      <p class="rc-advice">${esc(l.advice)}</p>
-      <p class="rc-src">Model nowcast (Open-Meteo, NOAA HRRR), updated every 15 min. Not a radar reading.</p>
+      <p class="rc-advice">${esc(advice)}</p>
+      <p class="rc-src">Model nowcast (Open-Meteo, NOAA HRRR), updated every 15 min. Not a radar reading.${ptype !== "rain" ? " Rate shown is liquid-equivalent, not depth." : ""}</p>
     </section>`;
 }
 

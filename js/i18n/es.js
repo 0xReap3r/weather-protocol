@@ -137,7 +137,7 @@ export const ES = {
   "Slight Chance Showers And Thunderstorms": "Leve probabilidad de chubascos y tormentas", "Showers And Thunderstorms": "Chubascos y tormentas",
   "Patchy Fog": "Niebla dispersa", "Areas Of Fog": "Zonas de niebla", "Windy": "Ventoso", "Breezy": "Con brisa",
   "wind {0} mph": "viento {0} mph", "low {0}°": "mínima {0}°", "high {0}°": "máxima {0}°",
-  "Rain now": "Lluvia ahora",
+  "Rain now": "Lluvia ahora", "Snow now": "Nieve ahora", "Freezing rain now": "Lluvia helada ahora",
   "Light rain": "Lluvia ligera", "Moderate rain": "Lluvia moderada", "Heavy rain": "Lluvia fuerte", "Very heavy rain": "Lluvia muy fuerte",
   "Wildfires nearby": "Incendios forestales cerca", "Tropical storms": "Tormentas tropicales",
   "Low-water crossings": "Cruces bajos", "{0} within {1} mi": "{0} a menos de {1} mi",
@@ -378,6 +378,32 @@ export const ES = {
   "Reports near here": "Reportes cerca de aquí", "No reports nearby yet.": "Todavía no hay reportes cerca.", "Report here": "Reportar aquí", "Report a road": "Reportar una calle",
   "Report what you see.": "Reporte lo que ve.",
 
+  // ---------- Winter severity (WSSI) ----------
+  "Winter severity": "Severidad invernal",
+  "Limited impact": "Impacto limitado", "Minor impacts": "Impactos menores", "Moderate impacts": "Impactos moderados",
+  "Major impacts": "Impactos mayores", "Extreme impacts": "Impactos extremos",
+  "Snow amount": "Cantidad de nieve", "Ice accumulation": "Acumulación de hielo", "Blowing snow": "Nieve con viento",
+  "Winter severity isn't loading right now.": "La severidad invernal no está cargando en este momento.",
+  "No winter impact expected across Texas right now": "No se espera impacto invernal en Texas por ahora",
+  "{0} area with winter impact": "{0} área con impacto invernal", "{0} areas with winter impact": "{0} áreas con impacto invernal",
+  "worst: Limited impact": "peor: impacto limitado", "worst: Minor impacts": "peor: impactos menores", "worst: Moderate impacts": "peor: impactos moderados",
+  "worst: Major impacts": "peor: impactos mayores", "worst: Extreme impacts": "peor: impactos extremos",
+  "WPC's 3-day winter outlook: how disruptive, not just how much snow. Not a warning itself.":
+    "Perspectiva invernal de 3 días del WPC: qué tan disruptivo será, no solo cuánta nieve. No es una alerta en sí misma.",
+  "Next 3 days": "Próximos 3 días", "What's driving it": "Qué lo está causando",
+  "From NOAA's Weather Prediction Center. A 3-day outlook of likely impact, not a watch or warning — check the Warnings layer for those.":
+    "Del Centro de Predicción del Tiempo de NOAA. Una perspectiva de 3 días del impacto probable, no una vigilancia o aviso — revise la capa de Alertas para eso.",
+  "next 3 days (WPC winter outlook)": "próximos 3 días (perspectiva invernal del WPC)",
+  "WPC's 3-day Winter Storm Severity Index: how disruptive winter weather will be (Limited to Extreme), and whether ice, snow or blowing snow is driving it.":
+    "Índice de Severidad de Tormenta Invernal del WPC a 3 días: qué tan disruptivo será el tiempo invernal (de limitado a extremo), y si lo causa el hielo, la nieve o la nieve con viento.",
+  "Snow over you": "Nieve sobre usted", "Freezing rain over you": "Lluvia helada sobre usted", "Snow": "Nieve", "Freezing rain": "Lluvia helada",
+  "Texas roads ice over fast under snow. Slow down, leave extra room, and watch for black ice as it melts and refreezes.":
+    "Las calles de Texas se cubren de hielo rápido con la nieve. Baje la velocidad, deje más espacio, y cuidado con el hielo negro cuando se derrite y vuelve a congelar.",
+  "Freezing rain coats roads and power lines in ice on contact — dangerous even when light. Stay off the roads if you can.":
+    "La lluvia helada cubre de hielo las calles y los cables al contacto — peligrosa incluso si es ligera. Evite manejar si puede.",
+  "Rate shown is liquid-equivalent, not depth.": "La tasa mostrada es equivalente líquido, no profundidad.",
+  "Nothing falling here now.": "No está cayendo nada aquí ahora.",
+
   // ---------- Suggestion box ----------
   "Suggestion box": "Buzón de sugerencias",
   "StormFront is built for Texans, by neighbors. Tell us what's missing, what's wrong, or what would help — we read every one.":
@@ -414,6 +440,7 @@ export const ES = {
   "Tornadoes and storms": "Tornados y tormentas", "Warnings, storm outlook, radar, hail and damage reports": "Alertas, perspectiva de tormentas, radar, reportes de granizo y daños",
   "Storm cone, coastal warnings, evacuation routes, rivers, radar": "Cono de tormenta, alertas costeras, rutas de evacuación, ríos, radar",
   "Winter and ice": "Invierno y hielo", "Warnings, iced-road and power reports, rail": "Alertas, reportes de hielo y de luz, tren",
+  "Warnings, winter severity, iced-road and power reports, rail": "Alertas, severidad invernal, reportes de hielo y de luz, tren",
   "Power outages": "Apagones", "Warnings and neighbor power reports": "Alertas y reportes de luz de vecinos",
   "Getting around": "Para moverse", "Warnings, radar, roads to avoid, rail": "Alertas, radar, calles que debe evitar, tren",
   "Showing:": "Mostrando:",

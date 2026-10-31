@@ -105,6 +105,15 @@ export const LAYERS = [
     defaultOn: false,
   },
   {
+    id: "wssi",
+    tier: "more",
+    label: "Winter severity",
+    hint: "WPC's 3-day Winter Storm Severity Index: how disruptive winter weather will be (Limited to Extreme), and whether ice, snow or blowing snow is driving it.",
+    source: "NOAA Weather Prediction Center",
+    phase: 16,
+    defaultOn: false,
+  },
+  {
     id: "grid",
     tier: "more",
     label: "Grid",
