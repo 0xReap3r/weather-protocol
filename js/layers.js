@@ -117,7 +117,7 @@ export const LAYERS = [
     id: "stormcells",
     tier: "more",
     label: "Storm shape",
-    hint: "The real radar reflectivity, shown as a solid color fill instead of drops, so you can see a storm's actual size, shape and heaviest core — not just the warning box.",
+    hint: "The real radar reflectivity, recolored in a fainter, cooler palette so light rain barely tints the map — only a storm's real core glows, right through the roads and markers underneath.",
     source: "NEXRAD via Iowa Environmental Mesonet",
     phase: 17,
     defaultOn: false,

@@ -40,6 +40,9 @@ for (let i = 1; i < 256; i++) {
   const key = parseInt(h, 16);
   if (!RGB_TO_DBZ.has(key)) RGB_TO_DBZ.set(key, i * 0.5 - 32.5);
 }
+// Shared with js/stormcells.js, which recolors the same NEXRAD tiles in our own palette instead of
+// reading them pixel-by-pixel for drops — no sense keeping two copies of the palette table.
+export const dbzFromRGB = (r, g, b) => RGB_TO_DBZ.get((r << 16) | (g << 8) | b) ?? null;
 
 /* ---------- Tile pixels ---------- */
 const tileCache = new Map(); // `${frame}|${bust}|${x}/${y}` -> Promise<Uint8ClampedArray|null>
