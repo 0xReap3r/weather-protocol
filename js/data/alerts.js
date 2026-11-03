@@ -30,6 +30,25 @@ export function alertStyle(event) {
   return STYLE.find((s) => s.match.test(event || "")) || STYLE[STYLE.length - 1];
 }
 
+// What a Watch/Warning/Advisory/etc. actually means, generalized across every hazard (tornado,
+// flood, winter storm, heat, you name it) rather than hardcoded per hazard — NWS uses the same
+// handful of alert "kinds" for all of them, so one small lookup on the last word of the event name
+// covers every alert this app will ever show.
+const KIND_INFO = {
+  Warning: "This is happening, about to happen, or very likely — take action now.",
+  Watch: "Conditions are coming together for this to happen. It hasn't yet — stay alert and be ready to act.",
+  Advisory: "Expected to cause inconvenience and could be hazardous if you're not careful — less serious than a warning.",
+  Emergency: "The most serious level: a severe, life-threatening situation already happening — take action immediately.",
+  Statement: "An update on an alert already in effect, not a new hazard by itself.",
+  Outlook: "An early heads-up that conditions may turn favorable for this later — not yet a watch or a warning.",
+};
+export function explainKind(event) {
+  const m = /\b(Warning|Watch|Advisory|Emergency|Statement|Outlook)\s*$/i.exec(event || "");
+  if (!m) return null;
+  const kind = m[1][0].toUpperCase() + m[1].slice(1).toLowerCase();
+  return KIND_INFO[kind] ? { kind, text: KIND_INFO[kind] } : null;
+}
+
 // Storm-based warnings carry a free-text "TIME...MOT...LOC <HHMM>Z <DDD>DEG <SS>KT <lat*100> <lon*100>"
 // line in their description (not a structured field). <DDD> is the compass heading the storm is
 // COMING FROM, same convention as wind direction, so the arrow drawn on the map points the

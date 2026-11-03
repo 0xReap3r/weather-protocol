@@ -157,6 +157,22 @@ export const ES = {
     "Alertas del Servicio Meteorológico Nacional. Mantenga activadas las Alertas Inalámbricas de Emergencia; este mapa puede ir atrasado respecto a las alertas oficiales.",
   "Area": "Zona", "Until": "Hasta", "Issued": "Emitido", "National Weather Service": "Servicio Meteorológico Nacional", "What to do": "Qué hacer", "What's happening": "Qué está pasando",
   "Official text from the National Weather Service, in English.": "Texto oficial del Servicio Meteorológico Nacional, en inglés.",
+
+  // ---------- Watch/Warning/etc. explainer (same wording for every hazard) ----------
+  "Warning": "Advertencia", "Watch": "Vigilancia", "Advisory": "Aviso", "Emergency": "Emergencia", "Statement": "Declaración", "Outlook": "Perspectiva",
+  "This is happening, about to happen, or very likely — take action now.":
+    "Esto está ocurriendo, va a ocurrir, o es muy probable — actúe ahora.",
+  "Conditions are coming together for this to happen. It hasn't yet — stay alert and be ready to act.":
+    "Las condiciones se están dando para que esto ocurra. Todavía no ha pasado — esté alerta y listo para actuar.",
+  "Expected to cause inconvenience and could be hazardous if you're not careful — less serious than a warning.":
+    "Se espera que cause molestias y podría ser peligroso si no tiene cuidado — menos grave que una advertencia.",
+  "The most serious level: a severe, life-threatening situation already happening — take action immediately.":
+    "El nivel más grave: una situación severa que pone en peligro la vida y ya está ocurriendo — actúe de inmediato.",
+  "An update on an alert already in effect, not a new hazard by itself.":
+    "Una actualización de una alerta ya vigente, no un nuevo peligro por sí sola.",
+  "An early heads-up that conditions may turn favorable for this later — not yet a watch or a warning.":
+    "Un aviso temprano de que las condiciones podrían volverse favorables para esto más adelante — todavía no es una vigilancia ni una advertencia.",
+
   "Warnings and watches": "Avisos y vigilancias",
   "Rare. A confirmed, damaging tornado heading for people. Take shelter now.": "Poco común. Un tornado confirmado y destructivo se dirige a zonas pobladas. Refúgiese ahora.",
   "Tornado seen or on radar. Take shelter now.": "Tornado visto o detectado por radar. Refúgiese ahora.",
@@ -404,6 +420,14 @@ export const ES = {
   "Rate shown is liquid-equivalent, not depth.": "La tasa mostrada es equivalente líquido, no profundidad.",
   "Nothing falling here now.": "No está cayendo nada aquí ahora.",
 
+  // ---------- Storm shape ----------
+  "Storm shape": "Forma de la tormenta",
+  "live radar": "radar en vivo",
+  "The real radar reflectivity, shown as a solid color fill instead of drops, so you can see a storm's actual size, shape and heaviest core — not just the warning box.":
+    "La reflectividad real del radar, mostrada como un relleno de color sólido en vez de gotas, para que vea el tamaño, la forma y el núcleo más fuerte de la tormenta — no solo el recuadro de la alerta.",
+  "The real shape of what's out there, not just the warning box. Green is lighter, red is heavier, purple or white is the most intense — often hail.":
+    "La forma real de lo que hay allá afuera, no solo el recuadro de la alerta. Verde es más ligero, rojo es más fuerte, morado o blanco es lo más intenso — a menudo granizo.",
+
   // ---------- Suggestion box ----------
   "Suggestion box": "Buzón de sugerencias",
   "StormFront is built for Texans, by neighbors. Tell us what's missing, what's wrong, or what would help — we read every one.":
@@ -437,7 +461,8 @@ export const ES = {
   "Privacy": "Privacidad", "Terms": "Condiciones", "View": "Vista", "View mode": "Modo de vista", "Simple": "Simple", "Advanced": "Avanzado", "Language": "Idioma",
   "Everything": "Todo", "All official layers and neighbor reports": "Todas las capas oficiales y reportes de vecinos",
   "Flooding": "Inundaciones", "Warnings, rivers, radar, flood zones, reports": "Alertas, ríos, radar, zonas de inundación, reportes",
-  "Tornadoes and storms": "Tornados y tormentas", "Warnings, storm outlook, radar, hail and damage reports": "Alertas, perspectiva de tormentas, radar, reportes de granizo y daños",
+  "Tornadoes and storms": "Tornados y tormentas", "Warnings, storm outlook, radar, storm shape, hail and damage reports": "Alertas, perspectiva de tormentas, radar, forma de la tormenta, reportes de granizo y daños",
+  "Warnings, storm outlook, radar, storm shape, mesoscale discussions, shelters": "Alertas, perspectiva de tormentas, radar, forma de la tormenta, discusiones de mesoescala, refugios",
   "Storm cone, coastal warnings, evacuation routes, rivers, radar": "Cono de tormenta, alertas costeras, rutas de evacuación, ríos, radar",
   "Winter and ice": "Invierno y hielo", "Warnings, iced-road and power reports, rail": "Alertas, reportes de hielo y de luz, tren",
   "Warnings, winter severity, iced-road and power reports, rail": "Alertas, severidad invernal, reportes de hielo y de luz, tren",
