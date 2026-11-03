@@ -148,6 +148,9 @@ map.on("load", () => {
 
   // Raster layers go under the basemap's place labels so town names stay readable.
   const firstLabel = map.getStyle().layers.find((l) => l.type === "symbol")?.id;
+  // Storm shape sits lower still: under the basemap's own road/tunnel/bridge lines too (not just
+  // labels), so roads stay crisp and legible right through a storm instead of getting tinted over.
+  const belowRoads = map.getStyle().layers.find((l) => /^(road|tunnel|bridge)_/.test(l.id))?.id || firstLabel;
 
   // FEMA flood zones (National Flood Hazard Layer). FEMA only draws them when zoomed in.
   map.addSource("fema-zones", {
@@ -182,7 +185,7 @@ map.on("load", () => {
 
   // Storm shape: raw radar reflectivity as a filled image, under everything else in this group so
   // rain totals, flood-from-space and the radar drops all stay legible drawn on top of it.
-  stormcells = initStormCells({ map, beforeId: firstLabel });
+  stormcells = initStormCells({ map, beforeId: belowRoads });
   MAP_LAYERS.stormcells = stormcells.layerIds;
   window.stormlineStormCells = stormcells; // debugging aid
 

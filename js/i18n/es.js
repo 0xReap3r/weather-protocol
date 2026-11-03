@@ -423,10 +423,11 @@ export const ES = {
   // ---------- Storm shape ----------
   "Storm shape": "Forma de la tormenta",
   "live radar": "radar en vivo",
-  "The real radar reflectivity, shown as a solid color fill instead of drops, so you can see a storm's actual size, shape and heaviest core — not just the warning box.":
-    "La reflectividad real del radar, mostrada como un relleno de color sólido en vez de gotas, para que vea el tamaño, la forma y el núcleo más fuerte de la tormenta — no solo el recuadro de la alerta.",
-  "The real shape of what's out there, not just the warning box. Green is lighter, red is heavier, purple or white is the most intense — often hail.":
-    "La forma real de lo que hay allá afuera, no solo el recuadro de la alerta. Verde es más ligero, rojo es más fuerte, morado o blanco es lo más intenso — a menudo granizo.",
+  "The real radar reflectivity, recolored in a fainter, cooler palette so light rain barely tints the map — only a storm's real core glows, right through the roads and markers underneath.":
+    "La reflectividad real del radar, con un color propio más tenue y frío para que la lluvia ligera apenas tiña el mapa — solo el núcleo real de la tormenta resplandece, justo encima de las calles y los marcadores.",
+  "Fainter and cooler is lighter rain, so it won't bury the map under it. The magenta glow is the most intense — often hail — the same color this app uses for a Tornado or Flash Flood Emergency.":
+    "Más tenue y frío es lluvia más ligera, para que no sepulte el mapa. El resplandor magenta es lo más intenso — a menudo granizo — el mismo color que usa esta aplicación para una Emergencia de Tornado o de Inundación Repentina.",
+  "Hail / extreme": "Granizo / extremo",
 
   // ---------- Suggestion box ----------
   "Suggestion box": "Buzón de sugerencias",
