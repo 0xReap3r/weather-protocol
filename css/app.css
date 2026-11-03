@@ -239,6 +239,8 @@ button { font: inherit; color: inherit; }
 .ai-body { padding: 0 12px 12px; }
 .ai-body h4 { margin: 12px 0 4px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-dim); }
 .ai-area { margin: 0; font-size: 13px; color: var(--text-dim); }
+.ai-explain { margin: 8px 0 0; padding: 8px 10px; border-left: 2px solid var(--alert); background: rgba(233,240,246,.04); font-size: 13px; border-radius: 0 var(--r) var(--r) 0; }
+.ai-explain strong { color: var(--text); }
 .ai-text { margin: 0; font-size: 14px; white-space: pre-line; max-width: 65ch; }
 .ai-meta { margin: 12px 0 0; font-family: var(--font-data); font-size: 11px; color: var(--text-dim); }
 

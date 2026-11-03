@@ -2,11 +2,12 @@ import { isEs, setLang, t, eventName } from "./i18n.js"; // first: Spanish mode 
 import { APP } from "./config.js";
 import { createRegion } from "./region.js";
 import { LAYERS, loadLayerState, saveLayerState } from "./layers.js";
-import { loadAlerts, uniqueAlerts } from "./data/alerts.js";
+import { loadAlerts, uniqueAlerts, explainKind } from "./data/alerts.js";
 import { loadGauges, loadStageflow, loadGaugeDetail, gaugeFeatures, CATEGORY } from "./data/gauges.js";
 import { loadCounties } from "./data/counties.js";
 import { initNearPanel } from "./near.js";
 import { initRadar } from "./radar.js";
+import { initStormCells } from "./stormcells.js";
 import { renderKey } from "./key.js";
 import { initOutlook } from "./outlook.js";
 import { initReports } from "./reports.js";
@@ -112,6 +113,7 @@ let storms = null; // SPC outlook, created once the map is ready
 let fires = null, tropical = null, lakes = null, crossings = null; // NIFC wildfires and NHC tropical storms
 let shelters = null, meso = null, wssi = null; // FEMA/HIFLD shelters, SPC mesoscale discussions, WPC winter severity
 let satellite = null, rainTotals = null; // NASA flood map and NOAA rain totals
+let stormcells = null; // raw radar reflectivity fill ("Storm shape")
 let feed = null, places = null, route = null, push = null; // What's happened, My places, Check a route, alerts
 const LABEL_FONT = ["Montserrat SemiBold", "Open Sans Bold", "Noto Sans Regular"]; // must exist in the basemap's glyphs
 
@@ -177,6 +179,12 @@ map.on("load", () => {
   MAP_LAYERS.wssi = wssi.layerIds;
   window.stormlineTropical = tropical; window.stormlineFires = fires; window.stormlineLakes = lakes; // debugging aids
   window.stormlineMeso = meso; window.stormlineShelters = shelters; window.stormlineWssi = wssi; // debugging aids
+
+  // Storm shape: raw radar reflectivity as a filled image, under everything else in this group so
+  // rain totals, flood-from-space and the radar drops all stay legible drawn on top of it.
+  stormcells = initStormCells({ map, beforeId: firstLabel });
+  MAP_LAYERS.stormcells = stormcells.layerIds;
+  window.stormlineStormCells = stormcells; // debugging aid
 
   // Rain totals (NOAA MRMS) and flood from space (NASA), under the radar drops.
   rainTotals = initRainTotals({ map, metro, beforeId: firstLabel, openSheet });
@@ -657,6 +665,7 @@ function applyLayerVisibility() {
   meso?.onToggle(!!layerState.mesodiscussion);
   shelters?.onToggle(!!layerState.shelters);
   wssi?.onToggle(!!layerState.wssi);
+  stormcells?.onToggle(!!layerState.stormcells);
   grid?.render();
   satellite?.onToggle(!!layerState.satflood);
   rainTotals?.onToggle(!!layerState.raintotal);
@@ -748,6 +757,7 @@ function renderAlertList(focusId) {
       </summary>
       <div class="ai-body">
         <p class="ai-area" translate="no">${esc(a.areaDesc)}</p>
+        ${(() => { const k = explainKind(a.event); return k ? `<p class="ai-explain"><strong>${t(k.kind)}:</strong> ${t(k.text)}</p>` : ""; })()}
         ${isEs ? `<p class="ai-lang">Official text from the National Weather Service, in English.</p>` : ""}
         ${a.instruction ? `<h4>What to do</h4><p class="ai-text" translate="no" lang="en">${esc(a.instruction)}</p>` : ""}
         <h4>Details</h4>
